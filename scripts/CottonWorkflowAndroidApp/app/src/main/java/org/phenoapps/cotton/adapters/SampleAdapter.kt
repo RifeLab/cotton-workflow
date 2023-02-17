@@ -35,6 +35,10 @@ class SampleAdapter(private val controller: SampleController):
         val expandImageView: ImageView = view.findViewById(R.id.list_item_sample_expand_iv)
         val timestampTextView: TextView = view.findViewById(R.id.list_item_sample_timestamp_header_tv)
         val weightTimestampTextView: TextView = view.findViewById(R.id.list_item_sample_weight_timestamp_header_tv)
+        val weightIcon: ImageView = view.findViewById(R.id.list_item_sample_weight_header_iv)
+        val scaleIcon: ImageView = view.findViewById(R.id.list_item_sample_scale_header_iv)
+        val scanIcon: ImageView = view.findViewById(R.id.list_item_sample_scan_header_iv)
+        val classIcon: ImageView = view.findViewById(R.id.list_item_sample_class_iv)
     }
 
     // Create new views (invoked by the layout manager)
@@ -68,10 +72,12 @@ class SampleAdapter(private val controller: SampleController):
                     viewHolder.weightTimestampTextView.text = formatter.format(scaleTime)
 
                     viewHolder.weightTimestampTextView.wrap()
+                    viewHolder.weightIcon.wrap()
 
                 } else {
 
                     viewHolder.weightTimestampTextView.shrink()
+                    viewHolder.weightIcon.shrink()
                 }
 
                 viewHolder.content.setOnClickListener {
@@ -97,16 +103,29 @@ class SampleAdapter(private val controller: SampleController):
                 //only show expand button if it is a parent
                 if (parent != null) {
                     viewHolder.expandImageView.visibility = View.GONE
+                    viewHolder.classIcon.visibility = View.VISIBLE
+                    viewHolder.classIcon.setImageResource(when(position) {
+                      0 -> R.drawable.tree_outline
+                      else -> R.drawable.seed
+                    })
+                } else {
+                    viewHolder.classIcon.visibility = View.GONE
                 }
 
                 if (this.weight != null) {
 
+                    viewHolder.scaleIcon.visibility = View.VISIBLE
+                    viewHolder.weightIcon.visibility = View.VISIBLE
                     viewHolder.weightTextView.text = this.weight
                     viewHolder.weightTextView.wrap()
+                    viewHolder.weightIcon.wrap()
 
                 } else {
 
+                    viewHolder.scaleIcon.visibility = View.GONE
+                    viewHolder.weightIcon.visibility = View.GONE
                     viewHolder.weightTextView.shrink()
+                    viewHolder.weightIcon.shrink()
                 }
 
                 BarcodeUtil.encodeBarcode(c, { bmp ->

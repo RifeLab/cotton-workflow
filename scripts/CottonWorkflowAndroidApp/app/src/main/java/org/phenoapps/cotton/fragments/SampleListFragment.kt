@@ -39,6 +39,22 @@ import org.phenoapps.security.Security
 import java.util.*
 import kotlin.NoSuchElementException
 
+
+/**
+ *
+ * Main page list: add just a scan button, default, to camera being open make main actions larger, connecting to devices,
+ *
+ *
+ * content lists put more icons/headers to make each section more apparent
+ *
+ * 
+ *
+ *
+ *
+ */
+
+
+
 @AndroidEntryPoint
 class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list), ScanInteractor, SampleController {
 
@@ -89,7 +105,7 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list), Scan
     private val definerLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
-
+        startBarcodeLauncher(getString(R.string.frag_sample_list_first_barcode_scan))
     }
 
     // Register the launcher and result handler
@@ -180,14 +196,7 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list), Scan
 
         scanButton?.setOnClickListener {
 
-            val options = ScanOptions()
-            options.setDesiredBarcodeFormats(ScanOptions.CODE_39)
-            options.setPrompt("Scan a barcode")
-            options.setCameraId(0) // Use a specific camera of the device
-            options.setOrientationLocked(false)
-            options.setBeepEnabled(false)
-            options.setBarcodeImageEnabled(true)
-            barcodeLauncher.launch(options)
+            startBarcodeLauncher(getString(R.string.frag_sample_list_scan_a_sample))
         }
 
         printButton?.setOnClickListener {
@@ -195,6 +204,17 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list), Scan
             findNavController().navigate(SampleListFragmentDirections
                 .globalActionToPrintFragment(null))
         }
+    }
+
+    private fun startBarcodeLauncher(message: String) {
+        val options = ScanOptions()
+        options.setDesiredBarcodeFormats(ScanOptions.CODE_39)
+        options.setPrompt(message)
+        options.setCameraId(0) // Use a specific camera of the device
+        options.setOrientationLocked(false)
+        options.setBeepEnabled(false)
+        options.setBarcodeImageEnabled(true)
+        barcodeLauncher.launch(options)
     }
 
     /**

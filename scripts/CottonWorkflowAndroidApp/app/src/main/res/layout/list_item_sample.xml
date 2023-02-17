@@ -8,12 +8,21 @@
     android:layout_margin="8dp"
     android:background="@drawable/cell">
 
+    <ImageView android:visibility="gone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/list_item_sample_class_iv"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:src="@drawable/tree_outline"
+        android:contentDescription="TODO" />
+
     <ImageView
         android:id="@+id/list_item_sample_code_iv"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:src="@drawable/launcher_icon"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@id/list_item_sample_class_iv"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:layout_margin="8dp"
@@ -30,15 +39,34 @@
         app:layout_constraintTop_toTopOf="parent"
         android:contentDescription="TODO" />
 
+    <ImageView android:id="@+id/list_item_sample_scan_header_iv"
+        android:padding="4dp"
+        android:layout_margin="8dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/barcode_scan"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/list_item_sample_code_header_tv"
+        android:contentDescription="TODO" />
+
+    <ImageView android:id="@+id/list_item_sample_id_header_iv"
+        android:padding="4dp"
+        android:layout_margin="8dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/identifier"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/list_item_sample_code_iv"
+        android:contentDescription="TODO" />
+
     <TextView style="@style/Theme.Cotton.Text"
         android:layout_margin="8dp"
         android:id="@+id/list_item_sample_code_header_tv"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/list_item_sample_code_iv"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@id/list_item_sample_scan_header_iv"
         app:layout_constraintEnd_toEndOf="parent"
-        android:gravity="center_horizontal"
         android:singleLine="true"
         android:ellipsize="marquee"
         tools:text="Sample Barcode ID *99010899"/>
@@ -49,38 +77,55 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:layout_constraintTop_toBottomOf="@id/list_item_sample_code_header_tv"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@id/list_item_sample_scan_header_iv"
         app:layout_constraintEnd_toEndOf="parent"
-        android:gravity="center_horizontal"
         android:singleLine="true"
         android:ellipsize="marquee"
         tools:text="Jan 1 2121"/>
 
-    <TextView style="@style/Theme.Cotton.Text"
+    <ImageView android:id="@+id/list_item_sample_scale_header_iv"
+        android:padding="4dp"
         android:layout_margin="8dp"
-        android:id="@+id/list_item_sample_weight_header_tv"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/list_item_sample_timestamp_header_tv"
+        android:src="@drawable/scale"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:singleLine="true"
-        android:ellipsize="marquee"
-        android:gravity="center_horizontal"
-        tools:text="1g"/>
+        app:layout_constraintTop_toBottomOf="@id/list_item_sample_timestamp_header_tv"
+        android:contentDescription="TODO" />
 
     <TextView style="@style/Theme.Cotton.Text"
         android:layout_margin="8dp"
         android:id="@+id/list_item_sample_weight_timestamp_header_tv"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/list_item_sample_weight_header_tv"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/list_item_sample_timestamp_header_tv"
+        app:layout_constraintStart_toEndOf="@id/list_item_sample_scale_header_iv"
         app:layout_constraintEnd_toEndOf="parent"
-        android:gravity="center_horizontal"
         android:singleLine="true"
         android:ellipsize="marquee"
         tools:text="Jan 1 2121"/>
+
+    <ImageView android:id="@+id/list_item_sample_weight_header_iv"
+        android:padding="4dp"
+        android:layout_margin="8dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/weight"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/list_item_sample_weight_timestamp_header_tv"
+        android:contentDescription="TODO" />
+
+    <TextView style="@style/Theme.Cotton.Text"
+        android:layout_margin="8dp"
+        android:id="@+id/list_item_sample_weight_header_tv"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/list_item_sample_weight_timestamp_header_tv"
+        app:layout_constraintStart_toEndOf="@id/list_item_sample_weight_header_iv"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:singleLine="true"
+        android:ellipsize="marquee"
+        tools:text="1g"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/list_item_sample_sub_sample_rv"
@@ -91,7 +136,7 @@
         android:orientation="vertical"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/list_item_sample_weight_timestamp_header_tv"
+        app:layout_constraintTop_toBottomOf="@id/list_item_sample_weight_header_tv"
         app:layout_constraintBottom_toBottomOf="parent"
         tools:listitem="@layout/list_item_sample"/>
     <!--        tools:itemCount="2"-->

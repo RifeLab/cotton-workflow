@@ -24,4 +24,6 @@
     <string name="preferences_device_id_clear_title">Clear devices from memory</string>
     <string name="action_menu_main_bot_tb_save_title">Export</string>
     <string name="frag_sample_list_no_printer">No printer is connected.</string>
+    <string name="frag_sample_list_scan_a_sample">Scan a sample</string>
+    <string name="frag_sample_list_first_barcode_scan">Scan your first barcode</string>
 </resources>

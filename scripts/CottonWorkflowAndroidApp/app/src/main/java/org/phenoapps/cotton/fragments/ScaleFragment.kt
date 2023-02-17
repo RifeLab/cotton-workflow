@@ -120,35 +120,43 @@ class ScaleFragment: BluetoothFragment(R.layout.fragment_scale), CoroutineScope 
 
     private fun startObserving() {
 
-        advisor.withNearby {
+        try {
 
-            viewModel.scaleReading.observe(viewLifecycleOwner) { scaleReading ->
+            advisor.withNearby {
 
-                if (scaleReading != null && scaleReading.isNotBlank()) {
+                viewModel.scaleReading.observe(viewLifecycleOwner) { scaleReading ->
 
-                    val readable = scaleReading.replace(" ", "").trim()
+                    if (scaleReading != null && scaleReading.isNotBlank()) {
 
-                    //the metric, in this case always 'g' will be the end of the string
-                    //but ohaus potentially splits it into multiple readings
-                    if (!readable.endsWith("g")) {
+                        val readable = scaleReading.replace(" ", "").trim()
 
-                        firstHalf = readable
+                        //the metric, in this case always 'g' will be the end of the string
+                        //but ohaus potentially splits it into multiple readings
+                        if (!readable.endsWith("g")) {
 
-                    } else {
+                            firstHalf = readable
 
-                        cachedRead = "$firstHalf$readable"
+                        } else {
 
-                        if (cachedRead != "g" && cachedRead?.contains(".") == true) {
+                            cachedRead = "$firstHalf$readable"
 
-                            editText?.setText(cachedRead)
+                            if (cachedRead != "g" && cachedRead?.contains(".") == true) {
+
+                                editText?.setText(cachedRead)
+
+                            }
+
+                            firstHalf = String()
 
                         }
-
-                        firstHalf = String()
-
                     }
                 }
             }
+
+        } catch (e: java.lang.IllegalStateException) {
+
+            e.printStackTrace()
+
         }
     }
 
