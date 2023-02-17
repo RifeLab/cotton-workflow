@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="pistachio">#bcd979</color>
+    <color name="olivine">#9dad6f</color>
+    <color name="dim_gray">#7d6d61</color>
+    <color name="walnut_brown">#5e574d</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+</resources>

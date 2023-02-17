@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory
+        android:title="@string/preferences_devices"
+        app:iconSpaceReserved="false">
+
+        <Preference android:title="@string/preferences_scale_device_chooser"
+            android:summary=""
+            android:icon="@drawable/scale"
+            android:key="@string/key_preferences_scale_device_id"/>
+
+        <Preference android:title="@string/preferences_printer_device_chooser"
+            android:summary=""
+            android:icon="@drawable/printer_outline"
+            android:key="@string/key_preferences_printer_device_id"/>
+
+        <Preference android:title="@string/preferences_device_id_clear_title"
+            android:icon="@android:drawable/ic_delete"
+            android:key="@string/key_preferences_device_id_clear"/>
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

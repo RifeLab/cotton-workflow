@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/content"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <TextView style="@style/Theme.Cotton.TitleText"
+        android:id="@+id/frag_print_sample_header_tv"
+        android:text="@string/frag_print_sample_header"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <EditText style="@style/Theme.Cotton.WeightEditText"
+        android:id="@+id/frag_print_et"
+        android:layout_margin="8dp"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/frag_print_sample_header_tv"
+        app:layout_constraintBottom_toTopOf="@id/frag_print_sample_accept_btn"
+        android:autofillHints=""
+        android:hint=""
+        tools:text="*991234123429*"
+        android:inputType="numberDecimal" />
+
+    <TextView style="@style/Theme.Cotton.Text"
+        android:id="@+id/frag_print_sample_explanation_tv"
+        android:text="@string/frag_print_explanation"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/frag_print_et"
+        app:layout_constraintBottom_toTopOf="@id/frag_print_sample_connect_fab"
+        app:layout_constraintVertical_bias="0"/>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_connection"
+        app:layout_constraintBottom_toTopOf="@id/frag_print_sample_accept_btn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:backgroundTint="@color/pistachio"
+        android:layout_margin="8dp"
+        android:id="@+id/frag_print_sample_connect_fab"
+        android:contentDescription="TODO" />
+
+    <Button style="@style/Theme.Cotton.Button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:id="@+id/frag_print_sample_accept_btn"
+        android:text="@string/print"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

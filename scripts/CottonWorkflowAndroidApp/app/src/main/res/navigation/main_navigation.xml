@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/navigation_root"
+    app:startDestination="@+id/fragment_sample_list">
+
+    <fragment android:id="@+id/fragment_sample_list"
+        android:name="org.phenoapps.cotton.fragments.SampleListFragment"
+        android:label="Sample List Fragment"
+        tools:layout="@layout/fragment_sample_list"/>
+
+    <fragment android:id="@+id/fragment_preferences"
+        android:name="org.phenoapps.cotton.fragments.PreferencesFragment"
+        android:label="Preferences"/>
+
+    <fragment android:id="@+id/fragment_device_chooser"
+        android:name="org.phenoapps.cotton.fragments.BluetoothDeviceChooserFragment"
+        android:label="Device Chooser"/>
+
+    <fragment android:id="@+id/fragment_scale"
+        android:name="org.phenoapps.cotton.fragments.ScaleFragment"
+        android:label="Scale"/>
+
+    <fragment android:id="@+id/fragment_print"
+        android:name="org.phenoapps.cotton.fragments.PrintFragment"
+        android:label="Print"/>
+
+    <action android:id="@+id/global_action_to_scale_fragment"
+        app:destination="@id/fragment_scale"
+        app:launchSingleTop="true"/>
+
+    <action android:id="@+id/global_action_to_device_chooser_fragment"
+        app:destination="@+id/fragment_device_chooser"
+        app:launchSingleTop="true">
+        <argument android:name="deviceType"
+            app:argType="string"
+            app:nullable="false"/>
+    </action>
+
+    <action android:id="@+id/global_action_to_preferences_fragment"
+        app:destination="@id/fragment_preferences"
+        app:launchSingleTop="true"
+        app:popUpTo="@id/fragment_preferences"/>
+
+    <action android:id="@+id/global_action_to_home_fragment"
+        app:destination="@id/fragment_sample_list"
+        app:launchSingleTop="true"
+        app:popUpTo="@id/fragment_sample_list"/>
+
+    <action android:id="@+id/global_action_to_print_fragment"
+        app:destination="@id/fragment_print"
+        app:launchSingleTop="true"
+        app:popUpTo="@id/fragment_sample_list">
+        <argument android:name="code"
+            app:nullable="true"
+            app:argType="string"/>
+    </action>
+
+</navigation>

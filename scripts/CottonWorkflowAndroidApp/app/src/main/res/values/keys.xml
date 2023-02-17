@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE resources [
+    <!ENTITY package "org.phenoapps.cotton.preferences">
+    ]>
+<resources>
+    <!-- preference ui -->
+    <string name="key_preferences_scale_device_id">&package;devices.scale</string>
+    <string name="key_preferences_printer_device_id">&package;devices.printer</string>
+    <string name="key_preferences_definer">&package;definer</string>
+    <string name="key_preferences_device_id_clear">&package;device.clear</string>
+
+    <!-- shared preferences -->
+    <string name="key_scale_device_id">&package;devices.scale.id</string>
+    <string name="key_printer_device_id">&package;devices.printer.id</string>
+    <string name="key_definer_first_load">&package;definer.first_load</string>
+
+</resources>

@@ -1,0 +1,34 @@
+package org.phenoapps.cotton.interfaces
+
+import org.phenoapps.cotton.models.SampleModel
+
+/**
+ * This interface should implement queries
+ * to get all samples,
+ * and subsamples from a given sample code.
+ */
+interface SampleController {
+
+    // return all samples
+    fun getSamples(): Array<SampleModel>
+
+    // return subsamples of a given sample id
+    fun getSubSamples(sid: Long): Array<SampleModel>
+
+    // write weight of a sample
+    fun writeWeight(model: SampleModel)
+
+    // prints label for a give sample, returns true/false if fails
+    fun printSample(model: SampleModel): Boolean
+
+    // start workflow to weigh a sample
+    fun weighSample(model: SampleModel)
+
+    // delete sample and sub samples from database
+    fun deleteSample(model: SampleModel)
+
+    // if a sample was clicked
+    fun sampleClicked(model: SampleModel)
+
+    fun getString(id: Int, diff: String): String
+}

@@ -1,0 +1,27 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="app_name" tools:override="true">CottonWorkflow</string>
+    <string name="fragment_sample_list_fab_content_description" />
+    <string name="dialog_accept_new_sample_message">Add this new barcode to the database?</string>
+    <string name="frag_weight_sample_header">Weigh the sample.</string>
+    <string name="dialog_sample_action_sample_message">Choose a sample action</string>
+    <string name="dialog_sample_action_print_label_rb">Print Label</string>
+    <string name="dialog_sample_action_weigh_rb">Weigh</string>
+    <string name="action_menu_main_bot_tb_settings_title">Settings</string>
+    <string name="action_menu_main_bot_tb_home_title">Home</string>
+    <string name="preferences_devices">Devices</string>
+    <string name="preferences_scale_device_chooser">Scale</string>
+    <string name="preferences_printer_device_chooser">Printer</string>
+    <string name="choose_paired_bluetooth_devices_title">Choose a wireless device to pair with.</string>
+    <string name="list_item_sample_weight_diff">Weight differs by %1$s</string>
+    <string name="dialog_sample_action_delete_rb">Delete</string>
+    <string name="frag_print_sample_header">Print sample barcode</string>
+    <string name="print">Print</string>
+    <string name="frag_print_no_id_set">Please choose a printer first.</string>
+    <string name="frag_print_explanation">The text must be compliant with CODE_39 specifications. It must be no greater than 10 numeric characters. Asterisks are automatically included.</string>
+    <string name="frag_print_connection_failed">Failed to conenct with printer.</string>
+    <string name="frag_sample_list_actions_text">Actions</string>
+    <string name="frag_print_cant_connect_to_device">Device is unreachable.</string>
+    <string name="preferences_device_id_clear_title">Clear devices from memory</string>
+    <string name="action_menu_main_bot_tb_save_title">Export</string>
+    <string name="frag_sample_list_no_printer">No printer is connected.</string>
+</resources>

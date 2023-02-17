@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item app:showAsAction="always"
+        android:id="@+id/action_menu_main_bot_tb_home"
+        android:icon="@drawable/home"
+        android:title="@string/action_menu_main_bot_tb_home_title"/>
+
+    <item
+        app:showAsAction="always"
+        android:id="@+id/action_menu_main_bot_tb_save"
+        android:icon="@drawable/content_save"
+        android:title="@string/action_menu_main_bot_tb_save_title"
+        tools:ignore="AlwaysShowAction" />
+
+    <item
+        app:showAsAction="always"
+        android:id="@+id/action_menu_main_bot_tb_settings"
+        android:icon="@drawable/cog"
+        android:title="@string/action_menu_main_bot_tb_settings_title"
+        tools:ignore="AlwaysShowAction" />
+
+</menu>
