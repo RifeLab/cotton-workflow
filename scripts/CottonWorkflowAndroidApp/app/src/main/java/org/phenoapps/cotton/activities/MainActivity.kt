@@ -386,4 +386,15 @@ class MainActivity: AppCompatActivity(), Connector {
         super.onResume()
         verifyPersonHelper.checkLastOpened()
     }
+
+    @SuppressLint("MissingPermission")
+    override fun onDestroy() {
+        super.onDestroy()
+        advisor.withNearby {
+            gatts.forEach { g ->
+                g.value.disconnect()
+                g.value.close()
+            }
+        }
+    }
 }
