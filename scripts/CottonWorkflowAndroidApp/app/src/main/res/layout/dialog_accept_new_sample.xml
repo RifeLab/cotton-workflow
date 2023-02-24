@@ -29,7 +29,7 @@
         android:id="@+id/dialog_accept_new_sample_code_iv"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:src="@drawable/launcher_icon"
+        android:src="@drawable/ic_icon_launcher"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/dialog_accept_new_sample_code_tv"

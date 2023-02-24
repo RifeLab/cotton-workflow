@@ -30,5 +30,8 @@ interface SampleController {
     // if a sample was clicked
     fun sampleClicked(model: SampleModel)
 
+    // add a subsample action
+    fun addSample(model: SampleModel)
+
     fun getString(id: Int, diff: String): String
 }

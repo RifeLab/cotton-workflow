@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
+import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.setFragmentResult
@@ -64,12 +65,27 @@ class ScaleFragment: BluetoothFragment(R.layout.fragment_scale), CoroutineScope 
                 weight = editText?.text?.toString()
             }
 
-            sample?.weight = weight
+            try {
 
-            setFragmentResult(REQUEST_KEY, bundleOf("sample" to sample))
+                sample?.weight = weight?.replace("g", "")?.toDouble()
 
-            findNavController().popBackStack()
+            } catch (e: NumberFormatException) {
 
+                e.printStackTrace()
+
+            }
+
+            if (sample?.weight != null && sample.weight?.toString()?.isNotBlank() == true) {
+
+                setFragmentResult(REQUEST_KEY, bundleOf("sample" to sample))
+
+                findNavController().popBackStack()
+
+            } else {
+
+                Toast.makeText(context,
+                    R.string.frag_scale_sample_weight_cant_be_empty, Toast.LENGTH_LONG).show()
+            }
         }
 
         connectButton?.setOnClickListener {

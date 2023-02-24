@@ -3,15 +3,23 @@
     <!ENTITY package "org.phenoapps.cotton.preferences">
     ]>
 <resources>
+
     <!-- preference ui -->
+    <string name="key_pref_screen">&package;screen</string>
     <string name="key_preferences_scale_device_id">&package;devices.scale</string>
     <string name="key_preferences_printer_device_id">&package;devices.printer</string>
     <string name="key_preferences_definer">&package;definer</string>
     <string name="key_preferences_device_id_clear">&package;device.clear</string>
+    <string name="key_preferences_workflow_id_start">&package;workflow.id</string>
+    <string name="key_preferences_person">&package;person</string>
+    <string name="key_preferences_person_require">&package;person_require</string>
+    <string name="key_preferences_person_require_interval">&package;person_require_interval</string>
 
     <!-- shared preferences -->
     <string name="key_scale_device_id">&package;devices.scale.id</string>
     <string name="key_printer_device_id">&package;devices.printer.id</string>
     <string name="key_definer_first_load">&package;definer.first_load</string>
+    <string name="key_last_time_opened">&package;last_time_opened</string>
+    <string name="key_person_name">&package;person_name</string>
 
 </resources>

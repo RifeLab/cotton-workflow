@@ -17,7 +17,7 @@ interface SampleDao {
     @Query("SELECT * FROM samples WHERE code = :code LIMIT 1")
     suspend fun getSampleWithCode(code: String): SampleEntity?
 
-    suspend fun insert(model: SampleModel): Long = insert(model.sid, model.code, model.weight, model.scanTime, model.scaleTime, model.parent)
+    suspend fun insert(model: SampleModel): Long = insert(model.sid, model.code, model.weight, model.scanTime, model.scaleTime, model.parent, model.person)
 
     @Update
     suspend fun update(model: SampleEntity)
@@ -25,8 +25,8 @@ interface SampleDao {
     @Delete
     suspend fun delete(model: SampleEntity)
 
-    @Query("INSERT INTO samples(sid, code, weight, scan_time, scale_time, parent) VALUES(:sid, :code, :weight, :scanTime, :scaleTime, :parent)")
-    suspend fun insert(sid: Long?, code: String?, weight: String? = null, scanTime: Long, scaleTime: Long? = null, parent: Long? = null): Long
+    @Query("INSERT INTO samples(sid, code, weight, scan_time, scale_time, parent, person) VALUES(:sid, :code, :weight, :scanTime, :scaleTime, :parent, :person)")
+    suspend fun insert(sid: Long?, code: String?, weight: Double? = null, scanTime: Long, scaleTime: Long? = null, parent: Long? = null, person: String? = null): Long
 
     @Query("UPDATE samples SET weight = :weight WHERE sid = :id")
     suspend fun writeWeight(id: Long, weight: String)

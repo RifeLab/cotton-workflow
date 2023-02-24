@@ -1,7 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:key="@string/key_pref_screen">
+
+    <PreferenceCategory
+        android:key="transfer_defaults"
+        android:title="@string/preferences_profile"
+        app:iconSpaceReserved="false">
+
+        <EditTextPreference android:title="@string/pref_person_title"
+            android:icon="@drawable/ic_pref_profile_person"
+            android:key="@string/key_preferences_person"
+            android:summary="@string/pref_person_summary"/>
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:icon="@drawable/ic_pref_profile_verify"
+            android:key="@string/key_preferences_person_require"
+            android:title="@string/pref_person_require_title"
+            android:summary="@string/pref_person_require_summary"/>
+
+        <ListPreference
+            android:entries="@array/preferences_profile_ask_user_interval_entries"
+            android:entryValues="@array/preferences_profile_ask_user_interval_values"
+            android:icon="@drawable/hours_24"
+            android:key="@string/key_preferences_person_require_interval"
+            android:title="@string/pref_profile_person_require_title"
+            android:summary="@string/pref_profile_person_require_summary"/>
+
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="@string/preferences_workflow"
+        app:iconSpaceReserved="false">
+
+        <EditTextPreference android:title="@string/preferences_start_id_chooser"
+            android:summary=""
+            android:icon="@drawable/identifier"
+            android:key="@string/key_preferences_workflow_id_start"/>
+
+    </PreferenceCategory>
 
     <PreferenceCategory
         android:title="@string/preferences_devices"

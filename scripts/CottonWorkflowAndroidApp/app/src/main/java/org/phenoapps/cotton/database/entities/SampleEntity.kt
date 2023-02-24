@@ -21,7 +21,7 @@ data class SampleEntity(
 
     //the raw weight string, this will always start as null before the scale is used
     @ColumnInfo(name = "weight")
-    val weight: String? = null,
+    val weight: Double? = null,
 
     //the timestamp in which a sample was scanned and entered into database,
     // or a sub sample was created
@@ -32,11 +32,15 @@ data class SampleEntity(
     @ColumnInfo(name = "scale_time")
     val scaleTime: Long? = null,
 
+    //person that scanned/weighed the sample
+    @ColumnInfo(name = "person")
+    val person: String? = null,
+
     //null if it is a sample, else it is a sub sample where parent is the sid of original
     @ColumnInfo(name = "parent")
     val parent: Long? = null
 ) {
 
-    constructor(sample: SampleModel) : this(sample.sid, sample.code, sample.weight, sample.scanTime, sample.scaleTime, sample.parent)
+    constructor(sample: SampleModel) : this(sample.sid, sample.code, sample.weight, sample.scanTime, sample.scaleTime, sample.person, sample.parent)
 
 }

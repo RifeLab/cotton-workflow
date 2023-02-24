@@ -8,22 +8,35 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.widget.Toast
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
+import com.google.android.material.snackbar.Snackbar
 import org.phenoapps.adapters.bluetooth.BluetoothDeviceAdapter
 import org.phenoapps.cotton.R
+import org.phenoapps.cotton.activities.MainActivity
 import org.phenoapps.fragments.bluetooth.BluetoothListFragment
 import org.phenoapps.models.bluetooth.BluetoothDeviceModel
+import org.phenoapps.security.Security
 
 @SuppressLint("MissingPermission")
 class BluetoothDeviceChooserFragment: BluetoothListFragment() {
+
+    companion object {
+        const val DELAY_TIME_FOR_CONNECTION_HELPER_MESSAGE = 15000L
+    }
 
     private val devices = arrayListOf<BluetoothDevice>()
 
     private var deviceType = "printer"
 
     private var prefs: SharedPreferences? = null
+
+    init {
+        advisor.initialize()
+    }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -41,6 +54,27 @@ class BluetoothDeviceChooserFragment: BluetoothListFragment() {
         }
 
         deviceType = arguments?.getString("deviceType") ?: "printer"
+
+        startResetCheck()
+
+    }
+
+    private fun startResetCheck() {
+        Handler(Looper.getMainLooper()).postDelayed({
+            activity?.runOnUiThread {
+                view?.let { v ->
+                    val snack = Snackbar.make(v, R.string.frag_device_chooser_help_message, Snackbar.LENGTH_LONG)
+                    snack.setAction(R.string.frag_device_chooser_reset_message) {
+                        advisor.withNearby {
+                            it.cancelDiscovery()
+                            it.startDiscovery()
+                        }
+                        startResetCheck()
+                    }
+                    snack.show()
+                }
+            }
+        }, DELAY_TIME_FOR_CONNECTION_HELPER_MESSAGE)
     }
 
     override fun onDestroy() {
@@ -48,8 +82,12 @@ class BluetoothDeviceChooserFragment: BluetoothListFragment() {
 
         activity?.unregisterReceiver(receiver)
 
-        advisor.withNearby {
-            it.cancelDiscovery()
+        try {
+            advisor.withNearby {
+                it.cancelDiscovery()
+            }
+        } catch (e: IllegalStateException) {
+            e.printStackTrace()
         }
     }
 
@@ -112,5 +150,10 @@ class BluetoothDeviceChooserFragment: BluetoothListFragment() {
                 }
             }
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        (activity as MainActivity).reconnect()
     }
 }

@@ -49,6 +49,13 @@
             android:text="@string/dialog_sample_action_weigh_rb"/>
 
         <RadioButton
+            android:id="@+id/dialog_sample_action_add_subsample"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="false"
+            android:text="@string/dialog_sample_action_add_rb"/>
+
+        <RadioButton
             android:id="@+id/dialog_sample_action_delete_rb"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

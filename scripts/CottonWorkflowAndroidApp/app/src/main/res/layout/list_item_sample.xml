@@ -8,21 +8,12 @@
     android:layout_margin="8dp"
     android:background="@drawable/cell">
 
-    <ImageView android:visibility="gone"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/list_item_sample_class_iv"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:src="@drawable/tree_outline"
-        android:contentDescription="TODO" />
-
     <ImageView
         android:id="@+id/list_item_sample_code_iv"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:src="@drawable/launcher_icon"
-        app:layout_constraintStart_toEndOf="@id/list_item_sample_class_iv"
+        android:src="@drawable/ic_icon_launcher"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:layout_margin="8dp"

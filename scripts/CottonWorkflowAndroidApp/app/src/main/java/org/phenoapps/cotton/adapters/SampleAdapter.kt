@@ -38,7 +38,6 @@ class SampleAdapter(private val controller: SampleController):
         val weightIcon: ImageView = view.findViewById(R.id.list_item_sample_weight_header_iv)
         val scaleIcon: ImageView = view.findViewById(R.id.list_item_sample_scale_header_iv)
         val scanIcon: ImageView = view.findViewById(R.id.list_item_sample_scan_header_iv)
-        val classIcon: ImageView = view.findViewById(R.id.list_item_sample_class_iv)
     }
 
     // Create new views (invoked by the layout manager)
@@ -103,20 +102,14 @@ class SampleAdapter(private val controller: SampleController):
                 //only show expand button if it is a parent
                 if (parent != null) {
                     viewHolder.expandImageView.visibility = View.GONE
-                    viewHolder.classIcon.visibility = View.VISIBLE
-                    viewHolder.classIcon.setImageResource(when(position) {
-                      0 -> R.drawable.tree_outline
-                      else -> R.drawable.seed
-                    })
-                } else {
-                    viewHolder.classIcon.visibility = View.GONE
                 }
 
                 if (this.weight != null) {
 
                     viewHolder.scaleIcon.visibility = View.VISIBLE
                     viewHolder.weightIcon.visibility = View.VISIBLE
-                    viewHolder.weightTextView.text = this.weight
+                    viewHolder.weightTextView.text = controller
+                        .getString(R.string.grams_unit,"${this.weight}")
                     viewHolder.weightTextView.wrap()
                     viewHolder.weightIcon.wrap()
 
@@ -146,46 +139,32 @@ class SampleAdapter(private val controller: SampleController):
 
                     if (subsamples.size == 2) {
 
-                        //TODO generify weight this expects g or no unit
-                        val totalWeight = weight?.replace("g", "")
-                        val subWeight1 = subsamples[0].weight?.replace("g", "")
-                        val subWeight2 = subsamples[1].weight?.replace("g", "")
+                        val w = weight
+                        val subWeight1 = subsamples[0].weight
+                        val subWeight2 = subsamples[1].weight
 
                         try {
 
-                            val x = totalWeight?.toDouble()
-                            val y = subWeight1?.toDouble()
-                            val z = subWeight2?.toDouble()
+                            if (w != null && subWeight1 != null && subWeight2 != null) {
 
-                            if (x != null && y != null && z != null) {
-
-                                var error = abs(x - (y + z)).toString()
+                                var error = abs(w - (subWeight1 + subWeight2)).toString()
 
                                 val length = error.length
 
-                                if (length > 5) {
+                                if (length > 4) {
 
+                                    //TODO delete trailing zeroes
                                     error = error.substring(0..5)
                                 }
 
                                 viewHolder.analysisTextView.text = controller.getString(R.string.list_item_sample_weight_diff, error)
                             }
 
-                        } catch (e: java.lang.NumberFormatException) {
+                        } catch (e: java.lang.Exception) {
                             e.printStackTrace()
                         }
                     }
                 }
-
-//                if (parent != null) {
-//
-//                    viewHolder.content.shrink()
-//
-//                } else {
-//
-//                    viewHolder.content.wrap()
-//
-//                }
             }
         }
     }

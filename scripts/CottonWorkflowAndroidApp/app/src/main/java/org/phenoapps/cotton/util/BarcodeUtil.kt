@@ -1,8 +1,11 @@
 package org.phenoapps.cotton.util
 
+import android.content.Context
 import android.graphics.Bitmap
+import androidx.preference.PreferenceManager
 import com.google.zxing.BarcodeFormat
 import com.journeyapps.barcodescanner.BarcodeEncoder
+import org.phenoapps.cotton.R
 import kotlin.random.Random
 
 class BarcodeUtil {
@@ -32,6 +35,42 @@ class BarcodeUtil {
 
             String()
         }
+
+        fun generateIncrementalBarcode(context: Context): String = try {
+
+            val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+
+            val nextId = prefs.getString(context.getString(R.string.key_preferences_workflow_id_start), "0") ?: "0"
+
+            try {
+
+                var nextNextId = nextId.toLong() + 1
+
+                if (nextId == "9999999999") {
+
+                    nextNextId = 0L
+
+                }
+
+                prefs.edit().putString(context.getString(R.string.key_preferences_workflow_id_start), "$nextNextId").apply()
+
+
+            } catch (e: Exception) {
+
+                e.printStackTrace()
+
+            }
+
+            nextId.toCode39()
+
+        } catch (e: Exception) {
+
+            e.printStackTrace()
+
+            String()
+        }
+
+        fun String.toCode39() = "99${this.padStart(10, '0')}"
 
         fun encodeBarcode(code: String, onSuccess: (Bitmap) -> Unit, onFail: (() -> Unit)? = null) {
 

@@ -42,7 +42,12 @@
     <action android:id="@+id/global_action_to_preferences_fragment"
         app:destination="@id/fragment_preferences"
         app:launchSingleTop="true"
-        app:popUpTo="@id/fragment_preferences"/>
+        app:popUpTo="@id/fragment_preferences">
+        <argument android:name="action"
+            android:defaultValue=""
+            app:nullable="true"
+            app:argType="string"/>
+    </action>
 
     <action android:id="@+id/global_action_to_home_fragment"
         app:destination="@id/fragment_sample_list"

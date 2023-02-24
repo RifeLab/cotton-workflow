@@ -5,6 +5,7 @@
     <string name="frag_weight_sample_header">Weigh the sample.</string>
     <string name="dialog_sample_action_sample_message">Choose a sample action</string>
     <string name="dialog_sample_action_print_label_rb">Print Label</string>
+    <string name="dialog_sample_action_add_rb">Add subsample</string>
     <string name="dialog_sample_action_weigh_rb">Weigh</string>
     <string name="action_menu_main_bot_tb_settings_title">Settings</string>
     <string name="action_menu_main_bot_tb_home_title">Home</string>
@@ -18,7 +19,7 @@
     <string name="print">Print</string>
     <string name="frag_print_no_id_set">Please choose a printer first.</string>
     <string name="frag_print_explanation">The text must be compliant with CODE_39 specifications. It must be no greater than 10 numeric characters. Asterisks are automatically included.</string>
-    <string name="frag_print_connection_failed">Failed to conenct with printer.</string>
+    <string name="frag_print_connection_failed">Failed to connect with printer.</string>
     <string name="frag_sample_list_actions_text">Actions</string>
     <string name="frag_print_cant_connect_to_device">Device is unreachable.</string>
     <string name="preferences_device_id_clear_title">Clear devices from memory</string>
@@ -26,4 +27,33 @@
     <string name="frag_sample_list_no_printer">No printer is connected.</string>
     <string name="frag_sample_list_scan_a_sample">Scan a sample</string>
     <string name="frag_sample_list_first_barcode_scan">Scan your first barcode</string>
+    <string name="canceled">Canceled</string>
+
+    <string name="grams_unit" translatable="false">%sg</string>
+    <string name="preferences_start_id_chooser">Start ID</string>
+    <string name="preferences_workflow">Workflow</string>
+    <string name="pref_frag_code_exists_warning">%s code already exists</string>
+    <string name="preferences_workflow_start_id_summary">Your next ID will be %s</string>
+    <string name="frag_sample_list_id_error">Max ID reached, please update start ID in preferences.</string>
+    <string name="preferences_workflow_id_to_long_error">Start IDs must be 10 characters or less.</string>
+    <string name="action_menu_main_top_scale_title">Scale Connection</string>
+    <string name="action_menu_main_top_printer_title">Printer Connection</string>
+    <string name="preferences_profile">Person</string>
+    <string name="pref_person_title">Person</string>
+    <string name="pref_person_summary">This name will be saved in the database for each scan and weigh action.</string>
+    <string name="pref_person_require_title">Require User</string>
+    <string name="pref_person_require_summary">Option to require a person for each action in the app.</string>
+    <string name="pref_profile_person_require_summary">When to ask the user for person data.</string>
+    <string name="pref_profile_person_require_title">Require Person Interval</string>
+
+    <string name="verify_collector_title">Is this still %s?</string>
+    <string name="verify_collector_no_button">No</string>
+    <string name="verify_collector_yes_button">Yes</string>
+    <string name="verify_collector_neutral_button">Don\'t ask again</string>
+    <string name="verify_collector_new_collector">Do you want to save the name of the person collecting data?</string>
+    <string name="frag_device_chooser_help_message">Try resetting your device or replugging your wireless interface.</string>
+    <string name="frag_device_chooser_reset_message">Try Again</string>
+    <string name="connect">Connect</string>
+    <string name="frag_sample_list_not_connected">Device not connected.</string>
+    <string name="frag_scale_sample_weight_cant_be_empty">You must enter a valid weight.</string>
 </resources>
