@@ -9,7 +9,7 @@ import org.phenoapps.cotton.models.SampleModel
 import javax.inject.Inject
 
 @HiltViewModel
-class SampleListViewModel @Inject constructor(
+class SampleViewModel @Inject constructor(
     private val samplesRepo: SampleRepository
 ): ViewModel() {
 

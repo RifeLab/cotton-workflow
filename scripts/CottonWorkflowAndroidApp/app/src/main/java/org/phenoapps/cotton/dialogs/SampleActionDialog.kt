@@ -6,25 +6,25 @@ import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.RadioButton
-import android.widget.RadioGroup
 import android.widget.TextView
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
 import org.phenoapps.cotton.R
 import org.phenoapps.cotton.interfaces.SampleController
 import org.phenoapps.cotton.models.SampleModel
+import org.phenoapps.cotton.util.WorkflowUtil
 
 open class SampleActionDialog(
     act: Activity,
     private val controller: SampleController,
     private val model: SampleModel,
-    private val samples: List<SampleModel>?
 ) : Dialog(act), CoroutineScope by MainScope() {
 
-    private var acceptButton: Button? = null
-    private var cancelButton: Button? = null
-    private var radioGroup: RadioGroup? = null
-    private var addSubsampleButton: RadioButton? = null
+    private lateinit var weighButton: Button
+    private lateinit var scanButton: Button
+    private lateinit var workflowButotn: Button
+    private lateinit var deleteButton: Button
+    private lateinit var editButton: Button
 
     private var codePreviewTextView: TextView? = null
 
@@ -33,69 +33,61 @@ open class SampleActionDialog(
 
         setContentView(R.layout.dialog_sample_action)
 
-        acceptButton = findViewById(R.id.dialog_sample_action_accept_btn)
-        cancelButton = findViewById(R.id.dialog_sample_action_cancel_btn)
-        radioGroup = findViewById(R.id.dialog_sample_action_rg)
-        codePreviewTextView = findViewById(R.id.dialog_sample_action_code_tv)
-        addSubsampleButton = findViewById(R.id.dialog_sample_action_add_subsample)
+        weighButton = findViewById(R.id.dialog_sample_action_weigh_btn)
+        workflowButotn = findViewById(R.id.dialog_sample_action_workflow_btn)
+        scanButton = findViewById(R.id.dialog_sample_action_scan_btn)
+        deleteButton = findViewById(R.id.dialog_sample_action_delete_btn)
+        editButton = findViewById(R.id.dialog_sample_action_edit_btn)
 
-        cancelButton?.setOnClickListener {
-            dismiss()
-        }
+        codePreviewTextView = findViewById(R.id.dialog_sample_action_code_tv)
+
+        scanButton.visibility = View.GONE
+        workflowButotn.visibility = View.GONE
+        deleteButton.visibility = View.GONE
 
         codePreviewTextView?.text = model.code
 
         window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
 
-        acceptButton?.setOnClickListener {
-
-            when (radioGroup?.checkedRadioButtonId) {
-
-                R.id.dialog_sample_action_print_rb -> {
-
-                    controller.printSample(model)
-
-                }
-
-                R.id.dialog_sample_action_weigh_rb -> {
-
-                    controller.weighSample(model)
-
-                }
-
-                R.id.dialog_sample_action_delete_rb -> {
-
-                    controller.deleteSample(model)
-                }
-
-                R.id.dialog_sample_action_add_subsample -> {
-
-                    controller.addSample(model)
-                }
-            }
-
+        weighButton.setOnClickListener {
+            controller.weighSample(model)
             dismiss()
         }
 
-        addSubsampleButton?.visibility = View.GONE
+        deleteButton.setOnClickListener {
+            controller.deleteSample(model)
+            dismiss()
+        }
 
-        try {
+        workflowButotn.setOnClickListener {
+            controller.workflow(model, false)
+            dismiss()
+        }
 
-            val children = samples?.filter { it.parent == model.sid } ?: listOf()
+        editButton.setOnClickListener {
+            controller.workflow(model, true)
+            dismiss()
+        }
 
-            if (children.size < 2 && model.parent == null) {
+        scanButton.setOnClickListener {
+            controller.scanSample(model)
+            dismiss()
+        }
 
-                addSubsampleButton?.visibility = View.VISIBLE
+        when (model.type) {
 
-            } else {
+            WorkflowUtil.Companion.SubSampleType.PARENT.ordinal -> {
 
-                addSubsampleButton?.visibility = View.GONE
+                workflowButotn.visibility = View.VISIBLE
+
+                deleteButton.visibility = View.VISIBLE
+
             }
+            WorkflowUtil.Companion.SubSampleType.TEST.ordinal -> {
 
-        } catch (e: Exception) {
+                scanButton.visibility = View.VISIBLE
 
-            e.printStackTrace()
-
+            }
         }
     }
 }

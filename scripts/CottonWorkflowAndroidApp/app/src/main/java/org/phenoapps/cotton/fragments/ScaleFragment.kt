@@ -3,45 +3,41 @@ package org.phenoapps.cotton.fragments
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.core.os.bundleOf
-import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.setFragmentResult
-import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
 import org.phenoapps.cotton.R
+import org.phenoapps.cotton.activities.MainActivity
 import org.phenoapps.cotton.models.SampleModel
+import org.phenoapps.cotton.viewmodels.OhausSampleViewModel
 import org.phenoapps.fragments.bluetooth.BluetoothFragment
-import org.phenoapps.security.Security
-import org.phenoapps.viewmodels.scales.OhausViewModel
 
 @AndroidEntryPoint
 class ScaleFragment: BluetoothFragment(R.layout.fragment_scale), CoroutineScope by MainScope() {
 
     companion object {
         const val REQUEST_KEY = "org.phenoapps.fragments.scales.request"
+        const val INTERRUPT_WAIT = 15000L
     }
 
-    private val viewModel: OhausViewModel by viewModels()
-
-    private var cachedRead: String? = null
+    private val viewModel: OhausSampleViewModel by activityViewModels()
 
     private var prefs: SharedPreferences? = null
 
     private var editText: EditText? = null
-    private var connectButton: FloatingActionButton? = null
 
-    //its possible that ohaus only sends first half of string keep this in var
-    private var firstHalf: String = ""
+    private var interrupted = false
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -53,21 +49,17 @@ class ScaleFragment: BluetoothFragment(R.layout.fragment_scale), CoroutineScope 
         super.onViewCreated(view, savedInstanceState)
 
         editText = view.findViewById(R.id.act_scale_et)
-        connectButton = view.findViewById(R.id.frag_weight_sample_connect_fab)
         val acceptButton = view.findViewById<Button>(R.id.frag_weight_sample_accept_btn)
 
         val sample = arguments?.getParcelable<SampleModel>("sample")
 
         acceptButton?.setOnClickListener {
 
-            var weight = cachedRead
-            if (weight == null) {
-                weight = editText?.text?.toString()
-            }
+            val weight = editText?.text?.toString()
 
             try {
 
-                sample?.weight = weight?.replace("g", "")?.toDouble()
+                sample?.weight = weight?.toDouble()
 
             } catch (e: NumberFormatException) {
 
@@ -75,7 +67,7 @@ class ScaleFragment: BluetoothFragment(R.layout.fragment_scale), CoroutineScope 
 
             }
 
-            if (sample?.weight != null && sample.weight?.toString()?.isNotBlank() == true) {
+            if (sample?.weight != null) {
 
                 setFragmentResult(REQUEST_KEY, bundleOf("sample" to sample))
 
@@ -83,101 +75,43 @@ class ScaleFragment: BluetoothFragment(R.layout.fragment_scale), CoroutineScope 
 
             } else {
 
-                Toast.makeText(context,
-                    R.string.frag_scale_sample_weight_cant_be_empty, Toast.LENGTH_LONG).show()
+                Toast.makeText(
+                    context,
+                    R.string.frag_scale_sample_weight_cant_be_empty, Toast.LENGTH_LONG
+                ).show()
             }
         }
 
-        connectButton?.setOnClickListener {
-
-            findNavController().navigate(ScaleFragmentDirections
-                .globalActionToDeviceChooserFragment("scale"))
-
+        editText?.setOnClickListener { _ ->
+            interrupted = true
         }
 
-        startSearch()
+        val scaleId = (activity as MainActivity).getScaleId()
 
-    }
-
-    private fun startSearch() {
-
-        launch {
-
-            while (!viewModel.isConnected()) {
-                startConnection()
-                delay(5000L)
-            }
-
-            startObserving()
-
-        }
-    }
-
-    private fun stopSearch() {
-        //cancel()
-    }
-
-    private fun startConnection() {
-
-        context?.let { ctx ->
+        if (scaleId != null) {
 
             advisor.withNearby { adapter ->
 
-                val scaleId = prefs?.getString(getString(R.string.key_scale_device_id), null)
+                viewModel.readWeight(requireContext(), adapter, scaleId).observe(viewLifecycleOwner) { data ->
 
-                if (scaleId != null) {
+                    if (!interrupted) {
 
-                    viewModel.register(adapter, ctx, scaleId)
+                        if (data != null && data.isNotBlank()) {
 
-                }
-            }
-        }
-    }
+                            editText?.setText(data)
 
-    private fun startObserving() {
+                        }
+                    } else {
 
-        try {
+                        activity?.runOnUiThread {
 
-            advisor.withNearby {
-
-                viewModel.scaleReading.observe(viewLifecycleOwner) { scaleReading ->
-
-                    if (scaleReading != null && scaleReading.isNotBlank()) {
-
-                        val readable = scaleReading.replace(" ", "").trim()
-
-                        //the metric, in this case always 'g' will be the end of the string
-                        //but ohaus potentially splits it into multiple readings
-                        if (!readable.endsWith("g")) {
-
-                            firstHalf = readable
-
-                        } else {
-
-                            cachedRead = "$firstHalf$readable"
-
-                            if (cachedRead != "g" && cachedRead?.contains(".") == true) {
-
-                                editText?.setText(cachedRead)
-
-                            }
-
-                            firstHalf = String()
-
+                            Handler(Looper.getMainLooper()).postDelayed({
+                                interrupted = false
+                            }, INTERRUPT_WAIT)
                         }
                     }
                 }
             }
-
-        } catch (e: java.lang.IllegalStateException) {
-
-            e.printStackTrace()
-
         }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        stopSearch()
     }
 }

@@ -20,6 +20,11 @@
         <item name="android:layout_margin">8dp</item>
     </style>
 
+    <style name="Theme.Cotton.SubSample.Text" parent="@style/Theme.Cotton.Text">
+        <item name="android:textSize">15sp</item>
+        <item name="android:layout_margin">8dp</item>
+    </style>
+
     <style name="Theme.Cotton.TitleText" parent="TextAppearance.AppCompat.Headline">
         <item name="android:textSize">30sp</item>
         <item name="android:layout_margin">8dp</item>

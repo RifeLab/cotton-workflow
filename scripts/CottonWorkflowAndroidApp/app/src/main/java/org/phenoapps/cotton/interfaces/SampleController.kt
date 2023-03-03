@@ -24,6 +24,9 @@ interface SampleController {
     // start workflow to weigh a sample
     fun weighSample(model: SampleModel)
 
+    // start a barcode scan to save code into model
+    fun scanSample(model: SampleModel)
+
     // delete sample and sub samples from database
     fun deleteSample(model: SampleModel)
 
@@ -33,5 +36,13 @@ interface SampleController {
     // add a subsample action
     fun addSample(model: SampleModel)
 
+    // start automatic workflow action
+    // edit mode overrides the automatic workflow and user inputs data
+    fun workflow(model: SampleModel, edit: Boolean)
+
+    // view code returns the error thresh preference
+    fun getErrorThresh(): Double
+
+    fun getString(id: Int): String
     fun getString(id: Int, diff: String): String
 }

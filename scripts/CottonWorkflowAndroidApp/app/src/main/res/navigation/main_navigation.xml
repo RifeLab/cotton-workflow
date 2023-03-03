@@ -27,6 +27,21 @@
         android:name="org.phenoapps.cotton.fragments.PrintFragment"
         android:label="Print"/>
 
+    <fragment android:id="@+id/fragment_sample"
+        android:name="org.phenoapps.cotton.fragments.SampleFragment"
+        android:label="Sample"/>
+
+    <action android:id="@+id/global_action_to_sample"
+        app:destination="@id/fragment_sample"
+        app:launchSingleTop="true">
+        <argument android:name="sample"
+            app:argType="org.phenoapps.cotton.models.SampleModel"
+            app:nullable="true"/>
+        <argument android:name="edit"
+            app:argType="boolean"
+            android:defaultValue="false"/>
+    </action>
+
     <action android:id="@+id/global_action_to_scale_fragment"
         app:destination="@id/fragment_scale"
         app:launchSingleTop="true"/>

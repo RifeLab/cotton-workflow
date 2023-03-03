@@ -30,17 +30,6 @@
         tools:text="142.84g"
         android:inputType="numberDecimal" />
 
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/ic_connection"
-        app:layout_constraintBottom_toTopOf="@id/frag_weight_sample_accept_btn"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:backgroundTint="@color/pistachio"
-        android:layout_margin="8dp"
-        android:id="@+id/frag_weight_sample_connect_fab"
-        android:contentDescription="TODO" />
-
     <Button style="@style/Theme.Cotton.Button"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -48,6 +37,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent"
         android:id="@+id/frag_weight_sample_accept_btn"
-        android:text="@android:string/ok"/>
+        android:text="@string/save"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

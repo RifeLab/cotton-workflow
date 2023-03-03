@@ -8,11 +8,11 @@
         android:icon="@drawable/scale_off"
         android:title="@string/action_menu_main_top_scale_title"/>
 
-    <item
-        app:showAsAction="always"
-        android:id="@+id/action_menu_main_top_printer"
-        android:icon="@drawable/printer_off"
-        android:title="@string/action_menu_main_top_printer_title"
-        tools:ignore="AlwaysShowAction" />
+<!--    <item-->
+<!--        app:showAsAction="always"-->
+<!--        android:id="@+id/action_menu_main_top_printer"-->
+<!--        android:icon="@drawable/printer_off"-->
+<!--        android:title="@string/action_menu_main_top_printer_title"-->
+<!--        tools:ignore="AlwaysShowAction" />-->
 
 </menu>

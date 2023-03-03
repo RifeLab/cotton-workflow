@@ -13,7 +13,7 @@ class SampleRepository @Inject constructor(
 
     suspend fun getSampleWithCode(code: String) = dao.getSampleWithCode(code)
 
-    suspend fun insert(model: SampleModel) = dao.insert(model)
+    suspend fun insert(model: SampleModel) = dao.insert(SampleEntity(model))
 
     suspend fun updateSample(model: SampleModel) = dao.update(SampleEntity(model))
 

@@ -2,7 +2,7 @@ package org.phenoapps.cotton.util
 
 import android.content.Context
 import android.content.DialogInterface
-import android.content.Intent
+import android.content.SharedPreferences
 import androidx.appcompat.app.AlertDialog
 import androidx.preference.PreferenceManager
 import dagger.hilt.android.qualifiers.ActivityContext
@@ -11,7 +11,7 @@ import javax.inject.Inject
 
 class VerifyPersonHelper @Inject constructor(@ActivityContext private val context: Context) {
 
-    val prefs = PreferenceManager.getDefaultSharedPreferences(context)
+    val prefs: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 
     private var navigationCallback: (() -> Unit)? = null
 

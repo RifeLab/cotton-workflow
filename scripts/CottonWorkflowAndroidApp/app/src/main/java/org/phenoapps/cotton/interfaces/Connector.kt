@@ -5,9 +5,6 @@ interface Connector {
     //check if a gatt address is connected
     fun isConnected(address: String?): Boolean
 
-    //triggers attempts to reconnect to preference devices
-    fun reconnect()
-
     //get the preference scale id
     fun getScaleId(): String?
 

@@ -7,7 +7,7 @@
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/frag_sample_list_rv"
-        android:layout_margin="8dp"
+        android:layout_margin="1dp"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:orientation="vertical"
@@ -15,43 +15,18 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/frag_sample_list_main_fab"
+        app:layout_constraintBottom_toTopOf="@id/frag_sample_list_scanner_fab"
         tools:listitem="@layout/list_item_sample"
         tools:itemCount="8"/>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:visibility="gone"
         android:id="@+id/frag_sample_list_scanner_fab"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/frag_sample_list_print_fab"
+        app:layout_constraintBottom_toBottomOf="parent"
         android:src="@drawable/barcode_scan"
         android:layout_margin="8dp"
-        app:backgroundTint="@color/pistachio"
-        android:contentDescription="@string/fragment_sample_list_fab_content_description" />
-
-    <com.google.android.material.floatingactionbutton.FloatingActionButton
-        android:visibility="gone"
-        android:id="@+id/frag_sample_list_print_fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/frag_sample_list_main_fab"
-        android:src="@drawable/printer_outline"
-        android:layout_margin="8dp"
-        app:backgroundTint="@color/pistachio"
-        android:contentDescription="@string/fragment_sample_list_fab_content_description" />
-
-    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/frag_sample_list_main_fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:icon="@android:drawable/ic_menu_more"
-        android:layout_margin="8dp"
-        android:text="@string/frag_sample_list_actions_text"
         app:backgroundTint="@color/pistachio"
         android:contentDescription="@string/fragment_sample_list_fab_content_description" />
 

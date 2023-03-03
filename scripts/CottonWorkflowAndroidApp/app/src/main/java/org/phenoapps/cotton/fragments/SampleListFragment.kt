@@ -16,7 +16,6 @@ import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.android.material.snackbar.Snackbar
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanIntentResult
 import com.journeyapps.barcodescanner.ScanOptions
@@ -31,19 +30,14 @@ import org.phenoapps.cotton.dialogs.SampleActionDialog
 import org.phenoapps.cotton.interfaces.SampleController
 import org.phenoapps.cotton.interfaces.ScanInteractor
 import org.phenoapps.cotton.models.SampleModel
-import org.phenoapps.cotton.util.BarcodeUtil
 import org.phenoapps.cotton.util.PrintThread
-import org.phenoapps.cotton.viewmodels.SampleListViewModel
+import org.phenoapps.cotton.util.WorkflowUtil
+import org.phenoapps.cotton.viewmodels.SampleViewModel
 import org.phenoapps.fragments.bluetooth.BluetoothFragment
 import java.util.*
-import kotlin.NoSuchElementException
 
 @AndroidEntryPoint
 class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list), ScanInteractor, SampleController {
-
-    /**
-     * TODO: export basic csv data
-     */
 
     companion object {
         //must be <= MAX_INT
@@ -58,9 +52,11 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list), Scan
 
     private var code: String? = null
 
-    private val viewModel: SampleListViewModel by viewModels()
+    private val viewModel: SampleViewModel by viewModels()
 
     private var samples: List<SampleModel>? = null
+
+    private var sampleToUpdate: SampleModel? = null
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -82,8 +78,6 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list), Scan
         super.onViewCreated(view, savedInstanceState)
 
         sampleListRecyclerView = view.findViewById(R.id.frag_sample_list_rv)
-        mainButton = view.findViewById(R.id.frag_sample_list_main_fab)
-        printButton = view.findViewById(R.id.frag_sample_list_print_fab)
         scanButton = view.findViewById(R.id.frag_sample_list_scanner_fab)
 
         setupUi()
@@ -101,22 +95,53 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list), Scan
     ) { result: ScanIntentResult ->
         if (result.contents == null) {
 
-            Toast.makeText(context,
-                getString(R.string.canceled),
-                Toast.LENGTH_LONG
-            ).show()
+//            Toast.makeText(context,
+//                getString(R.string.canceled),
+//                Toast.LENGTH_LONG
+//            ).show()
 
         } else {
 
-            Toast.makeText(
-                context,
-                result.contents,
-                Toast.LENGTH_LONG
-            ).show()
+//            Toast.makeText(
+//                context,
+//                result.contents,
+//                Toast.LENGTH_LONG
+//            ).show()
 
             code = result.contents
 
             checkForNewSample(result.contents)
+        }
+    }
+
+    // Register the launcher and result handler
+    private val barcodeUpdateLauncher = registerForActivityResult(
+        ScanContract()
+    ) { result: ScanIntentResult ->
+        if (result.contents == null) {
+
+//            Toast.makeText(context,
+//                getString(R.string.canceled),
+//                Toast.LENGTH_LONG
+//            ).show()
+
+        } else {
+
+//            Toast.makeText(
+//                context,
+//                result.contents,
+//                Toast.LENGTH_LONG
+//            ).show()
+
+            sampleToUpdate?.let { sample ->
+
+                sample.code = result.contents
+                sample.scanTime = Calendar.getInstance().timeInMillis
+
+                viewModel.updateSample(sample)
+
+                sampleToUpdate = null
+            }
         }
     }
 
@@ -170,32 +195,9 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list), Scan
 
     private fun setupButtons() {
 
-        mainButton?.shrink()
-        mainButton?.setOnClickListener {
-
-            if (mainButton?.isExtended == true) {
-
-                mainButton?.shrink()
-                scanButton?.visibility = View.GONE
-                printButton?.visibility = View.GONE
-
-            } else {
-
-                mainButton?.extend()
-                scanButton?.visibility = View.VISIBLE
-                printButton?.visibility = View.VISIBLE
-            }
-        }
-
         scanButton?.setOnClickListener {
 
             startBarcodeLauncher(getString(R.string.frag_sample_list_scan_a_sample))
-        }
-
-        printButton?.setOnClickListener {
-
-            findNavController().navigate(SampleListFragmentDirections
-                .globalActionToPrintFragment(null))
         }
     }
 
@@ -208,6 +210,17 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list), Scan
         options.setBeepEnabled(false)
         options.setBarcodeImageEnabled(true)
         barcodeLauncher.launch(options)
+    }
+
+    private fun startBarcodeUpdateLauncher(message: String) {
+        val options = ScanOptions()
+        options.setDesiredBarcodeFormats(ScanOptions.ALL_CODE_TYPES)
+        options.setPrompt(message)
+        options.setCameraId(0) // Use a specific camera of the device
+        options.setOrientationLocked(false)
+        options.setBeepEnabled(false)
+        options.setBarcodeImageEnabled(true)
+        barcodeUpdateLauncher.launch(options)
     }
 
     /**
@@ -289,101 +302,50 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list), Scan
                     scanTime = scanTime,
                     scaleTime = null,
                     parent = null,
-                    person = person
+                    person = person,
+                    type = WorkflowUtil.Companion.SubSampleType.PARENT.ordinal
                 )
 
                 val parentId = viewModel.insertSample(parentSample)
 
                 parentSample.sid = parentId
 
-                val sub1 = insertSubSample(ctx, scanTime, parentId)
-                val sub2 = insertSubSample(ctx, scanTime, parentId)
+                //seed, sub sample will copy the parent code
+                insertSubSample(scanTime, parentId, WorkflowUtil.Companion.SubSampleType.SEED.ordinal, code)
+                //lint, sub sample does not have a barcode, and material is essentially thrown out
+                insertSubSample(null, parentId, WorkflowUtil.Companion.SubSampleType.LINT.ordinal)
+                //test, sub sample that will need to be scanned
+                insertSubSample(null, parentId, WorkflowUtil.Companion.SubSampleType.TEST.ordinal)
 
-                val printerAddress = prefs?.getString(getString(R.string.key_printer_device_id), null)
-
-                if (printerAddress != null) {
-
-                    advisor.withNearby {
-
-                        val codes = arrayListOf<String>()
-
-                        if (sub1?.code != null) codes.add(sub1.code ?: String())
-                        if (sub2?.code != null) codes.add(sub2.code ?: String())
-
-                        if (codes.isNotEmpty()) {
-
-                            PrintThread(printerAddress).print(codes.toTypedArray())
-
-                        }
-                    }
-
-                } else {
-
-                    activity?.runOnUiThread {
-
-                        Toast.makeText(context, R.string.frag_sample_list_no_printer, Toast.LENGTH_LONG).show()
-
-                    }
-                }
-
-                requestSampleWeight(parentSample)
+                workflow(parentSample, false)
 
             }
         }
     }
 
-    private suspend fun insertSubSample(context: Context, scanTime: Long, parentId: Long): SampleModel? {
+    private suspend fun insertSubSample(scanTime: Long?, parentId: Long, type: Int, inheritParentCode: String? = null): SampleModel? {
 
         val person = (activity as MainActivity).getPerson()
 
         val subSample = SampleModel(
             sid = null,
-            code = null,
+            code = inheritParentCode,
             weight = null,
             scanTime = scanTime,
             scaleTime = null,
             parent = parentId,
-            person = person
+            person = person,
+            type = type
         )
 
         val ssid = viewModel.insertSample(subSample)
 
         subSample.sid = ssid
 
-        var tries = 0
-        var generatedCode: String
+        viewModel.updateSample(subSample)
 
-        try {
+        return subSample
 
-            do {
-
-                tries++
-                if (tries > MAX_ID_INCREMENT_ATTEMPTS) throw Exception("Identifiers maxed")
-
-                generatedCode = BarcodeUtil.generateIncrementalBarcode(context)
-
-            } while (generatedCode.isEmpty() || viewModel.getSampleWithCode(generatedCode) != null)
-
-            subSample.code = generatedCode
-
-            viewModel.updateSample(subSample)
-
-            return subSample
-
-        } catch (e: Exception) {
-
-            e.printStackTrace()
-
-            activity?.runOnUiThread {
-
-                Toast.makeText(context, R.string.frag_sample_list_id_error, Toast.LENGTH_LONG).show()
-
-            }
-
-            viewModel.deleteSample(subSample)
-        }
-
-        return null
     }
 
     override fun getScannedCode(): String? {
@@ -432,6 +394,14 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list), Scan
 
     }
 
+    override fun scanSample(model: SampleModel) {
+
+        sampleToUpdate = model
+
+        startBarcodeUpdateLauncher(getString(R.string.frag_sample_list_scan_a_sample))
+
+    }
+
     override fun deleteSample(model: SampleModel) {
 
         try {
@@ -453,36 +423,50 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list), Scan
 
     override fun sampleClicked(model: SampleModel) {
 
-        model.code?.let { code ->
+        //when a sample is clicked, ask user what to do
+        activity?.let { act ->
 
-            //when a sample is clicked, ask user what to do
-            activity?.let { act ->
+            act.runOnUiThread {
 
-                act.runOnUiThread {
+                val dialog = SampleActionDialog(act, this, model)
+                dialog.show()
 
-                    val dialog = SampleActionDialog(act, this, model, samples)
-                    dialog.show()
-
-                }
             }
         }
     }
 
     override fun addSample(model: SampleModel) {
 
-        context?.let { ctx ->
+//        context?.let { ctx ->
+//
+//            model.sid?.let { parentId ->
+//
+//                val scanTime = Calendar.getInstance().timeInMillis
+//
+//                viewModel.viewModelScope.launch {
+//
+//                    insertSubSample(scanTime, parentId)
+//
+//                }
+//            }
+//        }
+    }
 
-            model.sid?.let { parentId ->
+    override fun workflow(model: SampleModel, edit: Boolean) {
 
-                val scanTime = Calendar.getInstance().timeInMillis
+        findNavController().navigate(SampleListFragmentDirections
+            .globalActionToSample(model, edit))
+    }
 
-                viewModel.viewModelScope.launch {
+    override fun getErrorThresh(): Double = try {
 
-                    insertSubSample(ctx, scanTime, parentId)
+        val value = prefs?.getString(getString(R.string.key_preferences_error_check_threshold), "5.0") ?: "5.0"
 
-                }
-            }
-        }
+        value.toDouble()
+
+    } catch (e: Exception) {
+
+        5.0
     }
 
     override fun getString(id: Int, diff: String): String {
