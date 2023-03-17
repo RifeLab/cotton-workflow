@@ -34,6 +34,10 @@ import org.phenoapps.fragments.bluetooth.BluetoothFragment
 import java.util.*
 
 /***
+ *
+ * private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+ *
+ *
  * Follows this process:
     We tare the scale to the bag size the samples are collected in. (12lb, 16lb, or 25lb bag)
     We use a barcode scanner and scan the bag.
@@ -363,6 +367,7 @@ class SampleFragment : BluetoothFragment(R.layout.fragment_sample), CoroutineSco
                             val diff = (lint.weight ?: 0.0) - weight
                             //TODO used '>=' here but mainly for testing, or make a min/max thresh
                             //TODO should this save the threshed amount of the final lint ?
+                            //TODO make an issue on things to ask Scientists
                             if (diff >= testThresh) {
 
                                 testWeightEt.setText("$weight")
@@ -439,7 +444,7 @@ class SampleFragment : BluetoothFragment(R.layout.fragment_sample), CoroutineSco
 
     } catch (e: Exception) {
 
-        0.025
+        0.025 //TODO
     }
 
     private fun updateSampleWeight(model: SampleModel?, weight: Editable?, timeView: TextView) {
