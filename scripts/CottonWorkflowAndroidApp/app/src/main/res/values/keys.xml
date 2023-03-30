@@ -14,12 +14,14 @@
     <string name="key_preferences_person">&package;person</string>
     <string name="key_preferences_person_require">&package;person_require</string>
     <string name="key_preferences_person_require_interval">&package;person_require_interval</string>
+    <string name="key_preferences_workflow_scale_jitter_thresh">&package;.workflow.scale_jitter</string>
+    <string name="key_preferences_error_check_threshold">&package;.workflow.error_thresh</string>
+    <string name="key_preferences_test_weight_threshold">&package;.workflow.test_weight_thresh</string>
 
     <!-- shared preferences -->
     <string name="key_scale_device_id">&package;devices.scale.id</string>
     <string name="key_printer_device_id">&package;devices.printer.id</string>
     <string name="key_definer_first_load">&package;definer.first_load</string>
     <string name="key_last_time_opened">&package;last_time_opened</string>
-    <string name="key_person_name">&package;person_name</string>
 
 </resources>

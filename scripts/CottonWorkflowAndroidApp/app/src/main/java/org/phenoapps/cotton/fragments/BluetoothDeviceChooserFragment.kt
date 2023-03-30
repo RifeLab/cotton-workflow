@@ -1,7 +1,9 @@
 package org.phenoapps.cotton.fragments
 
 import android.annotation.SuppressLint
+import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
+import android.bluetooth.BluetoothManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
@@ -19,7 +21,6 @@ import org.phenoapps.cotton.R
 import org.phenoapps.cotton.activities.MainActivity
 import org.phenoapps.fragments.bluetooth.BluetoothListFragment
 import org.phenoapps.models.bluetooth.BluetoothDeviceModel
-import org.phenoapps.security.Security
 
 @SuppressLint("MissingPermission")
 class BluetoothDeviceChooserFragment: BluetoothListFragment() {
@@ -49,14 +50,28 @@ class BluetoothDeviceChooserFragment: BluetoothListFragment() {
         val filter = IntentFilter(BluetoothDevice.ACTION_FOUND)
         activity?.registerReceiver(receiver, filter)
 
-        advisor.withNearby {
-            it.startDiscovery()
+        val manager = activity?.getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        val adapter = manager.adapter
+
+        if (adapter == null) {
+
+            Toast.makeText(requireContext(), R.string.frag_device_chooser_no_bt, Toast.LENGTH_LONG).show()
+            findNavController().popBackStack()
+
+        } else if (!adapter.isEnabled) {
+
+            startActivity(Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE))
+
+        } else {
+
+            advisor.withNearby {
+                it.startDiscovery()
+            }
+
+            deviceType = arguments?.getString("deviceType") ?: "printer"
+
+            startResetCheck()
         }
-
-        deviceType = arguments?.getString("deviceType") ?: "printer"
-
-        startResetCheck()
-
     }
 
     private fun startResetCheck() {
@@ -83,16 +98,20 @@ class BluetoothDeviceChooserFragment: BluetoothListFragment() {
         activity?.unregisterReceiver(receiver)
 
         try {
+
             advisor.withNearby {
                 it.cancelDiscovery()
             }
-        } catch (e: IllegalStateException) {
+
+        } catch (e: Exception) {
+
             e.printStackTrace()
+
         }
     }
 
     override fun onItemClicked(model: BluetoothDeviceModel) {
-        super.onItemClicked(model)
+        //super.onItemClicked(model)
 
         prefs?.edit()?.putString(getString(when(deviceType) {
             "printer" -> {
@@ -103,19 +122,22 @@ class BluetoothDeviceChooserFragment: BluetoothListFragment() {
             }
         }), model.device.address)?.apply()
 
+        (activity as MainActivity).reconnect()
+
         findNavController().popBackStack()
     }
 
     override fun onRecyclerReady() {
 
-        advisor.connectWith { bonded ->
+        try {
 
-            Toast.makeText(context, "Loading ${devices.size} devices...", Toast.LENGTH_SHORT).show()
+            advisor.connectWith { bonded ->
 
-            (mRecyclerView.adapter as? BluetoothDeviceAdapter)
-                ?.submitList((bonded + devices).map { BluetoothDeviceModel(it) })
+                (mRecyclerView.adapter as? BluetoothDeviceAdapter)
+                    ?.submitList((bonded + devices).map { BluetoothDeviceModel(it) })
+            }
 
-        }
+        } catch (_: NullPointerException) {}
     }
 
     // Create a BroadcastReceiver for ACTION_FOUND.
@@ -150,10 +172,5 @@ class BluetoothDeviceChooserFragment: BluetoothListFragment() {
                 }
             }
         }
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        (activity as MainActivity).reconnect()
     }
 }

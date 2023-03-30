@@ -4,18 +4,18 @@ import android.os.Parcelable
 import kotlinx.parcelize.Parcelize
 import org.phenoapps.cotton.database.entities.SampleEntity
 import java.text.SimpleDateFormat
-import java.util.*
 
 @Parcelize
 data class SampleModel(var sid: Long? = null,
                        var code: String? = null,
                        var weight: Double? = null,
-                       var scanTime: Long,
+                       var scanTime: Long? = null,
                        var scaleTime: Long? = null,
                        var person: String? = null,
-                       var parent: Long? = null) : Parcelable {
+                       var parent: Long? = null,
+                       var type: Int) : Parcelable {
 
-    constructor(entity: SampleEntity): this(entity.sid, entity.code, entity.weight, entity.scanTime, entity.scaleTime, entity.person, entity.parent)
+    constructor(e: SampleEntity): this(e.sid, e.code, e.weight, e.scanTime, e.scaleTime, e.person, e.parent, e.type)
 
     fun toRowString(): String {
 
@@ -37,6 +37,6 @@ data class SampleModel(var sid: Long? = null,
             null
         }
 
-        return "$sid, $code, $weight, $scanTimestamp, $scaleTimestamp, \"$person\", $parent"
+        return "$sid, $code, $weight, $scanTimestamp, $scaleTimestamp, \"$person\", $parent, $type"
     }
 }

@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <TextView style="@style/Theme.Cotton.Text"
+        android:layout_margin="8dp"
+        android:id="@+id/frag_sample_code_tv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:ignore="MissingConstraints"
+        tools:text="*992020001801"/>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:background="@drawable/sample_cell"
+        android:id="@+id/frag_sample_title_bar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/frag_sample_code_tv"
+        app:layout_constraintBottom_toTopOf="@id/frag_sample_total_weight_header_tv"/>
+
+    <TextView style="@style/Theme.Cotton.Text"
+        android:layout_margin="8dp"
+        android:id="@+id/frag_sample_total_weight_header_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/frag_sample_total_weight"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/frag_sample_title_bar"
+        tools:ignore="MissingConstraints" />
+
+    <EditText style="@style/Theme.Cotton.Text"
+        android:layout_margin="8dp"
+        android:id="@+id/frag_sample_total_weight_et"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="@string/frag_sample_total_weight_hint"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/frag_sample_total_weight_header_tv"
+        tools:ignore="MissingConstraints"
+        android:autofillHints=""
+        android:inputType="numberDecimal" />
+
+    <TextView
+        android:id="@+id/frag_sample_total_weight_time_tv"
+        style="@style/Theme.Cotton.Text"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:gravity="end"
+        android:lines="1"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/frag_sample_total_weight_et"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1"
+        app:layout_constraintStart_toEndOf="@+id/frag_sample_total_weight_header_tv"
+        app:layout_constraintTop_toBottomOf="@+id/frag_sample_title_bar"
+        tools:ignore="MissingConstraints"
+        tools:text="1 Jan 1990" />
+
+    <TextView style="@style/Theme.Cotton.Text"
+        android:layout_margin="8dp"
+        android:id="@+id/frag_sample_seed_weight_header_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/frag_sample_seed_weight"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/frag_sample_total_weight_et"
+        tools:ignore="MissingConstraints" />
+
+    <EditText style="@style/Theme.Cotton.Text"
+        android:layout_margin="8dp"
+        android:id="@+id/frag_sample_seed_weight_et"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="@string/frag_sample_total_weight_hint"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/frag_sample_seed_weight_header_tv"
+        tools:ignore="MissingConstraints"
+        android:autofillHints=""
+        android:inputType="numberDecimal" />
+
+    <TextView
+        android:id="@+id/frag_sample_seed_weight_time_tv"
+        style="@style/Theme.Cotton.Text"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:gravity="end"
+        android:lines="1"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@+id/frag_sample_seed_weight_et"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1"
+        app:layout_constraintStart_toEndOf="@id/frag_sample_seed_weight_header_tv"
+        app:layout_constraintTop_toBottomOf="@+id/frag_sample_total_weight_et"
+        tools:ignore="MissingConstraints"
+        tools:text="1 Jan 1990" />
+
+    <TextView style="@style/Theme.Cotton.Text"
+        android:layout_margin="8dp"
+        android:id="@+id/frag_sample_lint_weight_header_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/frag_sample_lint_weight"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/frag_sample_seed_weight_et"
+        tools:ignore="MissingConstraints" />
+
+    <EditText style="@style/Theme.Cotton.Text"
+        android:layout_margin="8dp"
+        android:id="@+id/frag_sample_lint_weight_et"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="@string/frag_sample_total_weight_hint"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/frag_sample_lint_weight_header_tv"
+        tools:ignore="MissingConstraints"
+        android:autofillHints=""
+        android:inputType="numberDecimal" />
+
+    <TextView
+        android:id="@+id/frag_sample_lint_weight_time_tv"
+        style="@style/Theme.Cotton.Text"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:gravity="end"
+        android:lines="1"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@id/frag_sample_lint_weight_et"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1"
+        app:layout_constraintStart_toEndOf="@id/frag_sample_lint_weight_header_tv"
+        app:layout_constraintTop_toBottomOf="@+id/frag_sample_seed_weight_et"
+        tools:ignore="MissingConstraints"
+        tools:text="1 Jan 1990" />
+
+    <TextView style="@style/Theme.Cotton.Text"
+        android:layout_margin="8dp"
+        android:id="@+id/frag_sample_test_weight_header_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/frag_sample_test_weight"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/frag_sample_lint_weight_et"
+        tools:ignore="MissingConstraints" />
+
+    <EditText style="@style/Theme.Cotton.Text"
+        android:layout_margin="8dp"
+        android:id="@+id/frag_sample_test_weight_et"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:hint="@string/frag_sample_total_weight_hint"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/frag_sample_test_weight_header_tv"
+        tools:ignore="MissingConstraints"
+        android:autofillHints=""
+        android:inputType="numberDecimal" />
+
+    <TextView
+        android:id="@+id/frag_sample_test_weight_time_tv"
+        style="@style/Theme.Cotton.Text"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        android:gravity="end"
+        android:lines="1"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toTopOf="@id/frag_sample_test_weight_et"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1"
+        app:layout_constraintStart_toEndOf="@id/frag_sample_test_weight_header_tv"
+        app:layout_constraintTop_toBottomOf="@+id/frag_sample_lint_weight_et"
+        tools:ignore="MissingConstraints"
+        tools:text="1 Jan 1990" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

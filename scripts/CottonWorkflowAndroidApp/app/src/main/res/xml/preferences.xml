@@ -5,7 +5,6 @@
     android:key="@string/key_pref_screen">
 
     <PreferenceCategory
-        android:key="transfer_defaults"
         android:title="@string/preferences_profile"
         app:iconSpaceReserved="false">
 
@@ -35,10 +34,17 @@
         android:title="@string/preferences_workflow"
         app:iconSpaceReserved="false">
 
-        <EditTextPreference android:title="@string/preferences_start_id_chooser"
-            android:summary=""
-            android:icon="@drawable/identifier"
-            android:key="@string/key_preferences_workflow_id_start"/>
+        <EditTextPreference android:title="@string/preferences_error_check_threshold_title"
+            android:summary="@string/preferences_error_check_threshold_summary"
+            android:defaultValue="5"
+            android:icon="@drawable/abacus"
+            android:key="@string/key_preferences_error_check_threshold"/>
+
+        <EditTextPreference android:title="@string/preferences_test_check_threshold_title"
+            android:summary="@string/preferences_test_check_threshold_summary"
+            android:defaultValue="0.025"
+            android:icon="@drawable/receipt_text_check_outline"
+            android:key="@string/key_preferences_test_weight_threshold"/>
 
     </PreferenceCategory>
 
@@ -51,13 +57,13 @@
             android:icon="@drawable/scale"
             android:key="@string/key_preferences_scale_device_id"/>
 
-        <Preference android:title="@string/preferences_printer_device_chooser"
-            android:summary=""
-            android:icon="@drawable/printer_outline"
-            android:key="@string/key_preferences_printer_device_id"/>
+<!--        <Preference android:title="@string/preferences_printer_device_chooser"-->
+<!--            android:summary=""-->
+<!--            android:icon="@drawable/printer_outline"-->
+<!--            android:key="@string/key_preferences_printer_device_id"/>-->
 
         <Preference android:title="@string/preferences_device_id_clear_title"
-            android:icon="@android:drawable/ic_delete"
+            android:icon="@drawable/delete"
             android:key="@string/key_preferences_device_id_clear"/>
 
     </PreferenceCategory>

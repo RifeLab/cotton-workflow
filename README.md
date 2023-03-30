@@ -5,14 +5,21 @@
 The cotton workflow app is designed to flow through a pre-defined process. The process is defiend as:
 
 ```
-1. Scan a sample barcode
-2. Generate two subsamples and print them as labels
-3. Weigh the original sample
-4. User manually scans subsample barcodes to initiate a weigh
-5. Analyze the difference between the subsample and original weight
+ We tare the scale to the bag size the samples are collected in. (12lb, 16lb, or 25lb bag)
+    We use a barcode scanner and scan the bag.
+    Then we weight the bag with the cotton sample inside.
+    Then we gin the sample.
+    We collect the fuzzy seed and place back into original bag
+        We weigh the bag with the fuzzy seeds inside.
+    Next we grab the lint,  and place it on top of a bag that matches the sample bag(empty bag). Get the lint weight.
+        Remove 25 grams of lint.
+        25 grams of lint is place inside a labeled 2lb bag( for HVI testing). This bag is scanned as well.
+    The remaining lint is thrown away or kept.
+    Repeat the process.
+    We  use the error check for any samples that are +/-5
 ```
 
-This application follows this workflow, but also includes features to manually accomplish each option in the case where a device is not available or connected.
+This application follows this workflow, but also includes features to manually accomplish each option in the case where a scale is not available or connected. 
 
 ## Barcode Specification
 
@@ -41,11 +48,10 @@ Currently no storage is actually used in the app.
 
 ## Main Page
 
-At first load, the main page is empty. The user can click the action icon to choose between print or scan. Scan is the main option and can be used to immediatelly scan a barcode and begin workflow. Print is an optional action for printing manual labels.
+At first load a barcode scanner will be opened to scan the first sample. If a barcode is scanned, a weigh workflow automatically begins, otherwise the main page is shown. On the main page, the user can click the scan icon to reopen the scanner. If a barcode is scanned, the app navigates to the workflow fragment.
 
 <p align="center">
-	<img src="./readme_assets/main_page.png" width="256" height="512"/>
-	<img src="./readme_assets/main_page_actions.png" width="256" height="512"	/>
+	<img src="./readme_assets/main_page.png" width="256" height="512"	/>
 </p>
 
 ## Zebra Barcode Scanner
@@ -56,18 +62,22 @@ Scanning uses the Zebra API, scans CODE_39 barcodes.
 	<img src="./readme_assets/scan_barcode.png" width="256" height="512"/>
 </p>
 
-After a parent sample scan, two new samples are inserted into the database, and two print jobs are queued to print the subsample labels. If a printer is not set in the preferences, this is essentially skipped and the user must manually print on the main screen.
+After a new parent sample is scanned, three new subsamples are inserted into the database to track various metadata. The seed, lint, and test subsamples.
 
-## Weigh
+## Workflow
 
-The weigh sample screen is immediately opened when a sample is scanned. This page will automatically attempt to connect to a bonded scale (set in the preferences). Users can opt to manually enter the weight. Right now only grams is supported, but there is potential for other units. 
+During a parent workflow, the app reads from the connected scale and automatically fills in the needed data in order. The app detects new weigh-actions between every reading of 0.0g. Therefore, a new weight isn't saved until the scale is emptied or zeroed. The data is filled in this order: total weight, seed weight, lint weight, test weight. Test weight works differently, it does not wait for 0.0g and waits until a certain weight difference threshold is met then notifies the user and opens a barcode scanner to scan the Test label. When each weight is saved, the timestamp is saved as well. If the user clicks an item to edit any weight, the workflow is considered interrupted and does not continue.
+
+The workflow screen has an optional edit mode that does not connect to a scale.
+
+Besides the workflow screen, users can open a weigh screen that will only apply to that specific sample. This screen connects to a scale, but if the user interrupts by manually entering data the scale readings will not apply for 15 seconds.
 
 <p align="center">
-	<img src="./readme_assets/weigh_sample.png" width="256" height="512"/>
-	<img src="./readme_assets/weigh_sample_input.png" width="256" height="512"/>
+	<img src="./readme_assets/workflow.png" width="256" height="512"/>
+	<img src="./readme_assets/weigh.png" width="256" height="512"/>
 </p>
 
-Users can also click the connect button to open the device chooser, this will set the device in preferences when selected. This screen is used to choose a printer in the print screen and also to choose either device in the preferences. 
+Users can click the top toolbar scale icon to choose their device at any point.
 
 <p align="center">
 	<img src="./readme_assets/device_chooser.png" width="256" height="512"/>
@@ -77,35 +87,53 @@ Users can also click the connect button to open the device chooser, this will se
 
 When the main page has content, a list view shows all samples. Each parent sample can expand to show its generated subsamples. 
 
-Samples have the following content in top-to-bottom order: a CODE_39 barcode preview image, the text representation of the barcode (without CODE_39 asterisks), the timestamp when the sample was first scan, or when the subsample was generated, the weight in grams, finally the timestamp when the weight was taken.
+Samples show different data depending on their type. Parent samples show their barcode, weight, time metadata, and error analysis. Seed samples only show weight and time metadata, because they share a barcode with the parent. Lint samples only show weight/time because they are never assigned a barcode. Test samples show all data, but if the user skips the barcode scan this will show as unscanned, until the user fills this data. 
 
 <p align="center">
-	<img src="./readme_assets/after_weigh.png" width="256" height="512"/>
+	<img src="./readme_assets/main_page.png" width="256" height="512"/>
+	<img src="./readme_assets/filled_data_example.png" width="256" height="512"/>
+	<img src="./readme_assets/weigh.png" width="256" height="512"/>
 </p>
 
-Any sample/subsample can be clicked to show delete, print, or weigh options. This screen is also opened if a sample/subsample is scanned and already contains data.
+
+Each sample/subsample has different actions depending on its type.
+
+```
+Parent actions:
+	1. Weigh: manual weigh screen
+	2. Workflow: restart workflow screen
+	3. Edit: open workflow screen in edit mode
+	4. Delete: delete this sample and all subsamples
+```
 
 <p align="center">
-	<img src="./readme_assets/on_click_any_sample.png" width="256" height="512"/>
+	<img src="./readme_assets/parent_actions.png" width="256" height="512"/>
 </p>
 
-When a sample, and its two subsamples are weighed, an analysis shows the difference in weight.
+```
+Seed and Lint actions:
+	1. Weigh: manual weigh screen
+	2. Edit: open workflow screen in edit mode
+```
 
 <p align="center">
-	<img src="./readme_assets/weight_diff.png" width="256" height="512"/>
+	<img src="./readme_assets/seed_lint_actions.png" width="256" height="512"/>
 </p>
 
-## Manual Print
-
-Similar to the weigh screen, users can manually print any string within the given constraints.
+```
+Test actions:
+	1. Weigh: manual weigh screen
+	2. Edit: open workflow screen in edit mode
+	3. Scan: open scanner to fill barcode data
+```
 
 <p align="center">
-	<img src="./readme_assets/manual_print_screen.png" width="256" height="512"/>
+	<img src="./readme_assets/test_actions.png" width="256" height="512"/>
 </p>
 
 ## Settings
 
-Users can select printer/scale addresses or clear them from the preferences.
+Users can select scale addresses or clear them from the preferences.
 
 <p align="center">
 	<img src="./readme_assets/settings.png" width="256" height="512"/>

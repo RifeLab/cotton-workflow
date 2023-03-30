@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "0d4a56ba33933e74b1797530476bb079",
+    "identityHash": "2f36f31577561772a8a926af1153c291",
     "entities": [
       {
         "tableName": "samples",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`sid` INTEGER PRIMARY KEY AUTOINCREMENT, `code` TEXT, `weight` TEXT, `scan_time` INTEGER NOT NULL, `scale_time` INTEGER, `parent` INTEGER)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`sid` INTEGER PRIMARY KEY AUTOINCREMENT, `code` TEXT, `weight` REAL, `scan_time` INTEGER, `scale_time` INTEGER, `person` TEXT, `parent` INTEGER, `type` INTEGER NOT NULL)",
         "fields": [
           {
             "fieldPath": "sid",
@@ -23,14 +23,14 @@
           {
             "fieldPath": "weight",
             "columnName": "weight",
-            "affinity": "TEXT",
+            "affinity": "REAL",
             "notNull": false
           },
           {
             "fieldPath": "scanTime",
             "columnName": "scan_time",
             "affinity": "INTEGER",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "scaleTime",
@@ -39,10 +39,22 @@
             "notNull": false
           },
           {
+            "fieldPath": "person",
+            "columnName": "person",
+            "affinity": "TEXT",
+            "notNull": false
+          },
+          {
             "fieldPath": "parent",
             "columnName": "parent",
             "affinity": "INTEGER",
             "notNull": false
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "INTEGER",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -68,7 +80,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '0d4a56ba33933e74b1797530476bb079')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2f36f31577561772a8a926af1153c291')"
     ]
   }
 }

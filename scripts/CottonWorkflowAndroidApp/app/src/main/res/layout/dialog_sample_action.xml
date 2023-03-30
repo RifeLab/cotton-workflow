@@ -24,62 +24,73 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <RadioGroup
-        android:layout_margin="8dp"
-        android:id="@+id/dialog_sample_action_rg"
+    <!--        <Button-->
+    <!--            android:id="@+id/dialog_sample_action_print_rb"-->
+    <!--            android:layout_width="wrap_content"-->
+    <!--            android:layout_height="wrap_content"-->
+    <!--            android:checked="true"-->
+    <!--            android:text="@string/dialog_sample_action_print_label_rb"/>-->
+
+    <Button
+        android:id="@+id/dialog_sample_action_weigh_btn"
         android:layout_width="0dp"
+        android:layout_margin="8dp"
         android:layout_height="wrap_content"
+        android:checked="false"
+        android:text="@string/dialog_sample_action_weigh_rb"
+        app:layout_constraintTop_toBottomOf="@id/dialog_sample_action_code_tv"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!--        <Button-->
+    <!--            android:id="@+id/dialog_sample_action_add_subsample"-->
+    <!--            android:layout_width="wrap_content"-->
+    <!--            android:layout_height="wrap_content"-->
+    <!--            android:checked="false"-->
+    <!--            android:text="@string/dialog_sample_action_add_rb"/>-->
+
+    <Button
+        android:layout_width="0dp"
+        android:layout_margin="8dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/dialog_sample_action_workflow_btn"
+        android:checked="false"
+        android:text="@string/dialog_sample_action_workflow_rb"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/dialog_sample_action_code_tv"
-        app:layout_constraintBottom_toTopOf="@id/dialog_sample_action_cancel_btn">
+        app:layout_constraintTop_toBottomOf="@id/dialog_sample_action_weigh_btn"/>
 
-        <RadioButton
-            android:id="@+id/dialog_sample_action_print_rb"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:checked="true"
-            android:text="@string/dialog_sample_action_print_label_rb"/>
-
-        <RadioButton
-            android:id="@+id/dialog_sample_action_weigh_rb"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:checked="false"
-            android:text="@string/dialog_sample_action_weigh_rb"/>
-
-        <RadioButton
-            android:id="@+id/dialog_sample_action_add_subsample"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:checked="false"
-            android:text="@string/dialog_sample_action_add_rb"/>
-
-        <RadioButton
-            android:id="@+id/dialog_sample_action_delete_rb"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:checked="false"
-            android:text="@string/dialog_sample_action_delete_rb"/>
-
-    </RadioGroup>
-
-    <Button style="@style/Theme.Cotton.Button"
-        android:id="@+id/dialog_sample_action_cancel_btn"
+    <Button
         android:layout_width="0dp"
+        android:layout_margin="8dp"
         android:layout_height="wrap_content"
-        android:text="@android:string/cancel"
+        android:id="@+id/dialog_sample_action_edit_btn"
+        android:checked="false"
+        android:text="@string/dialog_sample_action_edit_rb"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/dialog_sample_action_accept_btn"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/dialog_sample_action_workflow_btn"/>
 
-    <Button style="@style/Theme.Cotton.Button"
-        android:id="@+id/dialog_sample_action_accept_btn"
+    <Button
         android:layout_width="0dp"
+        android:layout_margin="8dp"
         android:layout_height="wrap_content"
-        android:text="@android:string/ok"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@id/dialog_sample_action_cancel_btn"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        android:id="@+id/dialog_sample_action_scan_btn"
+        android:checked="false"
+        android:text="@string/dialog_sample_action_scan_rb"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/dialog_sample_action_edit_btn"/>
+
+    <Button
+        android:id="@+id/dialog_sample_action_delete_btn"
+        android:layout_width="0dp"
+        android:layout_margin="8dp"
+        android:layout_height="wrap_content"
+        android:checked="false"
+        android:text="@string/dialog_sample_action_delete_rb"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/dialog_sample_action_scan_btn"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

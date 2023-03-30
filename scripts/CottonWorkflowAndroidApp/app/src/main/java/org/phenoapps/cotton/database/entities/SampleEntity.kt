@@ -26,7 +26,7 @@ data class SampleEntity(
     //the timestamp in which a sample was scanned and entered into database,
     // or a sub sample was created
     @ColumnInfo(name = "scan_time")
-    val scanTime: Long,
+    val scanTime: Long? = null,
 
     //the timestamp when the sample was weighed, can be null
     @ColumnInfo(name = "scale_time")
@@ -38,9 +38,14 @@ data class SampleEntity(
 
     //null if it is a sample, else it is a sub sample where parent is the sid of original
     @ColumnInfo(name = "parent")
-    val parent: Long? = null
+    val parent: Long? = null,
+
+    //the type of sample this is
+    @ColumnInfo(name = "type")
+    val type: Int,
+
 ) {
 
-    constructor(sample: SampleModel) : this(sample.sid, sample.code, sample.weight, sample.scanTime, sample.scaleTime, sample.person, sample.parent)
+    constructor(s: SampleModel) : this(s.sid, s.code, s.weight, s.scanTime, s.scaleTime, s.person, s.parent, s.type)
 
 }

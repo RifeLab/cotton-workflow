@@ -1,8 +1,6 @@
 package org.phenoapps.cotton.fragments
 
 import android.annotation.SuppressLint
-import android.bluetooth.BluetoothGatt
-import android.bluetooth.BluetoothGattCallback
 import android.content.*
 import android.os.Bundle
 import android.view.View
@@ -13,13 +11,12 @@ import androidx.preference.EditTextPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.PreferenceManager
-import androidx.preference.PreferenceScreen
 import dagger.hilt.android.AndroidEntryPoint
 import org.phenoapps.cotton.R
 import org.phenoapps.cotton.activities.MainActivity
 import org.phenoapps.cotton.models.SampleModel
 import org.phenoapps.cotton.util.BarcodeUtil.Companion.toCode39
-import org.phenoapps.cotton.viewmodels.SampleListViewModel
+import org.phenoapps.cotton.viewmodels.SampleViewModel
 import org.phenoapps.security.Security
 
 @AndroidEntryPoint
@@ -34,7 +31,7 @@ class PreferencesFragment: PreferenceFragmentCompat() {
 
     private val advisor by Security().secureBluetooth()
 
-    private val viewModel: SampleListViewModel by viewModels()
+    private val viewModel: SampleViewModel by viewModels()
 
     private var prefs: SharedPreferences? = null
 
@@ -42,6 +39,14 @@ class PreferencesFragment: PreferenceFragmentCompat() {
 
     init {
         advisor.initialize()
+    }
+
+    private fun updatePersonSummary(value: String? = null) {
+
+        val pref = findPreference<EditTextPreference>(getString(R.string.key_preferences_person))
+
+        pref?.summary = value ?: prefs?.getString(getString(R.string.key_preferences_person),
+            getString(R.string.pref_person_summary))
     }
 
     private fun updateDeviceAddressSummary(choice: Int) {
@@ -74,12 +79,15 @@ class PreferencesFragment: PreferenceFragmentCompat() {
         }
     }
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        prefs = PreferenceManager.getDefaultSharedPreferences(context)
+    }
+
     @SuppressLint("MissingPermission")
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
 
         context?.let { ctx ->
-
-            prefs = PreferenceManager.getDefaultSharedPreferences(ctx)
 
             addPreferencesFromResource(R.xml.preferences)
 
@@ -166,13 +174,20 @@ class PreferencesFragment: PreferenceFragmentCompat() {
                     }
             }
 
+            findPreference<EditTextPreference>(getString(R.string.key_preferences_person))?.let { pref ->
+                pref.setOnPreferenceChangeListener { _, newValue ->
+                    updatePersonSummary(newValue as? String)
+                    true
+                }
+            }
+
             setupPersonUpdateUi(null)
         }
     }
 
     private fun clearDeviceConnection(address: String) {
 
-        (activity as MainActivity).disconnectGatt(address)
+        (activity as MainActivity).disconnectGatt()
 
     }
 
@@ -208,6 +223,7 @@ class PreferencesFragment: PreferenceFragmentCompat() {
         super.onResume()
         updateDeviceAddressSummary(PRINTER_DEVICE_CHOICE)
         updateDeviceAddressSummary(SCALE_DEVICE_CHOICE)
+        updatePersonSummary()
         updateStartIdSummary()
         setupPersonUpdateUi(null)
     }
