@@ -34,6 +34,13 @@
         android:title="@string/preferences_workflow"
         app:iconSpaceReserved="false">
 
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:icon="@drawable/alert_rhombus"
+            android:key="@string/key_preferences_error_threshold"
+            android:title="@string/pref_workflow_error_threshold_title"
+            android:summary="@string/pref_workflow_error_threshold_summary"/>
+
         <EditTextPreference android:title="@string/preferences_error_check_threshold_title"
             android:summary="@string/preferences_error_check_threshold_summary"
             android:defaultValue="5"
@@ -51,6 +58,11 @@
     <PreferenceCategory
         android:title="@string/preferences_devices"
         app:iconSpaceReserved="false">
+
+        <Preference android:title="@string/preferences_scale_config_helper_title"
+            android:summary="@string/preferences_scale_config_helper_summary"
+            android:icon="@drawable/ic_about_help_translate"
+            android:key="@string/key_preferences_scale_config_help"/>
 
         <Preference android:title="@string/preferences_scale_device_chooser"
             android:summary=""

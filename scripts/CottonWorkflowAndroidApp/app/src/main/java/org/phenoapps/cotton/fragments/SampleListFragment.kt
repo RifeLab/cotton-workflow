@@ -22,7 +22,6 @@ import com.journeyapps.barcodescanner.ScanOptions
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import org.phenoapps.cotton.R
-import org.phenoapps.cotton.activities.DefineStorageActivity
 import org.phenoapps.cotton.activities.MainActivity
 import org.phenoapps.cotton.adapters.SampleAdapter
 import org.phenoapps.cotton.dialogs.NewSampleAcceptDialog
@@ -58,6 +57,8 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list), Scan
 
     private var sampleToUpdate: SampleModel? = null
 
+    private var onNewSample: Boolean = false
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         advisor.initialize()
@@ -66,12 +67,6 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list), Scan
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        val definerFirstLoad = prefs?.getBoolean(getString(R.string.key_definer_first_load), true) ?: true
-        if (definerFirstLoad) {
-            prefs?.edit()?.putBoolean(getString(R.string.key_definer_first_load), false)?.apply()
-            definerLauncher.launch(Intent(context, DefineStorageActivity::class.java))
-        }
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -81,12 +76,6 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list), Scan
         scanButton = view.findViewById(R.id.frag_sample_list_scanner_fab)
 
         setupUi()
-    }
-
-    private val definerLauncher = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        startBarcodeLauncher(getString(R.string.frag_sample_list_first_barcode_scan))
     }
 
     // Register the launcher and result handler
@@ -228,16 +217,8 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list), Scan
      */
     override fun onNewBarcode(code: String) {
 
-        activity?.let { act ->
-
-            act.runOnUiThread {
-
-                val acceptDialog = NewSampleAcceptDialog(act, this)
-
-                acceptDialog.show()
-
-            }
-        }
+        //skip straight to this step now, instead aof asking if user wants to add new sample
+        onAcceptNewBarcode(code)
     }
 
     private fun resolveSampleResponse(sample: SampleModel?) {
@@ -317,13 +298,14 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list), Scan
                 //test, sub sample that will need to be scanned
                 insertSubSample(null, parentId, WorkflowUtil.Companion.SubSampleType.TEST.ordinal)
 
-                workflow(parentSample, false)
+                workflow(parentSample, edit = false, new = true)
 
+                onNewSample = true
             }
         }
     }
 
-    private suspend fun insertSubSample(scanTime: Long?, parentId: Long, type: Int, inheritParentCode: String? = null): SampleModel? {
+    private suspend fun insertSubSample(scanTime: Long?, parentId: Long, type: Int, inheritParentCode: String? = null): SampleModel {
 
         val person = (activity as MainActivity).getPerson()
 
@@ -452,10 +434,16 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list), Scan
 //        }
     }
 
-    override fun workflow(model: SampleModel, edit: Boolean) {
+    override fun workflow(model: SampleModel, edit: Boolean, new: Boolean) {
 
         findNavController().navigate(SampleListFragmentDirections
-            .globalActionToSample(model, edit))
+            .globalActionToSample(model, edit, new))
+    }
+
+    override fun getErrorEnabled(): Boolean {
+
+        return prefs?.getBoolean(getString(R.string.key_preferences_error_threshold), true) ?: true
+
     }
 
     override fun getErrorThresh(): Double = try {

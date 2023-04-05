@@ -1,14 +1,17 @@
 package org.phenoapps.cotton.fragments
 
+import android.app.AlertDialog
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
+import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
@@ -101,6 +104,9 @@ class SampleFragment : BluetoothFragment(R.layout.fragment_sample), CoroutineSco
     private lateinit var lintWeightTime: TextView
     private lateinit var testWeightTime: TextView
 
+    //save button
+    private lateinit var saveButton: Button
+
     private lateinit var sampleLiveData: LiveData<List<SampleEntity>>
 
     private val observer = Observer<List<SampleEntity>> { data ->
@@ -111,56 +117,6 @@ class SampleFragment : BluetoothFragment(R.layout.fragment_sample), CoroutineSco
 
             updateUi()
 
-        }
-    }
-
-    private val totalWeightListener = object : TextWatcher {
-
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-
-        override fun afterTextChanged(s: Editable?) {
-
-            updateSampleWeight(sample, s, totalWeightTime)
-        }
-    }
-
-    private val seedWeightListener = object : TextWatcher {
-
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-
-        override fun afterTextChanged(s: Editable?) {
-
-            if (::seed.isInitialized){
-                updateSampleWeight(seed, s, seedWeightTime)
-            }
-        }
-    }
-
-    private val lintWeightListener = object : TextWatcher {
-
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-
-        override fun afterTextChanged(s: Editable?) {
-
-            if (::lint.isInitialized) {
-                updateSampleWeight(lint, s, lintWeightTime)
-            }
-        }
-    }
-
-    private val testWeightListener = object : TextWatcher {
-
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-
-        override fun afterTextChanged(s: Editable?) {
-
-            if (::test.isInitialized) {
-                updateSampleWeight(test, s, testWeightTime)
-            }
         }
     }
 
@@ -224,6 +180,7 @@ class SampleFragment : BluetoothFragment(R.layout.fragment_sample), CoroutineSco
         testWeightEt = view.findViewById(R.id.frag_sample_test_weight_et)
         testWeightTime = view.findViewById(R.id.frag_sample_test_weight_time_tv)
         testWeightTv = view.findViewById(R.id.frag_sample_test_weight_header_tv)
+        saveButton = view.findViewById(R.id.frag_sample_save_btn)
 
         //at first all fields are empty and times are "gone"
         totalWeightTime.visibility = View.GONE
@@ -232,6 +189,17 @@ class SampleFragment : BluetoothFragment(R.layout.fragment_sample), CoroutineSco
         testWeightTime.visibility = View.GONE
 
         loadSamples()
+    }
+
+    //called from main activity when back button is pressed
+    //if this is a new sample, ask if user wants to save or delete
+    fun resolveBackPress() {
+
+        if (arguments?.getBoolean("new") == true) {
+
+            askSaveOrDeleteNewSample()
+
+        } else findNavController().popBackStack()
     }
 
     //find seed/lint samples from this parent
@@ -304,11 +272,6 @@ class SampleFragment : BluetoothFragment(R.layout.fragment_sample), CoroutineSco
 
         }
 
-        weightEt.addTextChangedListener(totalWeightListener)
-        lintWeightEt.addTextChangedListener(lintWeightListener)
-        seedWeightEt.addTextChangedListener(seedWeightListener)
-        testWeightEt.addTextChangedListener(testWeightListener)
-
         weightEt.setOnClickListener {
             state = FocusState.WAITING
         }
@@ -330,7 +293,73 @@ class SampleFragment : BluetoothFragment(R.layout.fragment_sample), CoroutineSco
 
         //}
 
+        saveButton.setOnClickListener {
+
+            saveWorkflowData()
+        }
+
         startWeightListener()
+    }
+
+    private fun askSaveOrDeleteNewSample() {
+
+        val builder = AlertDialog.Builder(context, R.style.AlertDialogTheme)
+        builder.setTitle(R.string.frag_sample_ask_resolve_new_sample_title)
+        builder.setMessage(R.string.frag_sample_ask_resolve_new_sample_message)
+        builder.setPositiveButton(R.string.save) { _, _ ->
+
+            saveWorkflowData()
+        }
+        builder.setNegativeButton(R.string.delete) { _, _ ->
+
+            deleteWorkflowData()
+        }
+        builder.show()
+    }
+
+    private fun deleteWorkflowData() {
+
+        if (::sample.isInitialized) {
+            sampleViewModel.deleteSample(sample)
+        }
+
+        if (::seed.isInitialized) {
+            sampleViewModel.deleteSample(seed)
+        }
+
+        if (::test.isInitialized) {
+            sampleViewModel.deleteSample(test)
+        }
+
+        if (::lint.isInitialized) {
+            sampleViewModel.deleteSample(lint)
+        }
+
+        findNavController().popBackStack()
+    }
+
+    //update sample weight and time
+    private fun saveWorkflowData() {
+
+        //save all samples
+        if (::sample.isInitialized) {
+            updateSampleWeight(sample, weightEt.text, totalWeightTime)
+        }
+
+        if (::seed.isInitialized) {
+            updateSampleWeight(seed, seedWeightEt.text, seedWeightTime)
+        }
+
+        if (::test.isInitialized) {
+            updateSampleWeight(test, testWeightEt.text, testWeightTime)
+        }
+
+        if (::lint.isInitialized) {
+            updateSampleWeight(lint, lintWeightEt.text, lintWeightTime)
+        }
+
+        //leave fragment
+        findNavController().popBackStack()
     }
 
     private fun loadSamples() {

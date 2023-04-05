@@ -3,12 +3,16 @@ package org.phenoapps.cotton.activities
 import android.annotation.SuppressLint
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.content.res.AppCompatResources
+import androidx.appcompat.view.menu.ActionMenuItemView
 import androidx.appcompat.widget.Toolbar
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.navigation.findNavController
@@ -17,6 +21,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import dagger.hilt.android.AndroidEntryPoint
 import org.phenoapps.cotton.NavigationRootDirections
 import org.phenoapps.cotton.R
+import org.phenoapps.cotton.fragments.SampleFragment
 import org.phenoapps.cotton.interfaces.Connector
 import org.phenoapps.cotton.models.SampleModel
 import org.phenoapps.cotton.util.KeyboardListenerHelper
@@ -50,10 +55,13 @@ class MainActivity: AppCompatActivity(), Connector {
 
     private val ohausViewModel: OhausSampleViewModel by viewModels()
 
+    private var menu: Menu? = null
+
     companion object {
         const val PRINTER = 0
         const val SCALE = 1
         const val CONNECTION_CHECK_INTERVAL = 1000L
+        const val BACK_BUTTON_THRESH = 2000L
     }
 
     @Inject
@@ -203,6 +211,74 @@ class MainActivity: AppCompatActivity(), Connector {
         updateToolbarStatus(SCALE, false)
         updateToolbarStatus(PRINTER, false)
 
+        setSupportActionBar(topToolbar)
+
+        if (supportActionBar != null) {
+            supportActionBar?.setDisplayHomeAsUpEnabled(true)
+            supportActionBar?.setDisplayShowHomeEnabled(true)
+            supportActionBar?.setDisplayShowTitleEnabled(false)
+        }
+    }
+
+    private fun resolveBackButtonPressed() {
+
+        when (findNavController(R.id.nav_fragment).currentDestination?.id ?: R.id.fragment_sample_list) {
+
+            R.id.fragment_sample_list -> {
+
+                backPressedTime = if (backPressedTime + BACK_BUTTON_THRESH > System.currentTimeMillis()) {
+
+                    finish()
+
+                    0L
+
+                } else {
+
+                    Toast.makeText(this, getString(R.string.act_main_press_back_twice), Toast.LENGTH_SHORT).show()
+
+                    System.currentTimeMillis()
+                }
+            }
+            R.id.fragment_device_chooser -> {
+
+                findNavController(R.id.nav_fragment)
+                    .popBackStack()
+            }
+            R.id.fragment_sample -> {
+
+                supportFragmentManager.findFragmentById(R.id.nav_fragment)
+                    ?.childFragmentManager?.fragments?.find { it is SampleFragment }.let {
+
+                        (it as? SampleFragment)?.resolveBackPress()
+
+                }
+            }
+            R.id.fragment_scale_config_help -> {
+
+                findNavController(R.id.nav_fragment)
+                    .popBackStack()
+
+            }
+            else -> {
+
+                bottomNav?.selectedItemId = R.id.action_menu_main_bot_tb_home
+
+            }
+        }
+    }
+
+    //track if back button is pressed twice to exit app
+    var backPressedTime = 0L
+    //support back button on toolbar to navigate back to home or close app
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
+        if (item.itemId == android.R.id.home) {
+
+           resolveBackButtonPressed()
+
+        }
+
+        return super.onOptionsItemSelected(item)
     }
 
     private fun showExportDialog() {
@@ -275,20 +351,16 @@ class MainActivity: AppCompatActivity(), Connector {
         }
     }
 
+    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
+        this.menu = menu
+        return super.onPrepareOptionsMenu(menu)
+    }
+
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        when (findNavController(R.id.nav_fragment).currentDestination?.id ?: -1) {
-            R.id.fragment_device_chooser -> {
-                findNavController(R.id.nav_fragment).popBackStack()
-            }
-            R.id.fragment_sample_list -> {
-                finish()
-            }
-            else -> {
-                super.onBackPressed()
-                bottomNav?.selectedItemId = R.id.action_menu_main_bot_tb_home
-            }
-        }
+
+        //press the support action back button
+        resolveBackButtonPressed()
     }
 
     private fun updateToolbarStatus(key: Int, connected: Boolean) {
@@ -296,7 +368,8 @@ class MainActivity: AppCompatActivity(), Connector {
         runOnUiThread {
             when (key) {
                 SCALE -> {
-                    topToolbar?.menu?.getItem(0)?.setIcon(
+                    println(topToolbar?.menu?.size())
+                    topToolbar?.menu?.findItem(R.id.action_menu_main_top_scale)?.setIcon(
                         if (connected) R.drawable.scale else R.drawable.scale_off
                     )
                 }
@@ -323,7 +396,8 @@ class MainActivity: AppCompatActivity(), Connector {
 
         if (scaleId == address) {
 
-            return (topToolbar?.menu?.getItem(0)?.icon == AppCompatResources.getDrawable(this, R.drawable.scale))
+            return (topToolbar?.menu?.findItem(R.id.action_menu_main_top_scale)?.icon
+                    == AppCompatResources.getDrawable(this, R.drawable.scale))
 
         }
 

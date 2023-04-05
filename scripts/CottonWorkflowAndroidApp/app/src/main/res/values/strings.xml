@@ -82,4 +82,20 @@
     <string name="preferences_error_check_threshold_summary">Analysis weight will be red when the difference between the total weight and the sum of the seed and lint weight differs by this amount.</string>
     <string name="preferences_test_check_threshold_title">Test Weight Threshold</string>
     <string name="preferences_test_check_threshold_summary">This defines the amount of Test lint the user will acquire.</string>
+    <string name="act_main_press_back_twice">Press the back button again to close.</string>
+    <string name="frag_sample_save_btn">Save</string>
+    <string name="frag_sample_ask_resolve_new_sample_title">Save or Delete data?</string>
+    <string name="frag_sample_ask_resolve_new_sample_message">Save new sample to database or delete it.</string>
+    <string name="delete">Delete</string>
+    <string name="pref_workflow_error_threshold_title">Enable Error Threshold</string>
+    <string name="pref_workflow_error_threshold_summary">This will enable a notification when final weight sums do not match the initial total weight using a threshold.</string>
+    <string name="preferences_scale_config_helper_title">Scale Configuration Helper</string>
+    <string name="preferences_scale_config_helper_summary">When using an Ohaus scale without their Ohaus Bluetooth Interface, follow this configuration guide to setup your scale.</string>
+    <string name="ohaus_com1_helper_text">\nWhen using the SerialIO Serial-to-Bluetooth device you must additionally enable: \n\n\t\t1)COM1 Baud rate to 9600. \n\t\t2)COM1 Parity to 8 None. \n\t\t3)Stop bit to 2.</string>
+    <string name="ohaus_print_settings_step_1">First, set the scale PRINT1 settings.</string>
+    <string name="ohaus_helper_tree_content_description">Defender 5000 settings tree</string>
+    <string name="ohaus_helper_print_on_stable_content_description">Ohaus manual showing print on stable setting.</string>
+    <string name="ohaus_manual_serial_io_content_description">Serial IO serial to Bluetooth device.</string>
+    <string name="ohaus_manual_com1_settings_content_description">COM1 settings for Ohaus</string>
+    <string name="ohaus_helper_general_settings_text">Ohaus scales should have: \n\t\t1) Print on Stable enabled. \n\t\t2) Print Stable on Zero enabled. \n\t\t3) Print Content Numeric set. \n \n \nHere is an example settings tree for the Defender 5000, each Ohaus is slightly different. \n \nFull manual reference is here: \nhttps://www.ohaus.ca/pdf/TD52-man.pdf</string>
 </resources>

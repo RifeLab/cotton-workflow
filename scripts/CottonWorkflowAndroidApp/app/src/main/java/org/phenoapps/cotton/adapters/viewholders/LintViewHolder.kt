@@ -10,6 +10,8 @@ internal class LintViewHolder(view: View): ParentViewHolder(view) {
     override fun bind(controller: SampleController, model: SampleModel) {
         super.bind(controller, model)
 
+        sampleHeaderTv.visibility = View.VISIBLE
+
         //lint does not have a barcode and is never scanned
         codeTextView.visibility = View.GONE
         scanIcon.visibility = View.GONE

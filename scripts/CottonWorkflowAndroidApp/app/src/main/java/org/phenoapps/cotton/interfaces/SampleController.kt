@@ -38,7 +38,11 @@ interface SampleController {
 
     // start automatic workflow action
     // edit mode overrides the automatic workflow and user inputs data
-    fun workflow(model: SampleModel, edit: Boolean)
+    // new mode is for creating a new sample (changes back button behaviour)
+    fun workflow(model: SampleModel, edit: Boolean, new: Boolean)
+
+    // returns the error thresh preference
+    fun getErrorEnabled(): Boolean
 
     // view code returns the error thresh preference
     fun getErrorThresh(): Double

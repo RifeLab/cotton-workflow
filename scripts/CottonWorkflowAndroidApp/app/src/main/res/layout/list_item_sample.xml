@@ -83,7 +83,7 @@
         android:ellipsize="marquee"
         tools:text="Jan 1 2121"/>
 
-    <ImageView android:id="@+id/list_item_sample_scale_header_iv"
+    <ImageView android:id="@+id/list_item_sample_weight_header_iv"
         android:padding="4dp"
         android:layout_margin="8dp"
         android:layout_width="wrap_content"
@@ -95,37 +95,37 @@
 
     <TextView style="@style/Theme.Cotton.Text"
         android:layout_margin="8dp"
-        android:id="@+id/list_item_sample_weight_timestamp_header_tv"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/list_item_sample_timestamp_header_tv"
-        app:layout_constraintStart_toEndOf="@id/list_item_sample_scale_header_iv"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:singleLine="true"
-        android:ellipsize="marquee"
-        tools:text="Jan 1 2121"/>
-
-    <ImageView android:id="@+id/list_item_sample_weight_header_iv"
-        android:padding="4dp"
-        android:layout_margin="8dp"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:src="@drawable/weight"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/list_item_sample_weight_timestamp_header_tv"
-        android:contentDescription="TODO" />
-
-    <TextView style="@style/Theme.Cotton.Text"
-        android:layout_margin="8dp"
         android:id="@+id/list_item_sample_weight_header_tv"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        app:layout_constraintTop_toBottomOf="@id/list_item_sample_weight_timestamp_header_tv"
+        app:layout_constraintTop_toBottomOf="@id/list_item_sample_timestamp_header_tv"
         app:layout_constraintStart_toEndOf="@id/list_item_sample_weight_header_iv"
         app:layout_constraintEnd_toEndOf="parent"
         android:singleLine="true"
         android:ellipsize="marquee"
         tools:text="1g"/>
+
+    <ImageView android:id="@+id/list_item_sample_scale_header_iv"
+        android:padding="4dp"
+        android:layout_margin="8dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/clock_time_eight_outline"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/list_item_sample_weight_header_tv"
+        android:contentDescription="TODO" />
+
+    <TextView style="@style/Theme.Cotton.Text"
+        android:layout_margin="8dp"
+        android:id="@+id/list_item_sample_weight_timestamp_header_tv"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/list_item_sample_weight_header_tv"
+        app:layout_constraintStart_toEndOf="@id/list_item_sample_scale_header_iv"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:singleLine="true"
+        android:ellipsize="marquee"
+        tools:text="Jan 1 2121"/>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/list_item_sample_sub_sample_rv"
@@ -136,7 +136,7 @@
         android:orientation="vertical"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/list_item_sample_weight_header_tv"
+        app:layout_constraintTop_toBottomOf="@id/list_item_sample_weight_timestamp_header_tv"
         app:layout_constraintBottom_toTopOf="@id/list_item_sample_analysis_tv"
         tools:listitem="@layout/list_item_sample"/>
     <!--        tools:itemCount="2"-->

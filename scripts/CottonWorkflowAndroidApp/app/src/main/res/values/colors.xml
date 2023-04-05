@@ -6,4 +6,10 @@
     <color name="walnut_brown">#5e574d</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <color name="dark">#96724e</color>
+    <color name="light">#e6d7ba</color>
+    <color name="accent">#889f97</color>
+    <color name="accent2">#b2cab2</color>
+    <color name="deleteButton">#cc021a</color>
 </resources>

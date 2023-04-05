@@ -60,12 +60,12 @@ open class SampleActionDialog(
         }
 
         workflowButotn.setOnClickListener {
-            controller.workflow(model, false)
+            controller.workflow(model, edit = false, new = false)
             dismiss()
         }
 
         editButton.setOnClickListener {
-            controller.workflow(model, true)
+            controller.workflow(model, edit = true, new = false)
             dismiss()
         }
 

@@ -50,6 +50,8 @@
         app:layout_constraintTop_toBottomOf="@+id/frag_sample_total_weight_header_tv"
         tools:ignore="MissingConstraints"
         android:autofillHints=""
+        android:imeOptions="actionNext"
+        android:selectAllOnFocus="true"
         android:inputType="numberDecimal" />
 
     <TextView
@@ -91,6 +93,8 @@
         app:layout_constraintTop_toBottomOf="@+id/frag_sample_seed_weight_header_tv"
         tools:ignore="MissingConstraints"
         android:autofillHints=""
+        android:imeOptions="actionNext"
+        android:selectAllOnFocus="true"
         android:inputType="numberDecimal" />
 
     <TextView
@@ -132,6 +136,8 @@
         app:layout_constraintTop_toBottomOf="@+id/frag_sample_lint_weight_header_tv"
         tools:ignore="MissingConstraints"
         android:autofillHints=""
+        android:imeOptions="actionNext"
+        android:selectAllOnFocus="true"
         android:inputType="numberDecimal" />
 
     <TextView
@@ -173,6 +179,7 @@
         app:layout_constraintTop_toBottomOf="@+id/frag_sample_test_weight_header_tv"
         tools:ignore="MissingConstraints"
         android:autofillHints=""
+        android:selectAllOnFocus="true"
         android:inputType="numberDecimal" />
 
     <TextView
@@ -191,5 +198,15 @@
         app:layout_constraintTop_toBottomOf="@+id/frag_sample_lint_weight_et"
         tools:ignore="MissingConstraints"
         tools:text="1 Jan 1990" />
+
+    <Button
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:id="@+id/frag_sample_save_btn"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:text="@string/frag_sample_save_btn"
+        android:textColor="@color/black"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -7,6 +7,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import androidx.preference.CheckBoxPreference
 import androidx.preference.EditTextPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
@@ -39,6 +40,18 @@ class PreferencesFragment: PreferenceFragmentCompat() {
 
     init {
         advisor.initialize()
+    }
+
+    private fun updateThresholdVisibility(value: Boolean? = null) {
+
+        val pref = findPreference<CheckBoxPreference>(getString(R.string.key_preferences_error_threshold))
+
+        if (pref != null) {
+
+            findPreference<EditTextPreference>(getString(R.string.key_preferences_error_check_threshold))
+                ?.isVisible = value ?: pref.isChecked
+
+        }
     }
 
     private fun updatePersonSummary(value: String? = null) {
@@ -93,6 +106,23 @@ class PreferencesFragment: PreferenceFragmentCompat() {
 
             val clearDeviceIdPreference =
                 findPreference<Preference>(getString(R.string.key_preferences_device_id_clear))
+
+            findPreference<Preference>(getString(R.string.key_preferences_scale_config_help))?.setOnPreferenceClickListener {
+
+                findNavController().navigate(
+                    PreferencesFragmentDirections
+                        .actionToScaleConfigHelp()
+                )
+
+                true
+            }
+
+            findPreference<CheckBoxPreference>(getString(R.string.key_preferences_error_threshold))?.setOnPreferenceChangeListener { _, value ->
+
+                updateThresholdVisibility(value as Boolean)
+
+                true
+            }
 
             findPreference<Preference>(getString(R.string.key_preferences_printer_device_id))?.setOnPreferenceClickListener {
 
@@ -225,6 +255,7 @@ class PreferencesFragment: PreferenceFragmentCompat() {
         updateDeviceAddressSummary(SCALE_DEVICE_CHOICE)
         updatePersonSummary()
         updateStartIdSummary()
+        updateThresholdVisibility()
         setupPersonUpdateUi(null)
     }
 }

@@ -13,7 +13,12 @@
 
     <fragment android:id="@+id/fragment_preferences"
         android:name="org.phenoapps.cotton.fragments.PreferencesFragment"
-        android:label="Preferences"/>
+        android:label="Preferences">
+        <action android:id="@+id/action_to_scale_config_help"
+            app:destination="@id/fragment_scale_config_help"
+            app:popUpTo="@id/fragment_preferences"
+            app:launchSingleTop="true"/>
+    </fragment>
 
     <fragment android:id="@+id/fragment_device_chooser"
         android:name="org.phenoapps.cotton.fragments.BluetoothDeviceChooserFragment"
@@ -31,6 +36,10 @@
         android:name="org.phenoapps.cotton.fragments.SampleFragment"
         android:label="Sample"/>
 
+    <fragment android:id="@+id/fragment_scale_config_help"
+        android:name="org.phenoapps.cotton.fragments.ScaleConfigHelpFragment"
+        android:label="Scale Config Helper"/>
+
     <action android:id="@+id/global_action_to_sample"
         app:destination="@id/fragment_sample"
         app:launchSingleTop="true">
@@ -40,6 +49,9 @@
         <argument android:name="edit"
             app:argType="boolean"
             android:defaultValue="false"/>
+        <argument android:name="new"
+            android:defaultValue="false"
+            app:argType="boolean"/>
     </action>
 
     <action android:id="@+id/global_action_to_scale_fragment"

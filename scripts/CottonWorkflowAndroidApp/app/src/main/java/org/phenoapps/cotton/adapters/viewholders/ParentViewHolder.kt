@@ -16,7 +16,7 @@ internal open class ParentViewHolder(view: View): SampleAdapter.ViewHolder(view)
 
     override fun bind(controller: SampleController, model: SampleModel) {
 
-        sampleHeaderTv.text = controller.getString(R.string.list_item_sample_parent_title)
+        sampleHeaderTv.visibility = View.GONE
 
         subSamplesRecyclerView.shrink()
 
@@ -101,8 +101,10 @@ internal open class ParentViewHolder(view: View): SampleAdapter.ViewHolder(view)
         //check that this id has been assigned
         model.sid?.let { id ->
 
+            val errorEnabled = controller.getErrorEnabled()
             val errorThresh = controller.getErrorThresh()
             val subsamples = controller.getSubSamples(id)
+
             val adapter = SampleAdapter(controller)
             adapter.submitList(subsamples.sortedBy { it.sid }.toList())
             adapter.notifyItemRangeChanged(0, subsamples.size)
@@ -112,34 +114,39 @@ internal open class ParentViewHolder(view: View): SampleAdapter.ViewHolder(view)
             if (subsamples.size == WorkflowUtil.NumSubSamples) {
 
                 val w = model.weight
-                val subWeight1 = subsamples[0].weight //seed weight
-                val subWeight2 = subsamples[1].weight //lint weight
+                val subWeight1 = subsamples.first { it.type == WorkflowUtil.Companion.SubSampleType.SEED.ordinal }.weight //seed weight
+                val subWeight2 = subsamples.first { it.type == WorkflowUtil.Companion.SubSampleType.LINT.ordinal }.weight //lint weight
 
-                try {
+                if (errorEnabled) {
 
-                    if (w != null && subWeight1 != null && subWeight2 != null) {
+                    try {
 
-                        val doubleError = abs(w - (subWeight1 + subWeight2))
-                        var error = doubleError.toString()
+                        if (w != null && subWeight1 != null && subWeight2 != null) {
 
-                        val length = error.length
+                            val doubleError = abs(w - (subWeight1 + subWeight2))
+                            var error = doubleError.toString()
 
-                        if (length > 5) {
+                            val length = error.length
 
-                            //TODO delete trailing zeroes
-                            error = error.substring(0..5)
+                            if (length > 5) {
+
+                                //TODO delete trailing zeroes
+                                error = error.substring(0..5)
+                            }
+
+                            analysisTextView.wrap()
+                            analysisTextView.text = controller.getString(R.string.list_item_sample_weight_diff, error)
+
+                            analysisTextView.setTextColor(
+                                if (doubleError > abs(errorThresh)) Color.RED
+                                else Color.GREEN)
                         }
 
-                        analysisTextView.wrap()
-                        analysisTextView.text = controller.getString(R.string.list_item_sample_weight_diff, error)
+                    } catch (e: java.lang.Exception) {
 
-                        analysisTextView.setTextColor(
-                            if (doubleError > abs(errorThresh)) Color.RED
-                            else Color.GREEN)
+                        e.printStackTrace()
+
                     }
-
-                } catch (e: java.lang.Exception) {
-                    e.printStackTrace()
                 }
             }
         }

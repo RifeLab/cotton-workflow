@@ -27,7 +27,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         android:src="@drawable/barcode_scan"
         android:layout_margin="8dp"
-        app:backgroundTint="@color/pistachio"
+        app:backgroundTint="@color/accent"
         android:contentDescription="@string/fragment_sample_list_fab_content_description" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

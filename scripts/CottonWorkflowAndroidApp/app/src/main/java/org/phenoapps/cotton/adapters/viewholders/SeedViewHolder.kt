@@ -11,6 +11,8 @@ internal class SeedViewHolder(view: View): ParentViewHolder(view) {
     override fun bind(controller: SampleController, model: SampleModel) {
         super.bind(controller, model)
 
+        sampleHeaderTv.visibility = View.VISIBLE
+
         //make code invisible, seed code is same as parent
         codeIconIv.visibility = View.GONE
         codeTextView.visibility = View.GONE

@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/content"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- https://www.ohaus.ca/pdf/TD52-man.pdf -->
+
+    <ScrollView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <!-- show explanation text view -->
+            <TextView
+                android:id="@+id/frag_scale_config_helper_main_tv"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:text="@string/ohaus_helper_general_settings_text"
+                android:textSize="24sp"
+                android:autoLink="web"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- show serialio device image view -->
+            <ImageView
+                android:layout_margin="16dp"
+                android:id="@+id/frag_scale_config_helper_serial_io_iv"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:adjustViewBounds="true"
+                android:cropToPadding="false"
+                android:scaleType="fitXY"
+                android:contentDescription="@string/ohaus_helper_tree_content_description"
+                android:src="@drawable/ohaus_manual_setting_tree"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/frag_scale_config_helper_main_tv" />
+
+            <!-- show print on stable text view and image view -->
+            <TextView
+                android:id="@+id/frag_scale_config_helper_tv0"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                android:text="@string/ohaus_print_settings_step_1"
+                android:textSize="24sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/frag_scale_config_helper_serial_io_iv" />
+
+            <ImageView
+                android:layout_margin="16dp"
+                android:id="@+id/frag_scale_config_helper_iv0"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:adjustViewBounds="true"
+                android:cropToPadding="false"
+                android:scaleType="fitXY"
+                android:contentDescription="@string/ohaus_helper_print_on_stable_content_description"
+                android:src="@drawable/ohaus_manual_print"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/frag_scale_config_helper_tv0" />
+
+            <!-- show stable print on zero text view and image view -->
+            <TextView
+                android:id="@+id/frag_scale_config_helper_tv1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_margin="16dp"
+                android:text="@string/ohaus_com1_helper_text"
+                android:textSize="24sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/frag_scale_config_helper_iv0" />
+
+            <ImageView
+                android:layout_margin="16dp"
+                android:id="@+id/frag_scale_config_helper_iv2"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:adjustViewBounds="true"
+                android:cropToPadding="false"
+                android:scaleType="fitXY"
+                android:scaleX="0.5"
+                android:scaleY="0.5"
+                android:contentDescription="@string/ohaus_manual_serial_io_content_description"
+                android:src="@drawable/serial_io_bt_serial"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/frag_scale_config_helper_tv1" />
+
+            <ImageView
+                android:layout_margin="16dp"
+                android:id="@+id/frag_scale_config_helper_iv1"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:adjustViewBounds="true"
+                android:cropToPadding="false"
+                android:scaleType="fitXY"
+                android:contentDescription="@string/ohaus_manual_com1_settings_content_description"
+                android:src="@drawable/ohaus_manual_com1_settings"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/frag_scale_config_helper_iv2" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
