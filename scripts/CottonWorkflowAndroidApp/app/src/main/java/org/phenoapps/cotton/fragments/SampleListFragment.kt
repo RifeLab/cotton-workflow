@@ -20,12 +20,14 @@ import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanIntentResult
 import com.journeyapps.barcodescanner.ScanOptions
 import dagger.hilt.android.AndroidEntryPoint
+import io.swagger.client.model.VendorOrderRequest.SampleTypeEnum
 import kotlinx.coroutines.launch
 import org.phenoapps.cotton.R
 import org.phenoapps.cotton.activities.MainActivity
 import org.phenoapps.cotton.adapters.SampleAdapter
 import org.phenoapps.cotton.dialogs.NewSampleAcceptDialog
 import org.phenoapps.cotton.dialogs.SampleActionDialog
+import org.phenoapps.cotton.interfaces.MainToolbarManager
 import org.phenoapps.cotton.interfaces.SampleController
 import org.phenoapps.cotton.interfaces.ScanInteractor
 import org.phenoapps.cotton.models.SampleModel
@@ -36,7 +38,8 @@ import org.phenoapps.fragments.bluetooth.BluetoothFragment
 import java.util.*
 
 @AndroidEntryPoint
-class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list), ScanInteractor, SampleController {
+class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list),
+    ScanInteractor, SampleController {
 
     companion object {
         //must be <= MAX_INT
@@ -56,8 +59,6 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list), Scan
     private var samples: List<SampleModel>? = null
 
     private var sampleToUpdate: SampleModel? = null
-
-    private var onNewSample: Boolean = false
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -103,6 +104,7 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list), Scan
         }
     }
 
+    // used to update hvi test subsample barcode
     // Register the launcher and result handler
     private val barcodeUpdateLauncher = registerForActivityResult(
         ScanContract()
@@ -116,20 +118,18 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list), Scan
 
         } else {
 
-//            Toast.makeText(
-//                context,
-//                result.contents,
-//                Toast.LENGTH_LONG
-//            ).show()
-
             sampleToUpdate?.let { sample ->
 
-                sample.code = result.contents
-                sample.scanTime = Calendar.getInstance().timeInMillis
+                samples?.filter { it.parent == sample.sid }
+                    ?.first { it.type == WorkflowUtil.Companion.SubSampleType.TEST.ordinal }?.let { testSubSample ->
 
-                viewModel.updateSample(sample)
+                        testSubSample.code = result.contents
+                        testSubSample.scanTime = Calendar.getInstance().timeInMillis
 
-                sampleToUpdate = null
+                        viewModel.updateSample(testSubSample)
+
+                        sampleToUpdate = null
+                    }
             }
         }
     }
@@ -148,7 +148,11 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list), Scan
 
                     Toast.makeText(context, "Barcode exists already!", Toast.LENGTH_SHORT).show()
 
-                    onBarcodeExists(SampleModel(sample))
+                    if (sample.type == WorkflowUtil.Companion.SubSampleType.PARENT.ordinal) {
+
+                        onBarcodeExists(SampleModel(sample))
+
+                    }
                 }
             }
         }
@@ -201,6 +205,7 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list), Scan
         barcodeLauncher.launch(options)
     }
 
+    //call barcode scanner for hvi test subsample barcode scan
     private fun startBarcodeUpdateLauncher(message: String) {
         val options = ScanOptions()
         options.setDesiredBarcodeFormats(ScanOptions.ALL_CODE_TYPES)
@@ -221,49 +226,10 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list), Scan
         onAcceptNewBarcode(code)
     }
 
-    private fun resolveSampleResponse(sample: SampleModel?) {
-
-        sample?.let { it ->
-
-            try {
-
-                it.scaleTime = Calendar.getInstance().timeInMillis
-                writeWeight(it)
-
-            } catch (e: NoSuchElementException) {
-
-                e.printStackTrace()
-
-            }
-        }
-    }
-
-    private fun startScaleFragment(sample: SampleModel) {
-
-        setFragmentResultListener(ScaleFragment.REQUEST_KEY) { _, bundle ->
-            resolveSampleResponse(bundle.getParcelable("sample"))
-        }
-
-        findNavController().navigate(R.id.global_action_to_scale_fragment,
-            bundleOf("sample" to sample))
-    }
-
-    private fun requestSampleWeight(sample: SampleModel) {
-
-        startScaleFragment(sample)
-
-    }
-
     override fun onBarcodeExists(sample: SampleModel) {
 
-        if (sample.weight == null) {
+        sampleClicked(sample)
 
-            requestSampleWeight(sample)
-
-        } else {
-
-            sampleClicked(sample)
-        }
     }
 
     override fun onAcceptNewBarcode(code: String) {
@@ -300,7 +266,6 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list), Scan
 
                 workflow(parentSample, edit = false, new = true)
 
-                onNewSample = true
             }
         }
     }
@@ -350,30 +315,7 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list), Scan
 
     override fun printSample(model: SampleModel): Boolean {
 
-        val printerId = prefs?.getString(getString(R.string.key_printer_device_id), null)
-
-        if (printerId != null) {
-
-            model.code?.let { barcode ->
-
-                PrintThread(printerId).print(arrayOf(barcode))
-
-            }
-
-        } else {
-
-            findNavController().navigate(SampleListFragmentDirections
-                .globalActionToPrintFragment(code = model.code))
-
-        }
-
         return true
-    }
-
-    override fun weighSample(model: SampleModel) {
-
-        requestSampleWeight(model)
-
     }
 
     override fun scanSample(model: SampleModel) {
@@ -436,13 +378,28 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list), Scan
 
     override fun workflow(model: SampleModel, edit: Boolean, new: Boolean) {
 
-        findNavController().navigate(SampleListFragmentDirections
-            .globalActionToSample(model, edit, new))
+        if (edit) {
+
+            findNavController().navigate(SampleListFragmentDirections
+                .globalActionToSample(model, new))
+
+        } else {
+
+            findNavController().navigate(SampleListFragmentDirections
+                .globalActionToWorkflowFragment(model, new))
+
+        }
     }
 
     override fun getErrorEnabled(): Boolean {
 
         return prefs?.getBoolean(getString(R.string.key_preferences_error_threshold), true) ?: true
+
+    }
+
+    override fun getTestEnabled(): Boolean {
+
+        return prefs?.getBoolean(getString(R.string.key_preferences_test_enabled), false) ?: false
 
     }
 
@@ -459,5 +416,10 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list), Scan
 
     override fun getString(id: Int, diff: String): String {
         return context?.getString(id, diff) ?: String()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        (activity as MainToolbarManager).updateToolbarVisibility()
     }
 }

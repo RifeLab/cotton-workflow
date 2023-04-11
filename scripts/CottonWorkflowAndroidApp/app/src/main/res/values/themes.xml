@@ -11,7 +11,15 @@
         <item name="colorSecondaryVariant">@color/accent2</item>
         <item name="colorOnSecondary">@color/black</item>
         <!-- Status bar color. -->
-        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <item name="android:statusBarColor">@color/dark</item>
+
+        <item name="buttonBarPositiveButtonStyle">@style/PositiveButtonStyle</item>
+        <item name="buttonBarNegativeButtonStyle">@style/NegativeButtonStyle</item>
+    </style>
+
+    <style name="Theme.Cotton.Button.Save">
+        <item name="android:backgroundTint">@color/accent</item>
+        <item name="android:textColor">@color/black</item>
     </style>
 
     <style name="AlertDialogTheme" parent="ThemeOverlay.AppCompat.Dialog.Alert">
@@ -20,11 +28,11 @@
     </style>
 
     <style name="NegativeButtonStyle" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
-        <item name="android:textColor">@color/black</item>
+        <item name="android:textColor">@color/accent</item>
     </style>
 
     <style name="PositiveButtonStyle" parent="Widget.MaterialComponents.Button.TextButton.Dialog">
-        <item name="android:textColor">@color/black</item>
+        <item name="android:textColor">@color/accent</item>
     </style>
 
     <style name="Theme.Cotton.Text" parent="TextAppearance.AppCompat.Body1">
@@ -42,6 +50,9 @@
         <item name="android:layout_margin">8dp</item>
     </style>
 
+    <style name="Theme.Cotton.Dialog.Title" parent="TextAppearance.AppCompat.Title"/>
+    <style name="Theme.Cotton.Dialog.Subtitle" parent="TextAppearance.AppCompat.Subhead"/>
+
     <style name="Theme.Cotton.WeightEditText" parent="TextAppearance.AppCompat.Headline">
         <item name="android:textSize">30sp</item>
         <item name="android:layout_margin">8dp</item>
@@ -53,7 +64,7 @@
     </style>
 
     <style name="Theme.Cotton.Toolbar" parent="Widget.AppCompat.Toolbar">
-        <item name="android:background">?colorAccent</item>
+        <item name="android:background">@color/light</item>
     </style>
 
 </resources>

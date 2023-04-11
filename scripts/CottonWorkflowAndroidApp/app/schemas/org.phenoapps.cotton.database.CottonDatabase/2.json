@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 2,
-    "identityHash": "6ed71b06a3eb387fbf21fc454e2accb8",
+    "identityHash": "c2fa765e39baf5955f08587b4daa41d4",
     "entities": [
       {
         "tableName": "samples",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`sid` INTEGER PRIMARY KEY AUTOINCREMENT, `code` TEXT, `weight` REAL, `scan_time` INTEGER NOT NULL, `scale_time` INTEGER, `person` TEXT, `parent` INTEGER)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`sid` INTEGER PRIMARY KEY AUTOINCREMENT, `code` TEXT, `weight` REAL, `scan_time` INTEGER, `scale_time` INTEGER, `person` TEXT, `parent` INTEGER, `type` INTEGER NOT NULL, `note` TEXT)",
         "fields": [
           {
             "fieldPath": "sid",
@@ -30,7 +30,7 @@
             "fieldPath": "scanTime",
             "columnName": "scan_time",
             "affinity": "INTEGER",
-            "notNull": true
+            "notNull": false
           },
           {
             "fieldPath": "scaleTime",
@@ -48,6 +48,18 @@
             "fieldPath": "parent",
             "columnName": "parent",
             "affinity": "INTEGER",
+            "notNull": false
+          },
+          {
+            "fieldPath": "type",
+            "columnName": "type",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "note",
+            "columnName": "note",
+            "affinity": "TEXT",
             "notNull": false
           }
         ],
@@ -74,7 +86,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '6ed71b06a3eb387fbf21fc454e2accb8')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c2fa765e39baf5955f08587b4daa41d4')"
     ]
   }
 }

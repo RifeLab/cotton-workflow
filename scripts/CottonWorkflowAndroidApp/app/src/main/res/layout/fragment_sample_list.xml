@@ -15,7 +15,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/frag_sample_list_scanner_fab"
+        app:layout_constraintBottom_toBottomOf="parent"
         tools:listitem="@layout/list_item_sample"
         tools:itemCount="8"/>
 

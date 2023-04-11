@@ -18,8 +18,6 @@ internal open class ParentViewHolder(view: View): SampleAdapter.ViewHolder(view)
 
         sampleHeaderTv.visibility = View.GONE
 
-        subSamplesRecyclerView.shrink()
-
         if (model.code != null) {
 
             codeTextView.text = model.code
@@ -28,15 +26,6 @@ internal open class ParentViewHolder(view: View): SampleAdapter.ViewHolder(view)
 
             codeIconIv.visibility = View.GONE
             codeTextView.visibility = View.GONE
-            scanIcon.visibility = View.GONE
-            scanTimeTv.visibility = View.GONE
-
-        }
-
-        if (model.scanTime != null) {
-
-            timestampTextView.text = model.scanTime?.toDateString()
-
         }
 
         if (model.scaleTime != null) {
@@ -56,22 +45,6 @@ internal open class ParentViewHolder(view: View): SampleAdapter.ViewHolder(view)
             controller.sampleClicked(model)
         }
 
-        //hide/show recycler content with chevron button that switches drawable states
-        expandImageView.setOnClickListener {
-            expandImageView.setImageResource(when (expandImageView.tag) {
-                "down" -> {
-                    subSamplesRecyclerView.wrap()
-                    expandImageView.tag = "up"
-                    R.drawable.chevron_up
-                }
-                else -> {
-                    subSamplesRecyclerView.shrink()
-                    expandImageView.tag = "down"
-                    R.drawable.chevron_down
-                }
-            })
-        }
-
         //only show expand button if it is a parent
         if (model.parent != null) {
             expandImageView.visibility = View.GONE
@@ -79,21 +52,20 @@ internal open class ParentViewHolder(view: View): SampleAdapter.ViewHolder(view)
 
         if (model.weight != null) {
 
+            weightTextView.text = "${model.weight}"
+
             scaleIcon.visibility = View.VISIBLE
-            weightIcon.visibility = View.VISIBLE
-            weightTextView.text = controller
-                .getString(R.string.grams_unit,"${model.weight}")
+
             weightTextView.wrap()
-            weightIcon.wrap()
+
             weightTimestampTextView.wrap()
 
         } else {
 
             scaleIcon.visibility = View.GONE
-            weightIcon.visibility = View.GONE
-            weightTextView.shrink()
-            weightIcon.shrink()
+
             weightTimestampTextView.shrink()
+
         }
 
         analysisTextView.shrink()
@@ -101,27 +73,52 @@ internal open class ParentViewHolder(view: View): SampleAdapter.ViewHolder(view)
         //check that this id has been assigned
         model.sid?.let { id ->
 
+            val testEnabled = controller.getTestEnabled()
             val errorEnabled = controller.getErrorEnabled()
             val errorThresh = controller.getErrorThresh()
             val subsamples = controller.getSubSamples(id)
 
-            val adapter = SampleAdapter(controller)
-            adapter.submitList(subsamples.sortedBy { it.sid }.toList())
-            adapter.notifyItemRangeChanged(0, subsamples.size)
+            //val adapter = SampleAdapter(controller)
+            //adapter.submitList(subsamples.sortedBy { it.sid }.toList())
+            //adapter.notifyItemRangeChanged(0, subsamples.size)
 
-            subSamplesRecyclerView.adapter = adapter
+            //subSamplesRecyclerView.adapter = adapter
 
             if (subsamples.size == WorkflowUtil.NumSubSamples) {
 
                 val w = model.weight
                 val subWeight1 = subsamples.first { it.type == WorkflowUtil.Companion.SubSampleType.SEED.ordinal }.weight //seed weight
                 val subWeight2 = subsamples.first { it.type == WorkflowUtil.Companion.SubSampleType.LINT.ordinal }.weight //lint weight
+                val testCode = subsamples.first { it.type == WorkflowUtil.Companion.SubSampleType.TEST.ordinal }.code //test barcode
+
+                if (subWeight1 != null) seedWeightTv.text = subWeight1.toString()
+                if (subWeight2 != null) lintWeightTv.text = subWeight2.toString()
+
+                analysisIcon.visibility = View.GONE
+                analysisTextView.visibility = View.GONE
+
+                //show test icon if test is enabled
+                if (testEnabled && testCode != null) {
+
+                    testIcon.visibility = View.VISIBLE
+                    testText.visibility = View.VISIBLE
+                    testText.text = testCode
+
+                } else {
+
+                    testIcon.visibility = View.GONE
+                    testText.visibility = View.GONE
+
+                }
 
                 if (errorEnabled) {
 
                     try {
 
                         if (w != null && subWeight1 != null && subWeight2 != null) {
+
+                            analysisIcon.visibility = View.VISIBLE
+                            analysisTextView.visibility = View.VISIBLE
 
                             val doubleError = abs(w - (subWeight1 + subWeight2))
                             var error = doubleError.toString()
@@ -140,6 +137,10 @@ internal open class ParentViewHolder(view: View): SampleAdapter.ViewHolder(view)
                             analysisTextView.setTextColor(
                                 if (doubleError > abs(errorThresh)) Color.RED
                                 else Color.GREEN)
+
+                            analysisIcon.setImageResource(
+                                if (doubleError > abs(errorThresh)) R.drawable.alert_circle
+                                else R.drawable.check_circle_outline)
                         }
 
                     } catch (e: java.lang.Exception) {

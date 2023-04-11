@@ -21,9 +21,6 @@ interface SampleController {
     // prints label for a give sample, returns true/false if fails
     fun printSample(model: SampleModel): Boolean
 
-    // start workflow to weigh a sample
-    fun weighSample(model: SampleModel)
-
     // start a barcode scan to save code into model
     fun scanSample(model: SampleModel)
 
@@ -43,6 +40,9 @@ interface SampleController {
 
     // returns the error thresh preference
     fun getErrorEnabled(): Boolean
+
+    // returns the test mode preference
+    fun getTestEnabled(): Boolean
 
     // view code returns the error thresh preference
     fun getErrorThresh(): Double

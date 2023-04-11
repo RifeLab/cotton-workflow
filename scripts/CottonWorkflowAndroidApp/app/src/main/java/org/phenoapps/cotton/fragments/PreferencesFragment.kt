@@ -15,6 +15,7 @@ import androidx.preference.PreferenceManager
 import dagger.hilt.android.AndroidEntryPoint
 import org.phenoapps.cotton.R
 import org.phenoapps.cotton.activities.MainActivity
+import org.phenoapps.cotton.interfaces.MainToolbarManager
 import org.phenoapps.cotton.models.SampleModel
 import org.phenoapps.cotton.util.BarcodeUtil.Companion.toCode39
 import org.phenoapps.cotton.viewmodels.SampleViewModel
@@ -49,6 +50,18 @@ class PreferencesFragment: PreferenceFragmentCompat() {
         if (pref != null) {
 
             findPreference<EditTextPreference>(getString(R.string.key_preferences_error_check_threshold))
+                ?.isVisible = value ?: pref.isChecked
+
+        }
+    }
+
+    private fun updateTestThresholdVisibility(value: Boolean? = null) {
+
+        val pref = findPreference<CheckBoxPreference>(getString(R.string.key_preferences_test_enabled))
+
+        if (pref != null) {
+
+            findPreference<EditTextPreference>(getString(R.string.key_preferences_test_weight_threshold))
                 ?.isVisible = value ?: pref.isChecked
 
         }
@@ -113,6 +126,13 @@ class PreferencesFragment: PreferenceFragmentCompat() {
                     PreferencesFragmentDirections
                         .actionToScaleConfigHelp()
                 )
+
+                true
+            }
+
+            findPreference<CheckBoxPreference>(getString(R.string.key_preferences_test_enabled))?.setOnPreferenceChangeListener { _, value ->
+
+                updateTestThresholdVisibility(value as Boolean)
 
                 true
             }
@@ -256,6 +276,8 @@ class PreferencesFragment: PreferenceFragmentCompat() {
         updatePersonSummary()
         updateStartIdSummary()
         updateThresholdVisibility()
+        updateTestThresholdVisibility()
         setupPersonUpdateUi(null)
+        (activity as MainToolbarManager).updateToolbarVisibility()
     }
 }

@@ -14,8 +14,6 @@ internal class LintViewHolder(view: View): ParentViewHolder(view) {
 
         //lint does not have a barcode and is never scanned
         codeTextView.visibility = View.GONE
-        scanIcon.visibility = View.GONE
-        scanTimeTv.visibility = View.GONE
 
         codeIconIv.visibility = View.GONE
 

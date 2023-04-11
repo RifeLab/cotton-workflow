@@ -24,17 +24,22 @@
         android:name="org.phenoapps.cotton.fragments.BluetoothDeviceChooserFragment"
         android:label="Device Chooser"/>
 
-    <fragment android:id="@+id/fragment_scale"
-        android:name="org.phenoapps.cotton.fragments.ScaleFragment"
-        android:label="Scale"/>
-
-    <fragment android:id="@+id/fragment_print"
-        android:name="org.phenoapps.cotton.fragments.PrintFragment"
-        android:label="Print"/>
+    <fragment android:id="@+id/fragment_workflow"
+        android:name="org.phenoapps.cotton.fragments.SampleWorkflowFragment"
+        android:label="Workflow"/>
 
     <fragment android:id="@+id/fragment_sample"
-        android:name="org.phenoapps.cotton.fragments.SampleFragment"
-        android:label="Sample"/>
+        android:name="org.phenoapps.cotton.fragments.SampleEditFragment"
+        android:label="Sample">
+        <action android:id="@+id/action_to_workflow_fragment"
+            app:destination="@id/fragment_workflow"
+            app:popUpTo="@id/fragment_sample_list"
+            app:launchSingleTop="true">
+            <argument android:name="sample"
+                app:argType="org.phenoapps.cotton.models.SampleModel"
+                app:nullable="true"/>
+        </action>
+    </fragment>
 
     <fragment android:id="@+id/fragment_scale_config_help"
         android:name="org.phenoapps.cotton.fragments.ScaleConfigHelpFragment"
@@ -46,17 +51,21 @@
         <argument android:name="sample"
             app:argType="org.phenoapps.cotton.models.SampleModel"
             app:nullable="true"/>
-        <argument android:name="edit"
-            app:argType="boolean"
-            android:defaultValue="false"/>
         <argument android:name="new"
             android:defaultValue="false"
             app:argType="boolean"/>
     </action>
 
-    <action android:id="@+id/global_action_to_scale_fragment"
-        app:destination="@id/fragment_scale"
-        app:launchSingleTop="true"/>
+    <action android:id="@+id/global_action_to_workflow_fragment"
+        app:destination="@id/fragment_workflow"
+        app:launchSingleTop="true">
+        <argument android:name="sample"
+            app:argType="org.phenoapps.cotton.models.SampleModel"
+            app:nullable="true"/>
+        <argument android:name="new"
+            android:defaultValue="false"
+            app:argType="boolean"/>
+    </action>
 
     <action android:id="@+id/global_action_to_device_chooser_fragment"
         app:destination="@+id/fragment_device_chooser"
@@ -80,14 +89,5 @@
         app:destination="@id/fragment_sample_list"
         app:launchSingleTop="true"
         app:popUpTo="@id/fragment_sample_list"/>
-
-    <action android:id="@+id/global_action_to_print_fragment"
-        app:destination="@id/fragment_print"
-        app:launchSingleTop="true"
-        app:popUpTo="@id/fragment_sample_list">
-        <argument android:name="code"
-            app:nullable="true"
-            app:argType="string"/>
-    </action>
 
 </navigation>

@@ -1,6 +1,7 @@
 package org.phenoapps.cotton.dialogs
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.app.Dialog
 import android.os.Bundle
 import android.view.View
@@ -20,11 +21,11 @@ open class SampleActionDialog(
     private val model: SampleModel,
 ) : Dialog(act), CoroutineScope by MainScope() {
 
-    private lateinit var weighButton: Button
     private lateinit var scanButton: Button
     private lateinit var workflowButotn: Button
     private lateinit var deleteButton: Button
     private lateinit var editButton: Button
+    private lateinit var cancelButton: Button
 
     private var codePreviewTextView: TextView? = null
 
@@ -33,15 +34,21 @@ open class SampleActionDialog(
 
         setContentView(R.layout.dialog_sample_action)
 
-        weighButton = findViewById(R.id.dialog_sample_action_weigh_btn)
         workflowButotn = findViewById(R.id.dialog_sample_action_workflow_btn)
         scanButton = findViewById(R.id.dialog_sample_action_scan_btn)
         deleteButton = findViewById(R.id.dialog_sample_action_delete_btn)
         editButton = findViewById(R.id.dialog_sample_action_edit_btn)
+        cancelButton = findViewById(R.id.dialog_sample_action_cancel_btn)
 
         codePreviewTextView = findViewById(R.id.dialog_sample_action_code_tv)
 
-        scanButton.visibility = View.GONE
+        val subsamples = controller.getSubSamples(model.sid ?: -1L)
+        val testSample = subsamples.first { it.type == WorkflowUtil.Companion.SubSampleType.TEST.ordinal }
+
+        scanButton.visibility = if (testSample.code == null) {
+             View.VISIBLE
+        } else View.GONE
+
         workflowButotn.visibility = View.GONE
         deleteButton.visibility = View.GONE
 
@@ -49,14 +56,22 @@ open class SampleActionDialog(
 
         window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
 
-        weighButton.setOnClickListener {
-            controller.weighSample(model)
-            dismiss()
-        }
+        cancelButton.setOnClickListener { dismiss() }
 
         deleteButton.setOnClickListener {
-            controller.deleteSample(model)
-            dismiss()
+
+            AlertDialog.Builder(context, R.style.AlertDialogTheme)
+                .setTitle(R.string.dialog_sample_delete_confirm_title)
+                .setMessage(R.string.dialog_sample_delete_confirm_message)
+                .setPositiveButton(android.R.string.ok) { _, _ ->
+                    controller.deleteSample(model)
+                    dismiss()
+                }
+                .setNegativeButton(android.R.string.cancel) { d, _ ->
+                    d.dismiss()
+                }
+                .create()
+                .show()
         }
 
         workflowButotn.setOnClickListener {

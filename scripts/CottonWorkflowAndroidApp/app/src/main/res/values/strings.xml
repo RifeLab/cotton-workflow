@@ -74,9 +74,10 @@
     <string name="list_item_sample_uncollected">Uncollected</string>
     <string name="list_item_sample_unscanned">Unscanned</string>
     <string name="frag_sample_scan_test_label">Please scan the Test label.</string>
-    <string name="dialog_sample_action_scan_rb">Scan</string>
+    <string name="dialog_sample_action_scan_rb">Scan HVI Barcode</string>
     <string name="save">Save</string>
-    <string name="act_main_select_sample_export_title">Select Sample Models</string>
+    <string name="act_main_sample_export_title">Export Samples</string>
+    <string name="act_main_sample_export_message">Number of samples to export: %s</string>
     <string name="frag_device_chooser_no_bt">No Bluetooth adapter found.</string>
     <string name="preferences_error_check_threshold_title">Error Threshold</string>
     <string name="preferences_error_check_threshold_summary">Analysis weight will be red when the difference between the total weight and the sum of the seed and lint weight differs by this amount.</string>
@@ -98,4 +99,21 @@
     <string name="ohaus_manual_serial_io_content_description">Serial IO serial to Bluetooth device.</string>
     <string name="ohaus_manual_com1_settings_content_description">COM1 settings for Ohaus</string>
     <string name="ohaus_helper_general_settings_text">Ohaus scales should have: \n\t\t1) Print on Stable enabled. \n\t\t2) Print Stable on Zero enabled. \n\t\t3) Print Content Numeric set. \n \n \nHere is an example settings tree for the Defender 5000, each Ohaus is slightly different. \n \nFull manual reference is here: \nhttps://www.ohaus.ca/pdf/TD52-man.pdf</string>
+    <string name="na">NA</string>
+    <string name="dialog_sample_delete_confirm_title">Confirm Delete Sample</string>
+    <string name="dialog_sample_delete_confirm_message">This action is permanent.</string>
+    <string name="pref_workflow_test_enabled_title">Collect HVI Test Weight</string>
+    <string name="pref_workflow_test_enabled_summary">Capture and display the weight of the HVI sample throughout the app.</string>
+    <string name="update">Update</string>
+    <string name="action_menu_main_top_workflow_title">Workflow</string>
+    <string name="action_menu_main_top_delete_title">Delete</string>
+    <string name="frag_sample_test_barcode_header">Barcode</string>
+    <string name="frag_sample_barcode_hint">Enter Barcode</string>
+    <string name="dialog_sample_workflow_confirm_title">Restart Workflow?</string>
+    <string name="dialog_sample_workflow_confirm_message">This will restart the workflow from the beginning.</string>
+    <string name="frag_sample_barcode_exists">Barcode already exists.</string>
+    <string name="cotton_file_prefix">Cotton_</string>
+    <string name="action_menu_main_top_note_title">Note</string>
+    <string name="frag_sample_note_dialog_title">Write a Note</string>
+    <string name="frag_sample_note_dialog_message">This will be saved and included in the export file.</string>
 </resources>

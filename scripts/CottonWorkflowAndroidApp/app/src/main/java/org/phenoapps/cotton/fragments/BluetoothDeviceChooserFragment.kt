@@ -19,6 +19,7 @@ import com.google.android.material.snackbar.Snackbar
 import org.phenoapps.adapters.bluetooth.BluetoothDeviceAdapter
 import org.phenoapps.cotton.R
 import org.phenoapps.cotton.activities.MainActivity
+import org.phenoapps.cotton.interfaces.MainToolbarManager
 import org.phenoapps.fragments.bluetooth.BluetoothListFragment
 import org.phenoapps.models.bluetooth.BluetoothDeviceModel
 
@@ -172,5 +173,10 @@ class BluetoothDeviceChooserFragment: BluetoothListFragment() {
                 }
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        (activity as MainToolbarManager).updateToolbarVisibility()
     }
 }
