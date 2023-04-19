@@ -134,7 +134,7 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager {
                             val lintWeight = lint.weight ?: ""
                             val testCode = test.code ?: ""
                             val scanTime = sample.scanTime?.toDateString() ?: ""
-                            val notes = "\"${sample.note?.replace("\"", "\"\"")}\""
+                            val notes = if (sample.note == null) "" else "\"${sample.note?.replace("\"", "\"\"")}\""
 
                             val error = if (sample.weight != null && lint.weight != null && seed.weight != null) {
 
