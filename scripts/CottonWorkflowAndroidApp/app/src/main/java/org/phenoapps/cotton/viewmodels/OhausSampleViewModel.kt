@@ -13,6 +13,8 @@ import org.phenoapps.cotton.util.ScaleUtil
 import org.phenoapps.interfaces.security.SecureBluetooth
 import org.phenoapps.viewmodels.bluetooth.gatt.GattViewModel
 import org.phenoapps.viewmodels.scales.OhausViewModel
+import org.phenoapps.viewmodels.scales.SerialPortViewModel.Companion.SERIAL_IO_SCALE_CHAR
+import org.phenoapps.viewmodels.scales.SerialPortViewModel.Companion.SERIAL_IO_WEIGHT_SERVICE
 import javax.inject.Inject
 
 @SuppressLint("MissingPermission")
@@ -41,6 +43,8 @@ class OhausSampleViewModel @Inject constructor(): GattViewModel() {
         MutableLiveData<String>()
     }
 
+    var connected: Boolean? = null
+
     private var internalReadingCache = arrayListOf<String>()
 
     /**
@@ -50,7 +54,7 @@ class OhausSampleViewModel @Inject constructor(): GattViewModel() {
 
         connect(context, adapter, address)
 
-        while (!super.isGattConnected()) {
+        while ((connected != true) and !super.isGattConnected()) {
             delay(1000)
         }
 
@@ -61,18 +65,20 @@ class OhausSampleViewModel @Inject constructor(): GattViewModel() {
 
         connect(context, adapter, address)
 
-        while (!super.isGattConnected()) {
+        while ((connected != true) and !super.isGattConnected()) {
             delay(1000)
         }
 
         do {
 
-            emit(super.isGattConnected())
+            if (connected == null) emit(super.isGattConnected())
+            else emit(connected)
 
             delay(1000)
 
-        } while (super.isGattConnected())
+        } while (connected == true || super.isGattConnected())
 
+        emit(false)
     }
 
     fun connect(context: Context, adapter: BluetoothAdapter, address: String? = "C4:BE:84:1A:25:93") {
@@ -82,7 +88,7 @@ class OhausSampleViewModel @Inject constructor(): GattViewModel() {
     }
 
     fun disconnect() {
-
+        connected = false
         super.unregister()
 //        gatts?.forEach { gatt ->
 //            gatt?.disconnect()
@@ -94,6 +100,11 @@ class OhausSampleViewModel @Inject constructor(): GattViewModel() {
     override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
         super.onServicesDiscovered(gatt, status)
 
+        if (gatt?.services?.map { it.uuid }?.contains(SERIAL_IO_WEIGHT_SERVICE) == true) {
+            connected = true
+        }
+
+        notify(SERIAL_IO_WEIGHT_SERVICE.toString(), SERIAL_IO_SCALE_CHAR.toString())
         notify(OhausViewModel.OHAUS_SERVICE_UUID.toString(), OhausViewModel.OHAUS_COMMAND_CHAR_UUID.toString())
         write(
             OhausViewModel.OHAUS_SERVICE_UUID.toString(), OhausViewModel.OHAUS_COMMAND_CHAR_UUID.toString(),
@@ -111,6 +122,57 @@ class OhausSampleViewModel @Inject constructor(): GattViewModel() {
         characteristic: BluetoothGattCharacteristic?,
     ) {
         super.onCharacteristicChanged(gatt, characteristic)
+
+        //serial port setup
+        if (characteristic?.uuid.toString() == SERIAL_IO_SCALE_CHAR.toString()) {
+
+            //https://dmx.ohaus.com/WorkArea/showcontent.aspx?id=30234
+
+            val bytes = characteristic!!.value
+
+            //input on Defender 5000 looks like this: A0 A0 A0 A0 30 2E 30 36 36 A0 EB E7 8D 0A 8D 0A
+            //A0 are null data 'spaces' (can also be 20), first token is UTF8 string encoded hex value: 30 2E 30 36 36 which when decoded from hex is 0e066 so 0.066
+            //second token is probably an ohaus id for unit E7 is gram and EBE7 is kg
+            //if starts with 2D its negative so actual output will skip "2" and just have "D" like "D11" for "-11"
+            //final string has an "E" for the decimal places
+            //if content -> num is selected parse E7 for g and EBE7 for kg (so depending on for loop below this will be 7 or b7 ending)
+
+            //translate bytes to hex
+            val hex = bytes.map { String.format("%02X", it.toInt() and 0xFF) }.map { if (it == "20") "A0" else it }
+
+            //join to string and split by A0 null data, grab the first token of data (data is between A0's)
+            //replace "20" with "A0" they are both "spaces"
+            //ranger 3000 uses ascii 32 == "20" in hex for separator
+            //other ranger seems to use "A0" which is space " "
+            val readable = hex.joinToString("").split("A0").filter { it.isNotEmpty() }
+
+            var measure = readable[0]
+
+            // E7 -> (g), EB E7 -> (kg)
+            //val units = readable[1].split("8D")[0]
+
+            var isNegative = false
+            if (measure.startsWith("2D")) {
+                isNegative = true
+                measure = measure.substring(2)
+            }
+
+            val builder = StringBuilder()
+            for (i in 1 until measure.length step 2) {
+                builder.append(measure[i])
+            }
+
+            //final string has an "E" for the decimal places
+            measure = builder.toString()
+            measure = measure.replace("E", ".")
+
+            if (isNegative) {
+                measure = "-$measure"
+            }
+
+            scaleReading.postValue(measure)
+
+        } else { //ohaus bt interface setup
 
             val reading = characteristic?.getStringValue(0) ?: ""
 
@@ -133,28 +195,20 @@ class OhausSampleViewModel @Inject constructor(): GattViewModel() {
                 internalReadingCache.add(reading)
 
             }
-
+        }
     }
 
-//    override fun onConnectionStateChange(
-//        gatt: BluetoothGatt?,
-//        status: Int,
-//        newState: Int
-//    ) {
-//        super.onConnectionStateChange(gatt, status, newState)
-//
-//        when (newState) {
-//            BluetoothGatt.STATE_CONNECTED -> {
-//                this.gatts?.add(gatt)
-//                connectionStatus.postValue(newState)
-//                gatt?.discoverServices()
-//            }
-//            BluetoothGatt.STATE_DISCONNECTED -> {
-//                connectionStatus.postValue(newState)
-//            }
-//            else -> {
-//                connectionStatus.postValue(status)
-//            }
-//        }
-//    }
+    override fun onConnectionStateChange(
+        gatt: BluetoothGatt?,
+        status: Int,
+        newState: Int
+    ) {
+        super.onConnectionStateChange(gatt, status, newState)
+
+        when (newState) {
+            BluetoothGatt.STATE_DISCONNECTED -> {
+                connected = false
+            }
+        }
+    }
 }

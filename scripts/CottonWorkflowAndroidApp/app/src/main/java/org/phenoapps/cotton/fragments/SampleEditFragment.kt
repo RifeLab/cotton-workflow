@@ -221,25 +221,16 @@ class SampleEditFragment : SampleFragment(R.layout.fragment_sample_edit) {
                     testWeightEt.visibility = View.GONE
                     testWeightTime.visibility = View.GONE
                     testWeightTv.visibility = View.GONE
-                    testBarcodeEt.visibility = View.GONE
-                    barcodeButton.visibility = View.GONE
-                    testBarcodeHeader.visibility = View.GONE
                 } else {
                     testWeightTv.visibility = View.VISIBLE
                     testWeightEt.visibility = View.VISIBLE
                     testWeightTime.visibility = View.VISIBLE
                     testWeightTv.visibility = View.VISIBLE
                     testBarcodeEt.visibility = View.VISIBLE
-                    barcodeButton.visibility = View.VISIBLE
                     testBarcodeHeader.visibility = View.VISIBLE
 
                     if (test.code != null) {
                         testBarcodeEt.setText(test.code)
-                    }
-
-                    barcodeButton.setOnClickListener {
-
-                        startBarcodeLauncher(getString(R.string.frag_sample_scan_test_label))
                     }
                 }
             }

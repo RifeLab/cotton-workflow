@@ -347,16 +347,9 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list),
 
     override fun sampleClicked(model: SampleModel) {
 
-        //when a sample is clicked, ask user what to do
-        activity?.let { act ->
+        //when a sample is clicked, open the sample's edit screen
+        workflow(model, edit = true, new = false)
 
-            act.runOnUiThread {
-
-                val dialog = SampleActionDialog(act, this, model)
-                dialog.show()
-
-            }
-        }
     }
 
     override fun addSample(model: SampleModel) {

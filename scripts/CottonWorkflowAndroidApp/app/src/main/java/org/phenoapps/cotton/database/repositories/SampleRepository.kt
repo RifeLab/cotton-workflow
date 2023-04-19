@@ -19,4 +19,6 @@ class SampleRepository @Inject constructor(
 
     suspend fun deleteSample(model: SampleModel) = dao.delete(SampleEntity(model))
 
+    suspend fun deleteAll() = dao.deleteAll()
+
 }

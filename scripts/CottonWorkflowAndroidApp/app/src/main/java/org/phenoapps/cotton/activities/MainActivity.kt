@@ -3,6 +3,7 @@ package org.phenoapps.cotton.activities
 import android.annotation.SuppressLint
 import android.content.SharedPreferences
 import android.content.res.Configuration
+import android.net.Uri
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -34,6 +35,7 @@ import org.phenoapps.cotton.util.WorkflowUtil
 import org.phenoapps.cotton.viewmodels.OhausSampleViewModel
 import org.phenoapps.cotton.viewmodels.SampleViewModel
 import org.phenoapps.security.Security
+import org.phenoapps.viewmodels.scales.SerialPortViewModel
 import java.io.OutputStreamWriter
 import java.text.SimpleDateFormat
 import java.util.*
@@ -74,55 +76,91 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager {
     private val saveLauncher =
         registerForActivityResult(ActivityResultContracts.CreateDocument("text/csv")) { uri ->
 
-            uri?.let { fileUri ->
+            try {
 
-                contentResolver.openOutputStream(fileUri).use {
+                uri?.let { fileUri ->
 
-                    OutputStreamWriter(it).use { writer ->
+                    exportToUri(fileUri)
 
-                        writer.write("Barcode, See Cotton Wt, Fuzzy Seed Wt, Lint Wt, HVI Sample No., Timestamp, Error, Notes\n")
+                }
 
-                        //iterate over chosen parents
-                        samples?.forEach { sample ->
+                askUserDeleteSamples()
 
-                            //iterate over its children and print as well
-                            samples?.filter { it.parent == sample.sid }?.sortedBy { it.type }?.let { children ->
+            } catch (e: Exception ) {
 
-                                if (children.size == WorkflowUtil.NumSubSamples) {
+                e.printStackTrace()
 
-                                    val seed = children[0]
-                                    val lint = children[1]
-                                    val test = children[2]
+                Toast.makeText(this, R.string.export_failed, Toast.LENGTH_SHORT).show()
+            }
+        }
 
-                                    if (sample.weight != null && lint.weight != null && seed.weight != null) {
+    private fun askUserDeleteSamples() {
 
-                                        val doubleError =
-                                            abs(sample.weight!! - (lint.weight!! + seed.weight!!))
-                                        var error = doubleError.toString()
+        AlertDialog.Builder(this, R.style.AlertDialogTheme)
+            .setTitle(R.string.delete_samples)
+            .setMessage(R.string.delete_samples_message)
+            .setPositiveButton(android.R.string.yes) { _, _ ->
 
-                                        val length = error.length
+                viewModel.deleteAll()
 
-                                        if (length > 5) {
+            }
+            .setNegativeButton(android.R.string.no) { _, _ -> }
+            .show()
+    }
 
-                                            error = error.substring(0..5)
-                                        }
+    private fun exportToUri(uri: Uri) {
 
-                                        //TODO serial input preference
-                                        //TODO Ohaus 3000 technical output
-                                        writer.write("\"${sample.code}\", \"${sample.weight}\", \"${seed.weight}\", \"${lint.weight}\", \"${test.code}\", \"${sample.scanTime?.toDateString()}\", \"${error}\", \"${sample.note?.replace("\"", "\"\"")}\"\n")
+        contentResolver.openOutputStream(uri).use {
 
-                                    } else {
+            OutputStreamWriter(it).use { writer ->
 
-                                        writer.write("\"${sample.code}\", \"${sample.weight}\", \"${seed.weight}\", \"${lint.weight}\", \"${test.code}\", \"${sample.scanTime?.toDateString()}\", null, \"${sample.note?.replace("\"", "\"\"")}\"\n")
+                writer.write("Barcode, See Cotton Wt, Fuzzy Seed Wt, Lint Wt, HVI Sample No., Timestamp, Error, Notes\n")
 
-                                    }
+                //iterate over chosen parents
+                samples?.forEach { sample ->
+
+                    //iterate over its children and print as well
+                    samples?.filter { it.parent == sample.sid }?.sortedBy { it.type }?.let { children ->
+
+                        if (children.size == WorkflowUtil.NumSubSamples) {
+
+                            val seed = children[0]
+                            val lint = children[1]
+                            val test = children[2]
+
+                            val code = sample.code ?: ""
+                            val weight = sample.weight ?: ""
+                            val seedWeight = seed.weight ?: ""
+                            val lintWeight = lint.weight ?: ""
+                            val testCode = test.code ?: ""
+                            val scanTime = sample.scanTime?.toDateString() ?: ""
+                            val notes = "\"${sample.note?.replace("\"", "\"\"")}\""
+
+                            val error = if (sample.weight != null && lint.weight != null && seed.weight != null) {
+
+                                val doubleError =
+                                    abs(sample.weight!! - (lint.weight!! + seed.weight!!))
+                                var e = doubleError.toString()
+
+                                val length = e.length
+
+                                if (length > 5) {
+
+                                    e = e.substring(0..5)
                                 }
-                            }
+
+                                e
+
+                            } else ""
+
+                            writer.write("$code, $weight, $seedWeight, $lintWeight, $testCode, $scanTime, $error, $notes\n")
+
                         }
                     }
                 }
             }
         }
+    }
 
     @SuppressLint("MissingPermission")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -209,7 +247,6 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager {
         }
 
         updateToolbarStatus(SCALE, false)
-        updateToolbarStatus(PRINTER, false)
 
         setSupportActionBar(topToolbar)
 
@@ -285,7 +322,7 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager {
     }
 
     //required to override this when using support action bar
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.menu_main_top_toolbar, menu)
         updateToolbarVisibility()
         return super.onCreateOptionsMenu(menu)
@@ -416,6 +453,7 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager {
         dialog.show()
     }
 
+    private var connected = false
     private fun startConnectionCheck(key: Int) {
 
         val scaleId = getScaleId()
@@ -424,17 +462,22 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager {
 
             advisor.withNearby { adapter ->
 
-                ohausViewModel.reach(this, adapter, scaleId).observe(this) { status: Boolean ->
+                ohausViewModel.reach(this, adapter, scaleId).observe(this) { status: Boolean? ->
 
-                    updateToolbarStatus(SCALE, status)
+                    status?.let { s ->
 
+                        connected = s
+
+                        updateToolbarStatus(SCALE, s)
+                    }
                 }
             }
         }
     }
 
-    override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         this.menu = menu
+        updateToolbarStatus(SCALE, connected)
         return super.onPrepareOptionsMenu(menu)
     }
 
@@ -450,8 +493,7 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager {
         runOnUiThread {
             when (key) {
                 SCALE -> {
-                    println(topToolbar?.menu?.size())
-                    topToolbar?.menu?.findItem(R.id.action_menu_main_top_scale)?.setIcon(
+                    menu?.findItem(R.id.action_menu_main_top_scale)?.setIcon(
                         if (connected) R.drawable.scale else R.drawable.scale_off
                     )
                 }
@@ -466,7 +508,7 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager {
 
         if (scaleId == address) {
 
-            return (topToolbar?.menu?.findItem(R.id.action_menu_main_top_scale)?.icon
+            return (menu?.findItem(R.id.action_menu_main_top_scale)?.icon
                     == AppCompatResources.getDrawable(this, R.drawable.scale))
 
         }

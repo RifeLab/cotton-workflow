@@ -116,4 +116,7 @@
     <string name="action_menu_main_top_note_title">Note</string>
     <string name="frag_sample_note_dialog_title">Write a Note</string>
     <string name="frag_sample_note_dialog_message">This will be saved and included in the export file.</string>
+    <string name="export_failed">Export Failed</string>
+    <string name="delete_samples">Delete Current Samples?</string>
+    <string name="delete_samples_message">This action is permanent.</string>
 </resources>

@@ -97,6 +97,35 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
         }
     }
 
+    private val onFocusChangedListener = View.OnFocusChangeListener { v, hasFocus ->
+        if (!hasFocus && (v as EditText).text.isNotBlank()) {
+            when (v) {
+                weightEt -> {
+                    numericOneIv.setImageResource(R.drawable.check_circle_outline_green)
+                }
+                seedWeightEt -> {
+                    numericTwoIv.setImageResource(R.drawable.check_circle_outline_green)
+                }
+                lintWeightEt -> {
+                    numericThreeIv.setImageResource(R.drawable.check_circle_outline_green)
+                }
+                testWeightEt -> {
+                    numericFourIv.setImageResource(R.drawable.check_circle_outline_green)
+
+                    try {
+
+                        checkTestDiff(testWeightEt.text.toString().toDouble())
+
+                    } catch (e: java.lang.NumberFormatException) {
+
+                        e.printStackTrace()
+
+                    }
+                }
+            }
+        }
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -106,6 +135,21 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
         numericThreeIv = view.findViewById(R.id.frag_workflow_numeric_three_iv)
         numericFourIv = view.findViewById(R.id.frag_workflow_numeric_four_iv)
         numericFiveIv = view.findViewById(R.id.frag_workflow_numeric_five_iv)
+
+        weightEt.onFocusChangeListener = onFocusChangedListener
+        seedWeightEt.onFocusChangeListener = onFocusChangedListener
+        lintWeightEt.onFocusChangeListener = onFocusChangedListener
+        testWeightEt.onFocusChangeListener = onFocusChangedListener
+        testBarcodeEt.onFocusChangeListener = View.OnFocusChangeListener { v, hasFocus ->
+
+            if (hasFocus) {
+                startBarcodeLauncher(getString(R.string.frag_sample_scan_test_label))
+            }
+        }
+
+        testBarcodeEt.setOnClickListener {
+            startBarcodeLauncher(getString(R.string.frag_sample_scan_test_label))
+        }
 
         //set save button text
         saveButton.text = getString(R.string.save)
@@ -174,8 +218,6 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
                     testWeightEt.visibility = View.GONE
                     testWeightTime.visibility = View.GONE
                     testWeightTv.visibility = View.GONE
-                    testBarcodeEt.visibility = View.GONE
-                    barcodeButton.visibility = View.GONE
                     numericFiveIv.visibility = View.GONE
                     testBarcodeHeader.visibility = View.GONE
                 } else {
@@ -184,18 +226,12 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
                     testWeightTime.visibility = View.VISIBLE
                     testWeightTv.visibility = View.VISIBLE
                     testBarcodeEt.visibility = View.VISIBLE
-                    barcodeButton.visibility = View.VISIBLE
                     numericFiveIv.visibility = View.VISIBLE
                     testBarcodeHeader.visibility = View.VISIBLE
 
                     if (test.code != null) {
                         testBarcodeEt.setText(test.code)
                         numericFiveIv.setImageResource(R.drawable.check_circle_outline_green)
-                    }
-
-                    barcodeButton.setOnClickListener {
-
-                        startBarcodeLauncher(getString(R.string.frag_sample_scan_test_label))
                     }
                 }
             }
@@ -249,6 +285,39 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
         startWeightListener()
     }
 
+    private fun checkTestDiff(weight: Double) {
+
+        val testThresh = getTestThresh()
+
+        if (isLintInitialized()) {
+
+            val lintWeight = try {
+                lintWeightEt.text.toString().toDouble()
+            } catch (e: NumberFormatException) {
+                0.0
+            }
+
+            val diff = lintWeight - weight
+            //TODO used '>=' here but mainly for testing, or make a min/max thresh
+            //TODO should this save the threshed amount of the final lint ?
+            //TODO make an issue on things to ask Scientists
+            if (diff >= testThresh) {
+
+                testWeightEt.setText("$weight")
+
+                state = FocusState.WAITING
+
+                numericFourIv.setImageResource(R.drawable.check_circle_outline_green)
+
+                Toast.makeText(context, R.string.frag_sample_test_complete, Toast.LENGTH_LONG).show()
+
+                saveWorkflowData()
+
+                startBarcodeLauncher(getString(R.string.frag_sample_scan_test_label))
+            }
+        }
+    }
+
     private var lastReading = 0.0
     private fun startWeightListener() {
 
@@ -266,39 +335,11 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
 
                     val weight = data.replace(ScaleUtil.UNIT, "").toDouble()
 
-                    val testThresh = getTestThresh()
-
-                    //in test mode take input until 25g are taken off (TODO should really figure out their units)
+                    //in test mode take input until 25g are taken off
                     //else take a reading between 0.0g readings
                     if (state == FocusState.TEST) {
 
-                        if (isLintInitialized()) {
-
-                            val lintWeight = try {
-                                lintWeightEt.text.toString().toDouble()
-                            } catch (e: NumberFormatException) {
-                                0.0
-                            }
-
-                            val diff = lintWeight - weight
-                            //TODO used '>=' here but mainly for testing, or make a min/max thresh
-                            //TODO should this save the threshed amount of the final lint ?
-                            //TODO make an issue on things to ask Scientists
-                            if (diff >= testThresh) {
-
-                                testWeightEt.setText("$weight")
-
-                                state = FocusState.WAITING
-
-                                numericFourIv.setImageResource(R.drawable.check_circle_outline_green)
-
-                                Toast.makeText(context, R.string.frag_sample_test_complete, Toast.LENGTH_LONG).show()
-
-                                saveWorkflowData()
-
-                                startBarcodeLauncher(getString(R.string.frag_sample_scan_test_label))
-                            }
-                        }
+                        checkTestDiff(weight)
 
                     } else if (state == FocusState.EDIT) {
 
@@ -404,6 +445,20 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
             .show()
     }
 
+    private fun clearUi() {
+
+        totalWeightTime.text = ""
+        seedWeightTime.text = ""
+        lintWeightTime.text = ""
+        testWeightTime.text = ""
+
+        weightEt.setText("")
+        seedWeightEt.setText("")
+        lintWeightEt.setText("")
+        testWeightEt.setText("")
+        testBarcodeEt.setText("")
+    }
+
     //called from main toolbar to restart workflow
     override fun resolveWorkflow() {
 
@@ -411,6 +466,8 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
             .setTitle(R.string.dialog_sample_workflow_confirm_title)
             .setMessage(R.string.dialog_sample_workflow_confirm_message)
             .setPositiveButton(android.R.string.ok) { _, _ ->
+
+                clearUi()
 
                 state = FocusState.TOTAL
 

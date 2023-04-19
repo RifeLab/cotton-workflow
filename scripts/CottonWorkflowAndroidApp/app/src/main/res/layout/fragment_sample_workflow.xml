@@ -232,6 +232,7 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/frag_sample_test_weight_header_tv"
                 tools:ignore="MissingConstraints"
+                android:imeOptions="actionNext"
                 android:autofillHints=""
                 android:selectAllOnFocus="true"
                 android:inputType="numberDecimal" />
@@ -281,24 +282,12 @@
                 android:layout_height="wrap_content"
                 android:hint="@string/frag_sample_barcode_hint"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toStartOf="@id/frag_workflow_test_scan_iv"
+                app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/frag_sample_test_code_header_tv"
                 tools:ignore="MissingConstraints"
                 android:autofillHints=""
                 android:selectAllOnFocus="true"
                 android:inputType="numberDecimal" />
-
-            <ImageButton android:id="@+id/frag_workflow_test_scan_iv"
-                android:background="@drawable/cell"
-                android:padding="8dp"
-                android:layout_margin="8dp"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/barcode_scan"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toEndOf="@id/frag_sample_test_barcode_et"
-                app:layout_constraintTop_toBottomOf="@id/frag_sample_test_code_header_tv"
-                android:contentDescription="TODO" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
 

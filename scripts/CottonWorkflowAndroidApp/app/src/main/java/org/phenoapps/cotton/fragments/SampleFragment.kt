@@ -23,6 +23,7 @@ import com.journeyapps.barcodescanner.ScanOptions
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import org.phenoapps.cotton.R
 import org.phenoapps.cotton.database.entities.SampleEntity
 import org.phenoapps.cotton.interfaces.MainToolbarManager
@@ -85,9 +86,6 @@ open class SampleFragment(layoutId: Int) : BluetoothFragment(layoutId), Coroutin
     //save button
     protected lateinit var saveButton: Button
 
-    //barcode button
-    protected lateinit var barcodeButton: ImageButton
-
     protected lateinit var sampleLiveData: LiveData<List<SampleEntity>>
 
     protected fun isSeedInitialized() = ::seed.isInitialized
@@ -133,12 +131,11 @@ open class SampleFragment(layoutId: Int) : BluetoothFragment(layoutId), Coroutin
         testWeightTime = view.findViewById(R.id.frag_sample_test_weight_time_tv)
         testWeightTv = view.findViewById(R.id.frag_sample_test_weight_header_tv)
         testBarcodeEt = view.findViewById(R.id.frag_sample_test_barcode_et)
-
+        
         testBarcodeHeader = view.findViewById(R.id.frag_sample_test_code_header_tv)
 
         //initialize buttons
         saveButton = view.findViewById(R.id.frag_sample_save_btn)
-        barcodeButton = view.findViewById(R.id.frag_workflow_test_scan_iv)
 
         //at first all fields are empty and times are "gone"
         totalWeightTime.visibility = View.GONE
@@ -146,7 +143,69 @@ open class SampleFragment(layoutId: Int) : BluetoothFragment(layoutId), Coroutin
         lintWeightTime.visibility = View.GONE
         testWeightTime.visibility = View.GONE
 
+        testBarcodeEt.onFocusChangeListener = View.OnFocusChangeListener { v, hasFocus ->
+
+            if (hasFocus) {
+                startBarcodeLauncher(getString(R.string.frag_sample_scan_test_label))
+            }
+        }
+
+        testBarcodeEt.setOnClickListener {
+            startBarcodeLauncher(getString(R.string.frag_sample_scan_test_label))
+        }
+
         loadSamples()
+    }
+
+    // Barcode launcher for scanning Test label
+    private val barcodeLauncher = registerForActivityResult(
+        ScanContract()
+    ) { result: ScanIntentResult ->
+        if (result.contents == null) {
+
+            Toast.makeText(context,
+                getString(R.string.canceled),
+                Toast.LENGTH_LONG
+            ).show()
+
+        } else {
+
+            val code = result.contents
+
+            launch {
+
+                if (sampleViewModel.getSampleWithCode(code) == null) {
+
+                    activity?.runOnUiThread {
+
+                        test.code = result.contents
+                        testBarcodeEt.setText(test.code)
+                        test.scanTime = Calendar.getInstance().timeInMillis
+
+                    }
+
+
+                } else {
+
+                    activity?.runOnUiThread {
+
+                        Toast.makeText(context, R.string.frag_sample_barcode_exists, Toast.LENGTH_LONG).show()
+
+                    }
+                }
+            }
+        }
+    }
+
+    private fun startBarcodeLauncher(message: String) {
+        val options = ScanOptions()
+        options.setDesiredBarcodeFormats(ScanOptions.ALL_CODE_TYPES)
+        options.setPrompt(message)
+        options.setCameraId(0) // Use a specific camera of the device
+        options.setOrientationLocked(false)
+        options.setBeepEnabled(false)
+        options.setBarcodeImageEnabled(true)
+        barcodeLauncher.launch(options)
     }
 
     //called from main activity when back button is pressed
@@ -206,16 +265,12 @@ open class SampleFragment(layoutId: Int) : BluetoothFragment(layoutId), Coroutin
                     testWeightEt.visibility = View.GONE
                     testWeightTime.visibility = View.GONE
                     testWeightTv.visibility = View.GONE
-                    testBarcodeEt.visibility = View.GONE
-                    barcodeButton.visibility = View.GONE
-                    testBarcodeHeader.visibility = View.GONE
                 } else {
                     testWeightTv.visibility = View.VISIBLE
                     testWeightEt.visibility = View.VISIBLE
                     testWeightTime.visibility = View.VISIBLE
                     testWeightTv.visibility = View.VISIBLE
                     testBarcodeEt.visibility = View.VISIBLE
-                    barcodeButton.visibility = View.VISIBLE
                     testBarcodeHeader.visibility = View.VISIBLE
 
                     if (test.code != null) {
