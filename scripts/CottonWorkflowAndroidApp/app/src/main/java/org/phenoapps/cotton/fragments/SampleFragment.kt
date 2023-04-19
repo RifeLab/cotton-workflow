@@ -387,26 +387,28 @@ open class SampleFragment(layoutId: Int) : BluetoothFragment(layoutId), Coroutin
 
         model?.let { m ->
 
+            m.person = prefs?.getString(getString(R.string.key_preferences_person), null)
+
             try {
 
-                m.person = prefs?.getString(getString(R.string.key_preferences_person), null)
                 m.weight = weight?.toString()?.toDouble()
-                m.scaleTime = time
-
-                timeView.text = time.toDateString()
-                timeView.visibility = View.VISIBLE
-
-                if (barcodeView != null) {
-                    m.code = barcodeView.text.toString()
-                }
-
-                sampleViewModel.updateSample(m)
 
             } catch (e: NumberFormatException) {
 
                 e.printStackTrace()
 
             }
+
+            m.scaleTime = time
+
+            timeView.text = time.toDateString()
+            timeView.visibility = View.VISIBLE
+
+            if (barcodeView != null) {
+                m.code = barcodeView.text.toString()
+            }
+
+            sampleViewModel.updateSample(m)
         }
     }
 
