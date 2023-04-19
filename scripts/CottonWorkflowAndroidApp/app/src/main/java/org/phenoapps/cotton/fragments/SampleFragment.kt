@@ -362,7 +362,7 @@ open class SampleFragment(layoutId: Int) : BluetoothFragment(layoutId), Coroutin
         }
 
         if (::test.isInitialized) {
-            updateSampleWeight(test, testWeightEt.text, testWeightTime)
+            updateSampleWeight(test, testWeightEt.text, testWeightTime, testBarcodeEt)
         }
 
         if (::lint.isInitialized) {
@@ -381,7 +381,7 @@ open class SampleFragment(layoutId: Int) : BluetoothFragment(layoutId), Coroutin
 
     }
 
-    private fun updateSampleWeight(model: SampleModel?, weight: Editable?, timeView: TextView) {
+    private fun updateSampleWeight(model: SampleModel?, weight: Editable?, timeView: TextView, barcodeView: TextView? = null) {
 
         val time = Calendar.getInstance().timeInMillis
 
@@ -395,6 +395,10 @@ open class SampleFragment(layoutId: Int) : BluetoothFragment(layoutId), Coroutin
 
                 timeView.text = time.toDateString()
                 timeView.visibility = View.VISIBLE
+
+                if (barcodeView != null) {
+                    m.code = barcodeView.text.toString()
+                }
 
                 sampleViewModel.updateSample(m)
 

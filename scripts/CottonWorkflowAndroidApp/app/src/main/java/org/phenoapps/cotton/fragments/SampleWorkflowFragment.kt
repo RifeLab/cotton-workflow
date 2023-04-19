@@ -218,8 +218,6 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
                     testWeightEt.visibility = View.GONE
                     testWeightTime.visibility = View.GONE
                     testWeightTv.visibility = View.GONE
-                    numericFiveIv.visibility = View.GONE
-                    testBarcodeHeader.visibility = View.GONE
                 } else {
                     numericFourIv.visibility = View.VISIBLE
                     testWeightEt.visibility = View.VISIBLE
@@ -228,11 +226,11 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
                     testBarcodeEt.visibility = View.VISIBLE
                     numericFiveIv.visibility = View.VISIBLE
                     testBarcodeHeader.visibility = View.VISIBLE
+                }
 
-                    if (test.code != null) {
-                        testBarcodeEt.setText(test.code)
-                        numericFiveIv.setImageResource(R.drawable.check_circle_outline_green)
-                    }
+                if (test.code != null && test.code!!.isNotBlank()) {
+                    testBarcodeEt.setText(test.code)
+                    numericFiveIv.setImageResource(R.drawable.check_circle_outline_green)
                 }
             }
 

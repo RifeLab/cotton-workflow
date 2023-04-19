@@ -271,7 +271,7 @@
                 android:layout_height="wrap_content"
                 android:text="@string/frag_sample_test_barcode_header"
                 android:textStyle="bold"
-                app:layout_constraintStart_toEndOf="@id/frag_workflow_numeric_four_iv"
+                app:layout_constraintStart_toEndOf="@id/frag_workflow_numeric_five_iv"
                 app:layout_constraintTop_toBottomOf="@+id/frag_sample_test_weight_et"
                 tools:ignore="MissingConstraints" />
 

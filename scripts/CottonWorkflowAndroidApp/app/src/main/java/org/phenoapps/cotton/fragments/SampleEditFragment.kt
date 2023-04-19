@@ -228,10 +228,10 @@ class SampleEditFragment : SampleFragment(R.layout.fragment_sample_edit) {
                     testWeightTv.visibility = View.VISIBLE
                     testBarcodeEt.visibility = View.VISIBLE
                     testBarcodeHeader.visibility = View.VISIBLE
+                }
 
-                    if (test.code != null) {
-                        testBarcodeEt.setText(test.code)
-                    }
+                if (test.code != null) {
+                    testBarcodeEt.setText(test.code)
                 }
             }
 

@@ -98,7 +98,7 @@ internal open class ParentViewHolder(view: View): SampleAdapter.ViewHolder(view)
                 analysisTextView.visibility = View.GONE
 
                 //show test icon if test is enabled
-                if (testEnabled && testCode != null) {
+                if (testCode != null && testCode.isNotBlank()) {
 
                     testIcon.visibility = View.VISIBLE
                     testText.visibility = View.VISIBLE
