@@ -2,9 +2,9 @@ package org.phenoapps.cotton.activities
 
 import android.annotation.SuppressLint
 import android.content.SharedPreferences
-import android.content.res.Configuration
 import android.net.Uri
 import android.os.Bundle
+import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -22,12 +22,15 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import dagger.hilt.android.AndroidEntryPoint
 import org.phenoapps.cotton.NavigationRootDirections
 import org.phenoapps.cotton.R
+import org.phenoapps.cotton.fragments.SampleEditFragment
 import org.phenoapps.cotton.fragments.SampleFragment
+import org.phenoapps.cotton.fragments.SampleListFragment
 import org.phenoapps.cotton.fragments.SampleWorkflowFragment
 import org.phenoapps.cotton.interfaces.Connector
 import org.phenoapps.cotton.interfaces.MainToolbarManager
+import org.phenoapps.cotton.interfaces.UsbBarcodeReader
 import org.phenoapps.cotton.models.SampleModel
-import org.phenoapps.cotton.util.DateUtil
+import org.phenoapps.cotton.util.BarcodeScannerHelper
 import org.phenoapps.cotton.util.DateUtil.Companion.toDateString
 import org.phenoapps.cotton.util.KeyboardListenerHelper
 import org.phenoapps.cotton.util.VerifyPersonHelper
@@ -35,15 +38,13 @@ import org.phenoapps.cotton.util.WorkflowUtil
 import org.phenoapps.cotton.viewmodels.OhausSampleViewModel
 import org.phenoapps.cotton.viewmodels.SampleViewModel
 import org.phenoapps.security.Security
-import org.phenoapps.viewmodels.scales.SerialPortViewModel
 import java.io.OutputStreamWriter
-import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
 import kotlin.math.abs
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity(), Connector, MainToolbarManager {
+class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarcodeReader {
 
     private var bottomNav: BottomNavigationView? = null
 
@@ -72,6 +73,9 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager {
 
     @Inject
     lateinit var verifyPersonHelper: VerifyPersonHelper
+
+    @Inject
+    lateinit var barcodeScannerHelper: BarcodeScannerHelper
 
     private val saveLauncher =
         registerForActivityResult(ActivityResultContracts.CreateDocument("text/csv")) { uri ->
@@ -294,7 +298,7 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager {
                 supportFragmentManager.findFragmentById(R.id.nav_fragment)
                     ?.childFragmentManager?.fragments?.find { it is SampleFragment }.let {
 
-                        (it as? SampleFragment)?.resolveBackPress()
+                        (it as? SampleEditFragment)?.resolveBackPress()
 
                     }
             }
@@ -584,5 +588,39 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager {
 
             }
         }
+    }
+
+    override fun resolveBarcode(code: String) {
+
+        when (findNavController(R.id.nav_fragment).currentDestination?.id
+            ?: R.id.fragment_sample_list) {
+
+            R.id.fragment_sample_list -> {
+
+                supportFragmentManager.findFragmentById(R.id.nav_fragment)
+                    ?.childFragmentManager?.fragments?.find { it is SampleListFragment }.let {
+
+                        (it as? SampleListFragment)?.checkForNewSample(code)
+
+                    }
+            }
+        }
+    }
+
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        return when (findNavController(R.id.nav_fragment).currentDestination?.id
+            ?: R.id.fragment_sample_list) {
+
+            R.id.fragment_sample_list -> {
+
+                return if (barcodeScannerHelper.dispatchKeyEvent(event)) true else super.dispatchKeyEvent(event)
+            }
+
+            else -> super.dispatchKeyEvent(event)
+        }
+    }
+
+    override fun askUsbBarcodeScanner() {
+        barcodeScannerHelper.askUsbBarcodeScanner()
     }
 }

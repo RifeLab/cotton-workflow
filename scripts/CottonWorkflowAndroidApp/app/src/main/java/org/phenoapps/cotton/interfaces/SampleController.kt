@@ -47,6 +47,9 @@ interface SampleController {
     // view code returns the error thresh preference
     fun getErrorThresh(): Double
 
+    // returns the usb barcode reader enabled preference
+    fun getUsbBarcodeReaderEnabled(): Boolean
+
     fun getString(id: Int): String
     fun getString(id: Int, diff: String): String
 }

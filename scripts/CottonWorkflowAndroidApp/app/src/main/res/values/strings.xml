@@ -98,7 +98,7 @@
     <string name="ohaus_helper_print_on_stable_content_description">Ohaus manual showing print on stable setting.</string>
     <string name="ohaus_manual_serial_io_content_description">Serial IO serial to Bluetooth device.</string>
     <string name="ohaus_manual_com1_settings_content_description">COM1 settings for Ohaus</string>
-    <string name="ohaus_helper_general_settings_text">Ohaus scales should have: \n\t\t1) Print on Stable enabled. \n\t\t2) Print Stable on Zero enabled. \n\t\t3) Print Content Numeric set. \n \n \nHere is an example settings tree for the Defender 5000, each Ohaus is slightly different. \n \nFull manual reference is here: \nhttps://www.ohaus.ca/pdf/TD52-man.pdf</string>
+    <string name="ohaus_helper_general_settings_text">Ohaus scales should have: \nPrint on Stable enabled\nPrint Stable on Zero enabled\nCOM1 Baud Rate 9600\nParity set to 8 None\nStop bit set to 2\n(Optional) Print Content Numeric set. </string>
     <string name="na">NA</string>
     <string name="dialog_sample_delete_confirm_title">Confirm Delete Sample</string>
     <string name="dialog_sample_delete_confirm_message">This action is permanent.</string>
@@ -119,4 +119,8 @@
     <string name="export_failed">Export Failed</string>
     <string name="delete_samples">Delete Current Samples?</string>
     <string name="delete_samples_message">This action is permanent.</string>
+    <string name="pref_device_usb_barcode_scanner_enabled_title">USB Barcode Scanner</string>
+    <string name="pref_device_usb_barcode_scanner_enabled_summary">When enabled, this will assume a USB barcode reader is connected; otherwise, an internal barcode scanner camera will be used.</string>
+    <string name="frag_sample_list_usb_reader_dialog_title">Sample Input</string>
+    <string name="frag_sample_list_empty_code_error">Barcodes must not be empty.</string>
 </resources>

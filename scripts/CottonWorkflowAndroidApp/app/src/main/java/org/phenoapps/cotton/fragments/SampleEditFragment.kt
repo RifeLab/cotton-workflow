@@ -62,7 +62,6 @@ class SampleEditFragment : SampleFragment(R.layout.fragment_sample_edit) {
 
                         }
 
-
                     } else {
 
                         activity?.runOnUiThread {
@@ -85,7 +84,6 @@ class SampleEditFragment : SampleFragment(R.layout.fragment_sample_edit) {
         saveButton.text = getString(R.string.update)
 
         initializeScaleButton()
-
     }
 
     private fun initializeScaleButton() {
@@ -115,11 +113,13 @@ class SampleEditFragment : SampleFragment(R.layout.fragment_sample_edit) {
                 state = when (state) {
                     FocusState.SEED -> {
                         seedWeightEt.setText(model.weight.toString())
+                        lintWeightEt.requestFocus()
                         FocusState.LINT
                     }
                     FocusState.LINT -> {
                         lintWeightEt.setText(model.weight.toString())
                         if (getTestEnabled()) {
+                            testWeightEt.requestFocus()
                             FocusState.TEST
                         } else FocusState.WAITING
                     }
@@ -127,9 +127,14 @@ class SampleEditFragment : SampleFragment(R.layout.fragment_sample_edit) {
                         testWeightEt.setText(model.weight.toString())
                         FocusState.WAITING
                     }
-                    else -> {
+                    FocusState.TOTAL -> {
                         weightEt.setText(model.weight.toString())
+                        seedWeightEt.requestFocus()
                         FocusState.SEED
+                    }
+                    else -> {
+                        //complete
+                        FocusState.WAITING
                     }
                 }
             }
@@ -155,6 +160,7 @@ class SampleEditFragment : SampleFragment(R.layout.fragment_sample_edit) {
 
     private fun startBarcodeLauncher(message: String) {
         val options = ScanOptions()
+        options.setOrientationLocked(true)
         options.setDesiredBarcodeFormats(ScanOptions.ALL_CODE_TYPES)
         options.setPrompt(message)
         options.setCameraId(0) // Use a specific camera of the device
@@ -258,10 +264,18 @@ class SampleEditFragment : SampleFragment(R.layout.fragment_sample_edit) {
 
         }
 
-        weightEt.setOnFocusChangeListener { _, hasFocus ->  if (hasFocus) state = FocusState.TOTAL}
-        lintWeightEt.setOnFocusChangeListener { _, hasFocus ->  if (hasFocus) state = FocusState.LINT}
-        seedWeightEt.setOnFocusChangeListener { _, hasFocus ->  if (hasFocus) state = FocusState.SEED}
-        testWeightEt.setOnFocusChangeListener { _, hasFocus ->  if (hasFocus) state = FocusState.TEST}
+        weightEt.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) state = FocusState.TOTAL
+        }
+        lintWeightEt.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) state = FocusState.LINT
+        }
+        seedWeightEt.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) state = FocusState.SEED
+        }
+        testWeightEt.setOnFocusChangeListener { _, hasFocus ->
+            if (hasFocus) state = FocusState.TEST
+        }
 
         weightEt.setOnClickListener {
             state = FocusState.TOTAL
@@ -285,6 +299,8 @@ class SampleEditFragment : SampleFragment(R.layout.fragment_sample_edit) {
 
             findNavController().popBackStack()
         }
+
+        weightEt.requestFocus()
     }
 
     //called from main toolbar to delete current sample

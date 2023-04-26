@@ -3,20 +3,16 @@ package org.phenoapps.cotton.fragments
 import android.app.AlertDialog
 import android.content.Context
 import android.content.SharedPreferences
-import android.content.res.Configuration
 import android.os.Bundle
 import android.text.Editable
 import android.view.View
-import android.view.inputmethod.EditorInfo
 import android.widget.*
-import androidx.activity.result.ActivityResultLauncher
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanIntentResult
 import com.journeyapps.barcodescanner.ScanOptions
@@ -146,12 +142,16 @@ open class SampleFragment(layoutId: Int) : BluetoothFragment(layoutId), Coroutin
         testBarcodeEt.onFocusChangeListener = View.OnFocusChangeListener { v, hasFocus ->
 
             if (hasFocus) {
-                startBarcodeLauncher(getString(R.string.frag_sample_scan_test_label))
+                if (!getUsbBarcodeReaderEnabled()) {
+                    startBarcodeLauncher(getString(R.string.frag_sample_scan_test_label))
+                }
             }
         }
 
         testBarcodeEt.setOnClickListener {
-            startBarcodeLauncher(getString(R.string.frag_sample_scan_test_label))
+            if (!getUsbBarcodeReaderEnabled()) {
+                startBarcodeLauncher(getString(R.string.frag_sample_scan_test_label))
+            }
         }
 
         loadSamples()
@@ -199,6 +199,7 @@ open class SampleFragment(layoutId: Int) : BluetoothFragment(layoutId), Coroutin
 
     private fun startBarcodeLauncher(message: String) {
         val options = ScanOptions()
+        options.setOrientationLocked(true)
         options.setDesiredBarcodeFormats(ScanOptions.ALL_CODE_TYPES)
         options.setPrompt(message)
         options.setCameraId(0) // Use a specific camera of the device
@@ -378,6 +379,12 @@ open class SampleFragment(layoutId: Int) : BluetoothFragment(layoutId), Coroutin
     protected fun getTestEnabled(): Boolean {
 
         return prefs?.getBoolean(getString(R.string.key_preferences_test_enabled), false) ?: false
+
+    }
+
+    protected fun getUsbBarcodeReaderEnabled(): Boolean {
+
+        return prefs?.getBoolean(getString(R.string.key_preferences_usb_barcode_reader_enabled), false) ?: false
 
     }
 

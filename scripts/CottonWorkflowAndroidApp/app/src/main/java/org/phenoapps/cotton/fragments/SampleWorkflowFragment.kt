@@ -143,12 +143,16 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
         testBarcodeEt.onFocusChangeListener = View.OnFocusChangeListener { v, hasFocus ->
 
             if (hasFocus) {
-                startBarcodeLauncher(getString(R.string.frag_sample_scan_test_label))
+                if (!getUsbBarcodeReaderEnabled()) {
+                    startBarcodeLauncher(getString(R.string.frag_sample_scan_test_label))
+                }
             }
         }
 
         testBarcodeEt.setOnClickListener {
-            startBarcodeLauncher(getString(R.string.frag_sample_scan_test_label))
+            if (!getUsbBarcodeReaderEnabled()) {
+                startBarcodeLauncher(getString(R.string.frag_sample_scan_test_label))
+            }
         }
 
         //set save button text
@@ -311,7 +315,9 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
 
                 saveWorkflowData()
 
-                startBarcodeLauncher(getString(R.string.frag_sample_scan_test_label))
+                if (!getUsbBarcodeReaderEnabled()) {
+                    startBarcodeLauncher(getString(R.string.frag_sample_scan_test_label))
+                }
             }
         }
     }
@@ -407,6 +413,7 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
 
     private fun startBarcodeLauncher(message: String) {
         val options = ScanOptions()
+        options.setOrientationLocked(true)
         options.setDesiredBarcodeFormats(ScanOptions.ALL_CODE_TYPES)
         options.setPrompt(message)
         options.setCameraId(0) // Use a specific camera of the device

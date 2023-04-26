@@ -1,14 +1,10 @@
 package org.phenoapps.cotton.fragments
 
 import android.content.Context
-import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.os.bundleOf
-import androidx.fragment.app.setFragmentResultListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.findNavController
@@ -20,18 +16,15 @@ import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanIntentResult
 import com.journeyapps.barcodescanner.ScanOptions
 import dagger.hilt.android.AndroidEntryPoint
-import io.swagger.client.model.VendorOrderRequest.SampleTypeEnum
 import kotlinx.coroutines.launch
 import org.phenoapps.cotton.R
 import org.phenoapps.cotton.activities.MainActivity
 import org.phenoapps.cotton.adapters.SampleAdapter
-import org.phenoapps.cotton.dialogs.NewSampleAcceptDialog
-import org.phenoapps.cotton.dialogs.SampleActionDialog
 import org.phenoapps.cotton.interfaces.MainToolbarManager
 import org.phenoapps.cotton.interfaces.SampleController
 import org.phenoapps.cotton.interfaces.ScanInteractor
+import org.phenoapps.cotton.interfaces.UsbBarcodeReader
 import org.phenoapps.cotton.models.SampleModel
-import org.phenoapps.cotton.util.PrintThread
 import org.phenoapps.cotton.util.WorkflowUtil
 import org.phenoapps.cotton.viewmodels.SampleViewModel
 import org.phenoapps.fragments.bluetooth.BluetoothFragment
@@ -64,10 +57,6 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list),
         super.onAttach(context)
         advisor.initialize()
         prefs = PreferenceManager.getDefaultSharedPreferences(context)
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -134,7 +123,7 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list),
         }
     }
 
-    private fun checkForNewSample(code: String) {
+    fun checkForNewSample(code: String) {
 
         //if code exists then ask if user wants to update weight
         //if doesn't exists, assume new sample and add to database, also move to weight fragment
@@ -190,12 +179,22 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list),
 
         scanButton?.setOnClickListener {
 
-            startBarcodeLauncher(getString(R.string.frag_sample_list_scan_a_sample))
+            if (getUsbBarcodeReaderEnabled()) {
+                (activity as UsbBarcodeReader).askUsbBarcodeScanner()
+            } else {
+                startBarcodeLauncher(getString(R.string.frag_sample_list_scan_a_sample))
+            }
         }
+
+        scanButton?.setImageResource(
+            if (getUsbBarcodeReaderEnabled()) R.drawable.plus
+            else R.drawable.barcode_scan
+        )
     }
 
     private fun startBarcodeLauncher(message: String) {
         val options = ScanOptions()
+        options.setOrientationLocked(true)
         options.setDesiredBarcodeFormats(ScanOptions.ALL_CODE_TYPES)
         options.setPrompt(message)
         options.setCameraId(0) // Use a specific camera of the device
@@ -208,6 +207,7 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list),
     //call barcode scanner for hvi test subsample barcode scan
     private fun startBarcodeUpdateLauncher(message: String) {
         val options = ScanOptions()
+        options.setOrientationLocked(true)
         options.setDesiredBarcodeFormats(ScanOptions.ALL_CODE_TYPES)
         options.setPrompt(message)
         options.setCameraId(0) // Use a specific camera of the device
@@ -221,7 +221,6 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list),
      * This will go to onAcceptNewBarcode when accepted, else it will be dismissed
      */
     override fun onNewBarcode(code: String) {
-
         //skip straight to this step now, instead aof asking if user wants to add new sample
         onAcceptNewBarcode(code)
     }
@@ -382,6 +381,12 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list),
                 .globalActionToWorkflowFragment(model, new))
 
         }
+    }
+
+    override fun getUsbBarcodeReaderEnabled(): Boolean {
+
+        return prefs?.getBoolean(getString(R.string.key_preferences_usb_barcode_reader_enabled), false) ?: false
+
     }
 
     override fun getErrorEnabled(): Boolean {

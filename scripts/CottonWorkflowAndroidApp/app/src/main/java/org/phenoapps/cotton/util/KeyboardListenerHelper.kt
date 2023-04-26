@@ -12,12 +12,12 @@ class KeyboardListenerHelper {
         // ContentView is the root view of the layout of this activity/fragment
         view.viewTreeObserver.addOnGlobalLayoutListener {
             val r = Rect()
-            view.getWindowVisibleDisplayFrame(r);
-            val screenHeight = view.rootView.height;
+            view.getWindowVisibleDisplayFrame(r)
+            val screenHeight = view.rootView.height
 
             // r.bottom is the position above soft keypad or device button.
             // if keypad is shown, the r.bottom is smaller than that before.
-            val keypadHeight = screenHeight - r.bottom;
+            val keypadHeight = screenHeight - r.bottom
 
             if (keypadHeight > screenHeight * 0.15) { // 0.15 ratio is perhaps enough to determine keypad height.
                 // keyboard is opened

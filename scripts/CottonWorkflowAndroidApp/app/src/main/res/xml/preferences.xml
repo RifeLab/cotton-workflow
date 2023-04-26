@@ -66,6 +66,13 @@
         android:title="@string/preferences_devices"
         app:iconSpaceReserved="false">
 
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:icon="@drawable/barcode_scan"
+            android:key="@string/key_preferences_usb_barcode_reader_enabled"
+            android:title="@string/pref_device_usb_barcode_scanner_enabled_title"
+            android:summary="@string/pref_device_usb_barcode_scanner_enabled_summary"/>
+
         <Preference android:title="@string/preferences_scale_config_helper_title"
             android:summary="@string/preferences_scale_config_helper_summary"
             android:icon="@drawable/ic_about_help_translate"
