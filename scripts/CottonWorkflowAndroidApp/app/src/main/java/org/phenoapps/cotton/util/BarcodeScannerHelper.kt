@@ -16,26 +16,34 @@ class BarcodeScannerHelper @Inject constructor(@ActivityContext private val cont
 
     var barcode = String()
 
-    private val barcodeKeyListener: View.OnKeyListener = View.OnKeyListener { v, keyCode, event ->
-        //barcode scanner
-        val c = event.unicodeChar
-        //accept only 0..9 and ENTER
-        if (c in 48..57 || c == 10) {
+    private fun dispatchBarcodeKey(event: KeyEvent, unicodeChar: Int, onEnter: () -> Unit): Boolean {
+        if (unicodeChar in 48..57 || unicodeChar in 65..90 || unicodeChar in 97..122 || unicodeChar == 10) {
             if (event.action == KeyEvent.ACTION_DOWN) {
-                if (c != 10) {
-                    barcode += "" + c.toChar()
+                if (unicodeChar != 10) {
+                    barcode += "" + unicodeChar.toChar()
                 } else {
-                    if (barcode.isNotBlank()) {
-                        val b: String = barcode
-                        editText.setText(b)
-                        barcode = ""
-                        dialog.getButton(DialogInterface.BUTTON_POSITIVE).performClick()
-                    }
+                    onEnter()
                 }
             }
+            return true
         }
+        return false
+    }
 
-        true
+    private val barcodeKeyListener: View.OnKeyListener = View.OnKeyListener { v, keyCode, event ->
+
+        //barcode scanner
+        val c = event.unicodeChar
+
+        //accept only 0..9 and ENTER
+        dispatchBarcodeKey(event, c) {
+            if (barcode.isNotBlank()) {
+                val b: String = barcode
+                editText.setText(b)
+                barcode = ""
+                dialog.getButton(DialogInterface.BUTTON_POSITIVE).performClick()
+            }
+        }
     }
 
     private val editText = EditText(context).apply {
@@ -54,22 +62,14 @@ class BarcodeScannerHelper @Inject constructor(@ActivityContext private val cont
         //barcode scanner
         val c = event.unicodeChar
         //accept only 0..9 and ENTER
-        if (c in 48..57 || c == 10) {
-            if (event.action == KeyEvent.ACTION_DOWN) {
-                if (c != 10) {
-                    barcode += "" + c.toChar()
-                } else {
-                    if (barcode.isNotBlank()) {
-                        val b: String = barcode
-                        barcode = ""
-                        (context as UsbBarcodeReader).resolveBarcode(b)
-                        dialog.dismiss()
-                    }
-                }
+        return dispatchBarcodeKey(event, c) {
+            if (barcode.isNotBlank()) {
+                val b: String = barcode
+                barcode = ""
+                (context as UsbBarcodeReader).resolveBarcode(b)
+                dialog.dismiss()
             }
-            return true
         }
-        return false
     }
 
     private val dialog: AlertDialog = AlertDialog.Builder(context, R.style.AlertDialogTheme)

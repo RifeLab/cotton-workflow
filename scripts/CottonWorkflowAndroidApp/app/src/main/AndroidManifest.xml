@@ -44,7 +44,7 @@
 
         <activity android:theme="@style/Theme.Cotton"
             android:name="com.journeyapps.barcodescanner.CaptureActivity"
-            android:screenOrientation="fullSensor"
+            android:screenOrientation="unspecified"
             tools:replace="screenOrientation,android:theme" />
 
     </application>
