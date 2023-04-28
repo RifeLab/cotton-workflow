@@ -194,11 +194,9 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list),
 
     private fun startBarcodeLauncher(message: String) {
         val options = ScanOptions()
-        options.setOrientationLocked(true)
         options.setDesiredBarcodeFormats(ScanOptions.ALL_CODE_TYPES)
         options.setPrompt(message)
         options.setCameraId(0) // Use a specific camera of the device
-        options.setOrientationLocked(false)
         options.setBeepEnabled(false)
         options.setBarcodeImageEnabled(true)
         barcodeLauncher.launch(options)
@@ -207,11 +205,9 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list),
     //call barcode scanner for hvi test subsample barcode scan
     private fun startBarcodeUpdateLauncher(message: String) {
         val options = ScanOptions()
-        options.setOrientationLocked(true)
         options.setDesiredBarcodeFormats(ScanOptions.ALL_CODE_TYPES)
         options.setPrompt(message)
         options.setCameraId(0) // Use a specific camera of the device
-        options.setOrientationLocked(false)
         options.setBeepEnabled(false)
         options.setBarcodeImageEnabled(true)
         barcodeUpdateLauncher.launch(options)

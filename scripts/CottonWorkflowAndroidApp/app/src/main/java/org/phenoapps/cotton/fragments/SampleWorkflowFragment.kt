@@ -84,7 +84,6 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
 
                     }
 
-
                 } else {
 
                     activity?.runOnUiThread {
@@ -417,7 +416,6 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
         options.setDesiredBarcodeFormats(ScanOptions.ALL_CODE_TYPES)
         options.setPrompt(message)
         options.setCameraId(0) // Use a specific camera of the device
-        options.setOrientationLocked(false)
         options.setBeepEnabled(false)
         options.setBarcodeImageEnabled(true)
         barcodeLauncher.launch(options)
@@ -442,6 +440,7 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
             .setMessage(R.string.dialog_sample_delete_confirm_message)
             .setPositiveButton(android.R.string.ok) { _, _ ->
                 deleteWorkflowData()
+                findNavController().popBackStack()
             }
             .setNegativeButton(android.R.string.cancel) { d, _ ->
                 d.dismiss()

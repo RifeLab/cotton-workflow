@@ -199,11 +199,10 @@ open class SampleFragment(layoutId: Int) : BluetoothFragment(layoutId), Coroutin
 
     private fun startBarcodeLauncher(message: String) {
         val options = ScanOptions()
-        options.setOrientationLocked(true)
         options.setDesiredBarcodeFormats(ScanOptions.ALL_CODE_TYPES)
         options.setPrompt(message)
         options.setCameraId(0) // Use a specific camera of the device
-        options.setOrientationLocked(false)
+        options.setOrientationLocked(true)
         options.setBeepEnabled(false)
         options.setBarcodeImageEnabled(true)
         barcodeLauncher.launch(options)
@@ -346,8 +345,6 @@ open class SampleFragment(layoutId: Int) : BluetoothFragment(layoutId), Coroutin
         if (::lint.isInitialized) {
             sampleViewModel.deleteSample(lint)
         }
-
-        findNavController().popBackStack()
     }
 
     //update sample weight and time
