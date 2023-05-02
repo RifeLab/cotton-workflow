@@ -1,9 +1,14 @@
 package org.phenoapps.cotton.activities
 
 import android.annotation.SuppressLint
+import android.bluetooth.BluetoothManager
+import android.bluetooth.BluetoothProfile
+import android.content.Context
 import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
@@ -60,9 +65,9 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarc
 
     private val viewModel: SampleViewModel by viewModels()
 
-    private val ohausViewModel: OhausSampleViewModel by viewModels()
-
     private var menu: Menu? = null
+
+    val ohausViewModel: OhausSampleViewModel by viewModels()
 
     companion object {
         const val PRINTER = 0
@@ -457,8 +462,30 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarc
         dialog.show()
     }
 
-    private var connected = false
+    var connected = false
+
+    var checking = false
+
     private fun startConnectionCheck(key: Int) {
+
+        if (!connected) {
+
+            if (!checking) {
+
+                checking = true
+
+                connectionCheck()
+
+            }
+
+            Handler(Looper.getMainLooper()).postDelayed({
+                startConnectionCheck(key)
+            }, 5000)
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun connectionCheck() {
 
         val scaleId = getScaleId()
 
@@ -470,9 +497,12 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarc
 
                     status?.let { s ->
 
+                        println("STATUS: $s")
                         connected = s
 
                         updateToolbarStatus(SCALE, s)
+
+                        checking = false
                     }
                 }
             }
@@ -550,6 +580,8 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarc
     }
 
     fun reconnect() {
+
+        ohausViewModel.reset()
 
         startConnectionCheck(SCALE)
 

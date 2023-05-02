@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.text.Editable
 import android.view.View
 import android.widget.*
-import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
@@ -26,7 +25,6 @@ import org.phenoapps.cotton.interfaces.MainToolbarManager
 import org.phenoapps.cotton.models.SampleModel
 import org.phenoapps.cotton.util.DateUtil.Companion.toDateString
 import org.phenoapps.cotton.util.WorkflowUtil
-import org.phenoapps.cotton.viewmodels.OhausSampleViewModel
 import org.phenoapps.cotton.viewmodels.SampleViewModel
 import org.phenoapps.fragments.bluetooth.BluetoothFragment
 import java.util.*
@@ -43,7 +41,6 @@ open class SampleFragment(layoutId: Int) : BluetoothFragment(layoutId), Coroutin
         TOTAL(0), SEED(1), LINT(2), TEST(3), WAITING(4), EDIT(5)
     }
 
-    protected val viewModel: OhausSampleViewModel by activityViewModels()
     protected val sampleViewModel: SampleViewModel by viewModels()
 
     protected var prefs: SharedPreferences? = null
@@ -183,7 +180,6 @@ open class SampleFragment(layoutId: Int) : BluetoothFragment(layoutId), Coroutin
                         test.scanTime = Calendar.getInstance().timeInMillis
 
                     }
-
 
                 } else {
 

@@ -121,7 +121,13 @@ class SampleEditFragment : SampleFragment(R.layout.fragment_sample_edit) {
                         if (getTestEnabled()) {
                             testWeightEt.requestFocus()
                             FocusState.TEST
-                        } else FocusState.WAITING
+                        } else if (getUsbBarcodeReaderEnabled()) {
+                            testBarcodeEt.requestFocus()
+                            FocusState.WAITING
+                        } else {
+                            testBarcodeEt.requestFocus()
+                            FocusState.WAITING
+                        }
                     }
                     FocusState.TEST -> {
                         testWeightEt.setText(model.weight.toString())
@@ -146,12 +152,15 @@ class SampleEditFragment : SampleFragment(R.layout.fragment_sample_edit) {
 
             advisor.withNearby { adapter ->
 
-                viewModel.readWeight(requireContext(), adapter, scaleId).observe(viewLifecycleOwner) { data ->
+                if ((activity as MainActivity).connected) {
 
-                    if (data != null && data.isNotBlank()) {
+                    (activity as MainActivity).ohausViewModel.readWeight().observe(viewLifecycleOwner) { data ->
 
-                        scaleReadingValue = data
+                        if (data != null && data.isNotBlank()) {
 
+                            scaleReadingValue = data
+
+                        }
                     }
                 }
             }

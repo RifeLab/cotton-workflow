@@ -316,6 +316,8 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
 
                 if (!getUsbBarcodeReaderEnabled()) {
                     startBarcodeLauncher(getString(R.string.frag_sample_scan_test_label))
+                } else {
+                    testBarcodeEt.requestFocus()
                 }
             }
         }
@@ -326,85 +328,92 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
 
         val scaleId = (activity as MainActivity).getScaleId()
 
-        viewModel.advisor = advisor
+        (activity as MainActivity).ohausViewModel.advisor = advisor
 
         advisor.withNearby { adapter ->
 
-            viewModel.readWeight(requireContext(), adapter, scaleId).observe(viewLifecycleOwner) { data ->
+            if ((activity as MainActivity).connected) {
 
-                //println("Weight: ${data.toCharArray().joinToString(",")}")
+                (activity as MainActivity).ohausViewModel.readWeight().observe(viewLifecycleOwner) { data ->
 
-                try {
+                    //println("Weight: ${data.toCharArray().joinToString(",")}")
 
-                    val weight = data.replace(ScaleUtil.UNIT, "").toDouble()
+                    try {
 
-                    //in test mode take input until 25g are taken off
-                    //else take a reading between 0.0g readings
-                    if (state == FocusState.TEST) {
+                        val weight = data.replace(ScaleUtil.UNIT, "").toDouble()
 
-                        checkTestDiff(weight)
+                        //in test mode take input until 25g are taken off
+                        //else take a reading between 0.0g readings
+                        if (state == FocusState.TEST) {
 
-                    } else if (state == FocusState.EDIT) {
+                            checkTestDiff(weight)
 
-                        //do nothing !
+                        } else if (state == FocusState.EDIT) {
 
-                    } else if (lastReading == 0.0 && weight > 0) {
+                            //do nothing !
 
-                        when (state) {
+                        } else if (lastReading == 0.0 && weight > 0) {
 
-                            FocusState.TOTAL -> {
+                            when (state) {
 
-                                weightEt.setText("$weight")
+                                FocusState.TOTAL -> {
 
-                                seedWeightEt.selectAll()
+                                    weightEt.setText("$weight")
 
-                                state = FocusState.SEED
+                                    seedWeightEt.selectAll()
 
-                                numericOneIv.setImageResource(R.drawable.check_circle_outline_green)
-                            }
+                                    state = FocusState.SEED
 
-                            FocusState.SEED -> {
+                                    numericOneIv.setImageResource(R.drawable.check_circle_outline_green)
+                                }
 
-                                seedWeightEt.setText("$weight")
+                                FocusState.SEED -> {
 
-                                lintWeightEt.selectAll()
+                                    seedWeightEt.setText("$weight")
 
-                                state = FocusState.LINT
+                                    lintWeightEt.selectAll()
 
-                                numericTwoIv.setImageResource(R.drawable.check_circle_outline_green)
-                            }
+                                    state = FocusState.LINT
 
-                            FocusState.LINT -> {
+                                    numericTwoIv.setImageResource(R.drawable.check_circle_outline_green)
+                                }
 
-                                lintWeightEt.setText("$weight")
+                                FocusState.LINT -> {
 
-                                numericThreeIv.setImageResource(R.drawable.check_circle_outline_green)
+                                    lintWeightEt.setText("$weight")
 
-                                state = if (getTestEnabled()) {
+                                    numericThreeIv.setImageResource(R.drawable.check_circle_outline_green)
 
-                                    testWeightEt.selectAll()
+                                    state = if (getTestEnabled()) {
 
-                                    FocusState.TEST
+                                        testWeightEt.selectAll()
 
-                                } else FocusState.WAITING
+                                        FocusState.TEST
 
-                            }
+                                    } else {
 
-                            else -> {
+                                        testBarcodeEt.requestFocus()
 
-                                //TODO WAITING, in case user interrupts
+                                        FocusState.WAITING
+                                    }
+                                }
 
+                                else -> {
+
+                                    //TODO WAITING, in case user interrupts
+
+                                }
                             }
                         }
+
+                        lastReading = weight
+
+                    } catch (e: NumberFormatException) {
+
+                        e.printStackTrace()
+
+                        println(data)
                     }
-
-                    lastReading = weight
-
-                } catch (e: NumberFormatException) {
-
-                    e.printStackTrace()
-
-                    println(data)
                 }
             }
         }

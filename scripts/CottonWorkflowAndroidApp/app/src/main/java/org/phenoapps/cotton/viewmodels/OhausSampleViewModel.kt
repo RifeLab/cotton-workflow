@@ -1,9 +1,7 @@
 package org.phenoapps.cotton.viewmodels
 
 import android.annotation.SuppressLint
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothGatt
-import android.bluetooth.BluetoothGattCharacteristic
+import android.bluetooth.*
 import android.content.Context
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.liveData
@@ -27,19 +25,9 @@ class OhausSampleViewModel @Inject constructor(): GattViewModel() {
             return field
         }
 
-    var gatts: ArrayList<BluetoothGatt?>? = null
-
     var advisor: SecureBluetooth? = null
 
-    val reachabilityStatus: MutableLiveData<Boolean> by lazy {
-        MutableLiveData<Boolean>()
-    }
-
-    val connectionStatus: MutableLiveData<Int> by lazy {
-        MutableLiveData<Int>()
-    }
-
-    val scaleReading: MutableLiveData<String> by lazy {
+    private val scaleReading: MutableLiveData<String> by lazy {
         MutableLiveData<String>()
     }
 
@@ -50,29 +38,35 @@ class OhausSampleViewModel @Inject constructor(): GattViewModel() {
     /**
      * Helper function that does it all, checks connection before outputting scale readings
      */
-    fun readWeight(context: Context, adapter: BluetoothAdapter, address: String? = "C4:BE:84:1A:25:93") = liveData<String>(job) {
-
-        connect(context, adapter, address)
-
-        while ((connected != true) and !super.isGattConnected()) {
-            delay(1000)
-        }
+    fun readWeight() = liveData<String>(job) {
 
         emitSource(scaleReading)
     }
 
+    fun reset() {
+        scaleReading.value = ""
+    }
+
     fun reach(context: Context, adapter: BluetoothAdapter, address: String?) = liveData(job) {
+
+        connected = false
 
         connect(context, adapter, address)
 
-        while ((connected != true) and !super.isGattConnected()) {
+        while (!super.isGattConnected()) {
             delay(1000)
         }
 
+        connected = true
+
         do {
 
-            if (connected == null) emit(super.isGattConnected())
-            else emit(connected)
+            if (connected == null) {
+                emit(super.isGattConnected())
+            }
+            else {
+                emit(connected)
+            }
 
             delay(1000)
 
@@ -90,11 +84,6 @@ class OhausSampleViewModel @Inject constructor(): GattViewModel() {
     fun disconnect() {
         connected = false
         super.unregister()
-//        gatts?.forEach { gatt ->
-//            gatt?.disconnect()
-//            gatt?.close()
-//            //super.unregister()
-//        }
     }
 
     override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
@@ -208,6 +197,8 @@ class OhausSampleViewModel @Inject constructor(): GattViewModel() {
         when (newState) {
             BluetoothGatt.STATE_DISCONNECTED -> {
                 connected = false
+                gatt?.close()
+                gatt?.disconnect()
             }
         }
     }

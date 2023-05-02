@@ -39,23 +39,13 @@ class BarcodeScannerHelper @Inject constructor(@ActivityContext private val cont
         dispatchBarcodeKey(event, c) {
             if (barcode.isNotBlank()) {
                 val b: String = barcode
-                editText.setText(b)
+                editText?.setText(b)
                 barcode = ""
-                dialog.getButton(DialogInterface.BUTTON_POSITIVE).performClick()
+                dialog?.getButton(DialogInterface.BUTTON_POSITIVE)?.performClick()
             }
         }
     }
 
-    private val editText = EditText(context).apply {
-        layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
-            setMargins(8, 8, 8, 8)
-        }
-        isSingleLine = true
-        setLines(1)
-        setHorizontallyScrolling(false)
-        maxLines = 1
-        setOnKeyListener(barcodeKeyListener)
-    }
 
     //https://stackoverflow.com/questions/34411919/android-and-external-usb-barcode-scanner-how-catch-the-enter
     fun dispatchKeyEvent(event: KeyEvent): Boolean {
@@ -67,24 +57,40 @@ class BarcodeScannerHelper @Inject constructor(@ActivityContext private val cont
                 val b: String = barcode
                 barcode = ""
                 (context as UsbBarcodeReader).resolveBarcode(b)
-                dialog.dismiss()
+                dialog?.dismiss()
             }
         }
     }
 
-    private val dialog: AlertDialog = AlertDialog.Builder(context, R.style.AlertDialogTheme)
-        .setTitle(R.string.frag_sample_list_usb_reader_dialog_title)
-        .setPositiveButton(android.R.string.ok) { d, _ ->
-            (context as UsbBarcodeReader).resolveBarcode(editText.text.toString())
-            editText.text.clear()
-            d.dismiss()
-        }
-        .setView(editText)
-        .create()
+    private var editText: EditText? = null
+    private var dialog: AlertDialog? = null
 
     fun askUsbBarcodeScanner() {
 
-        if (!dialog.isShowing) dialog.show()
+        if (dialog?.isShowing == true) dialog?.dismiss()
+
+        editText = EditText(context).apply {
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
+                setMargins(8, 8, 8, 8)
+            }
+            isSingleLine = true
+            setLines(1)
+            setHorizontallyScrolling(false)
+            maxLines = 1
+            setOnKeyListener(barcodeKeyListener)
+        }
+
+        dialog = AlertDialog.Builder(context, R.style.AlertDialogTheme)
+            .setTitle(R.string.frag_sample_list_usb_reader_dialog_title)
+            .setPositiveButton(android.R.string.ok) { d, _ ->
+                (context as UsbBarcodeReader).resolveBarcode(editText?.text?.toString() ?: "")
+                editText?.text?.clear()
+                d.dismiss()
+            }
+            .setView(editText)
+            .create()
+
+        if (dialog != null && dialog?.isShowing != true) dialog?.show()
 
     }
 }
