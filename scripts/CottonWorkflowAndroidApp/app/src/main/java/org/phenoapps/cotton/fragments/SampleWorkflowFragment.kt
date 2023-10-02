@@ -21,16 +21,23 @@ import java.util.*
  *
  * private static final UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
  *
- *
- * Follows this process:
-    We tare the scale to the bag size the samples are collected in. (12lb, 16lb, or 25lb bag)
-    We use a barcode scanner and scan the bag.
-    Then we weight the bag with the cotton sample inside.
-    Then we gin the sample.
-    We collect the fuzzy seed and place back into original bag
+  v1.4 update - updated next weight threshold to trigger when last weight is <= 0 (instead of exactly 0)
+    Follows this process:
+    1. We tare the scale to the bag size the samples are collected in. (12lb, 16lb, or 25lb bag)
+        a. scale should be at 0
+    2. We use a barcode scanner and scan the bag.
+    3. Then we weight the bag with the cotton sample inside.
+        a. scale should be at some weight C (weight of the cotton, this will always be > 0)
+    4. Then we gin the sample.
+        a. scale will be - when bag is removed for gin
+    5. We collect the fuzzy seed and place back into original bag
+        a. scale should be > 0, because its greater than the original tare
         We weigh the bag with the fuzzy seeds inside.
-    Next we grab the lint,  and place it on top of a bag that matches the sample bag(empty bag). Get the lint weight.
+    6. Next we grab the lint,  and place it on top of a bag that matches the sample bag(empty bag). Get the lint weight.
+        a. removing the bag will cause - weight
+        b. sample bag + lint will cause + weight
         Remove 25 grams of lint.
+            c. weight should always be > 0, with remaining lint
         25 grams of lint is place inside a labeled 2lb bag( for HVI testing). This bag is scanned as well.
     The remaining lint is thrown away or kept.
     Repeat the process.
@@ -326,7 +333,7 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
     private var lastReading = 0.0
     private fun startWeightListener() {
 
-        val scaleId = (activity as MainActivity).getScaleId()
+        //val scaleId = (activity as MainActivity).getScaleId()
 
         (activity as MainActivity).ohausViewModel.advisor = advisor
 
@@ -352,7 +359,7 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
 
                             //do nothing !
 
-                        } else if (lastReading == 0.0 && weight > 0) {
+                        } else if (lastReading <= 0.0 && weight > 0) {
 
                             when (state) {
 

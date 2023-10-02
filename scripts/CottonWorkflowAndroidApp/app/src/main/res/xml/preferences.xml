@@ -43,7 +43,7 @@
 
         <EditTextPreference android:title="@string/preferences_error_check_threshold_title"
             android:summary="@string/preferences_error_check_threshold_summary"
-            android:defaultValue="5"
+            android:defaultValue="3"
             android:icon="@drawable/abacus"
             android:key="@string/key_preferences_error_check_threshold"/>
 
