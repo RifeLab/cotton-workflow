@@ -10,6 +10,8 @@ internal class TestViewHolder(view: View): ParentViewHolder(view) {
     override fun bind(controller: SampleController, model: SampleModel) {
         super.bind(controller, model)
 
+        sampleHeaderTv.visibility = View.VISIBLE
+
         //set test header
         sampleHeaderTv.text = controller.getString(R.string.list_item_test_title,
             if (model.weight == null) controller.getString(R.string.list_item_sample_uncollected)

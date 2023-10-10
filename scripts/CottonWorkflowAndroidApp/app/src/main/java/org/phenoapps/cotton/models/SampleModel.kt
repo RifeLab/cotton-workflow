@@ -13,9 +13,10 @@ data class SampleModel(var sid: Long? = null,
                        var scaleTime: Long? = null,
                        var person: String? = null,
                        var parent: Long? = null,
-                       var type: Int) : Parcelable {
+                       var type: Int,
+                       var note: String? = null) : Parcelable {
 
-    constructor(e: SampleEntity): this(e.sid, e.code, e.weight, e.scanTime, e.scaleTime, e.person, e.parent, e.type)
+    constructor(e: SampleEntity): this(e.sid, e.code, e.weight, e.scanTime, e.scaleTime, e.person, e.parent, e.type, e.note)
 
     fun toRowString(): String {
 

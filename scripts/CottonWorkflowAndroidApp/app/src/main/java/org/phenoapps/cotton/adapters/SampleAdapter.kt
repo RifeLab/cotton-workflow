@@ -30,16 +30,17 @@ class SampleAdapter(private val controller: SampleController):
         val codeTextView: TextView = view.findViewById(R.id.list_item_sample_code_header_tv)
         val codeIconIv: ImageView = view.findViewById(R.id.list_item_sample_id_header_iv)
         val weightTextView: TextView = view.findViewById(R.id.list_item_sample_weight_header_tv)
-        val subSamplesRecyclerView: RecyclerView = view.findViewById(R.id.list_item_sample_sub_sample_rv)
         val analysisTextView: TextView = view.findViewById(R.id.list_item_sample_analysis_tv)
+        val analysisIcon: ImageView = view.findViewById(R.id.list_item_sample_analysis_header_iv)
         val expandImageView: ImageView = view.findViewById(R.id.list_item_sample_expand_iv)
-        val timestampTextView: TextView = view.findViewById(R.id.list_item_sample_timestamp_header_tv)
         val weightTimestampTextView: TextView = view.findViewById(R.id.list_item_sample_weight_timestamp_header_tv)
         val weightIcon: ImageView = view.findViewById(R.id.list_item_sample_weight_header_iv)
         val scaleIcon: ImageView = view.findViewById(R.id.list_item_sample_scale_header_iv)
-        val scanIcon: ImageView = view.findViewById(R.id.list_item_sample_scan_header_iv)
         val sampleHeaderTv: TextView = view.findViewById(R.id.list_item_sample_tv)
-        val scanTimeTv: TextView = view.findViewById(R.id.list_item_sample_timestamp_header_tv)
+        val lintWeightTv: TextView = view.findViewById(R.id.list_item_lint_weight_header_tv)
+        val seedWeightTv: TextView = view.findViewById(R.id.list_item_seed_weight_header_tv)
+        val testIcon: ImageView = view.findViewById(R.id.list_item_test_header_iv)
+        val testText: TextView = view.findViewById(R.id.list_item_sample_test_header_tv)
 
         open fun bind(controller: SampleController, model: SampleModel) {
 
@@ -76,15 +77,15 @@ class SampleAdapter(private val controller: SampleController):
                 WorkflowUtil.Companion.SubSampleType.PARENT.ordinal -> {
                     (viewHolder as ParentViewHolder).bind(controller, this)
                 }
-                WorkflowUtil.Companion.SubSampleType.SEED.ordinal -> {
-                    (viewHolder as SeedViewHolder).bind(controller, this)
-                }
-                WorkflowUtil.Companion.SubSampleType.LINT.ordinal -> {
-                    (viewHolder as LintViewHolder).bind(controller, this)
-                }
-                WorkflowUtil.Companion.SubSampleType.TEST.ordinal -> {
-                    (viewHolder as TestViewHolder).bind(controller, this)
-                }
+//                WorkflowUtil.Companion.SubSampleType.SEED.ordinal -> {
+//                    (viewHolder as SeedViewHolder).bind(controller, this)
+//                }
+//                WorkflowUtil.Companion.SubSampleType.LINT.ordinal -> {
+//                    (viewHolder as LintViewHolder).bind(controller, this)
+//                }
+//                WorkflowUtil.Companion.SubSampleType.TEST.ordinal -> {
+//                    (viewHolder as TestViewHolder).bind(controller, this)
+//                }
             }
         }
     }

@@ -1,15 +1,12 @@
 package org.phenoapps.cotton.fragments
 
+import android.app.AlertDialog
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.text.Editable
-import android.text.TextWatcher
 import android.view.View
-import android.widget.EditText
-import android.widget.TextView
-import android.widget.Toast
-import androidx.fragment.app.activityViewModels
+import android.widget.*
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
@@ -21,85 +18,74 @@ import com.journeyapps.barcodescanner.ScanOptions
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 import org.phenoapps.cotton.R
-import org.phenoapps.cotton.activities.MainActivity
 import org.phenoapps.cotton.database.entities.SampleEntity
+import org.phenoapps.cotton.interfaces.MainToolbarManager
 import org.phenoapps.cotton.models.SampleModel
 import org.phenoapps.cotton.util.DateUtil.Companion.toDateString
-import org.phenoapps.cotton.util.ScaleUtil
 import org.phenoapps.cotton.util.WorkflowUtil
-import org.phenoapps.cotton.viewmodels.OhausSampleViewModel
 import org.phenoapps.cotton.viewmodels.SampleViewModel
 import org.phenoapps.fragments.bluetooth.BluetoothFragment
 import java.util.*
 
 /***
- * Follows this process:
-    We tare the scale to the bag size the samples are collected in. (12lb, 16lb, or 25lb bag)
-    We use a barcode scanner and scan the bag.
-    Then we weight the bag with the cotton sample inside.
-    Then we gin the sample.
-    We collect the fuzzy seed and place back into original bag
-        We weigh the bag with the fuzzy seeds inside.
-    Next we grab the lint,  and place it on top of a bag that matches the sample bag(empty bag). Get the lint weight.
-        Remove 25 grams of lint.
-        25 grams of lint is place inside a labeled 2lb bag( for HVI testing). This bag is scanned as well.
-    The remaining lint is thrown away or kept.
-    Repeat the process.
-    We  use the error check for any samples that are +/-5
-
- Whenever a main page item is clicked, this screen opens to show/input details of a sample.
-
- Screens for parents show total, seed, lint, etc weights. Child screens only show total weight.
-
- When a scale connection is made the fragment automatically fills in the data on stable reads,
- if the user clicks any of the edit text the flow is interrupted and won't restart until fragment restarts.
-
- TODO: maybe add a save/confirm button, or freeze data if already saved
+ *
+ * Base fragment that Workflow and Edit fragments extend.
+ *
  */
 @AndroidEntryPoint
-class SampleFragment : BluetoothFragment(R.layout.fragment_sample), CoroutineScope by MainScope() {
+open class SampleFragment(layoutId: Int) : BluetoothFragment(layoutId), CoroutineScope by MainScope() {
 
     enum class FocusState(priority: Int) {
         TOTAL(0), SEED(1), LINT(2), TEST(3), WAITING(4), EDIT(5)
     }
 
-    private val viewModel: OhausSampleViewModel by activityViewModels()
-    private val sampleViewModel: SampleViewModel by viewModels()
+    protected val sampleViewModel: SampleViewModel by viewModels()
 
-    private var prefs: SharedPreferences? = null
+    protected var prefs: SharedPreferences? = null
 
     //cache of samples in database
-    private var samples: List<SampleModel>? = null
+    protected var samples: List<SampleModel>? = null
 
     //the sample for this fragment
-    private lateinit var sample: SampleModel
+    protected lateinit var sample: SampleModel
 
-    private lateinit var seed: SampleModel
-    private lateinit var lint: SampleModel
-    private lateinit var test: SampleModel
+    protected lateinit var seed: SampleModel
+    protected lateinit var lint: SampleModel
+    protected lateinit var test: SampleModel
 
     //sample data tv's
-    private lateinit var barcodeTv: TextView
+    protected lateinit var barcodeTv: TextView
 
     //total, seed, and lint weight edit texts
-    private lateinit var weightEt: EditText
-    private lateinit var seedWeightTv: TextView
-    private lateinit var seedWeightEt: EditText
-    private lateinit var lintWeightTv: TextView
-    private lateinit var lintWeightEt: EditText
-    private lateinit var testWeightEt: EditText
-    private lateinit var testWeightTv: TextView
+    protected lateinit var weightEt: EditText
+    protected lateinit var seedWeightTv: TextView
+    protected lateinit var seedWeightEt: EditText
+    protected lateinit var lintWeightTv: TextView
+    protected lateinit var lintWeightEt: EditText
+    protected lateinit var testWeightEt: EditText
+    protected lateinit var testWeightTv: TextView
+    protected lateinit var testBarcodeEt: EditText
 
     //timestamp text views to show when scale measure was taken
-    private lateinit var totalWeightTime: TextView
-    private lateinit var seedWeightTime: TextView
-    private lateinit var lintWeightTime: TextView
-    private lateinit var testWeightTime: TextView
+    protected lateinit var totalWeightTime: TextView
+    protected lateinit var seedWeightTime: TextView
+    protected lateinit var lintWeightTime: TextView
+    protected lateinit var testWeightTime: TextView
 
-    private lateinit var sampleLiveData: LiveData<List<SampleEntity>>
+    protected lateinit var testBarcodeHeader: TextView
 
-    private val observer = Observer<List<SampleEntity>> { data ->
+    //save button
+    protected lateinit var saveButton: Button
+
+    protected lateinit var sampleLiveData: LiveData<List<SampleEntity>>
+
+    protected fun isSeedInitialized() = ::seed.isInitialized
+    protected fun isLintInitialized() = ::lint.isInitialized
+    protected fun isTestInitialized() = ::test.isInitialized
+
+    protected val observer = Observer<List<SampleEntity>> { data ->
 
         if (data != null) {
 
@@ -107,86 +93,6 @@ class SampleFragment : BluetoothFragment(R.layout.fragment_sample), CoroutineSco
 
             updateUi()
 
-        }
-    }
-
-    private val totalWeightListener = object : TextWatcher {
-
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-
-        override fun afterTextChanged(s: Editable?) {
-
-            updateSampleWeight(sample, s, totalWeightTime)
-        }
-    }
-
-    private val seedWeightListener = object : TextWatcher {
-
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-
-        override fun afterTextChanged(s: Editable?) {
-
-            if (::seed.isInitialized){
-                updateSampleWeight(seed, s, seedWeightTime)
-            }
-        }
-    }
-
-    private val lintWeightListener = object : TextWatcher {
-
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-
-        override fun afterTextChanged(s: Editable?) {
-
-            if (::lint.isInitialized) {
-                updateSampleWeight(lint, s, lintWeightTime)
-            }
-        }
-    }
-
-    private val testWeightListener = object : TextWatcher {
-
-        override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-        override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
-
-        override fun afterTextChanged(s: Editable?) {
-
-            if (::test.isInitialized) {
-                updateSampleWeight(test, s, testWeightTime)
-            }
-        }
-    }
-
-    // Barcode launcher for scanning Test label
-    private val barcodeLauncher = registerForActivityResult(
-        ScanContract()
-    ) { result: ScanIntentResult ->
-        if (result.contents == null) {
-
-            Toast.makeText(context,
-                getString(R.string.canceled),
-                Toast.LENGTH_LONG
-            ).show()
-
-        } else {
-
-            Toast.makeText(
-                context,
-                result.contents,
-                Toast.LENGTH_LONG
-            ).show()
-
-            if (::test.isInitialized) {
-
-                test.code = result.contents
-                test.scanTime = Calendar.getInstance().timeInMillis
-                sampleViewModel.updateSample(test)
-
-                findNavController().popBackStack()
-            }
         }
     }
 
@@ -200,9 +106,6 @@ class SampleFragment : BluetoothFragment(R.layout.fragment_sample), CoroutineSco
         super.onViewCreated(view, savedInstanceState)
 
         val s = arguments?.getParcelable<SampleModel>("sample")
-        val edit = arguments?.getBoolean("edit") == true
-
-        if (edit) state = FocusState.EDIT
         if (s == null) findNavController().popBackStack()
         else sample = s
 
@@ -220,6 +123,12 @@ class SampleFragment : BluetoothFragment(R.layout.fragment_sample), CoroutineSco
         testWeightEt = view.findViewById(R.id.frag_sample_test_weight_et)
         testWeightTime = view.findViewById(R.id.frag_sample_test_weight_time_tv)
         testWeightTv = view.findViewById(R.id.frag_sample_test_weight_header_tv)
+        testBarcodeEt = view.findViewById(R.id.frag_sample_test_barcode_et)
+        
+        testBarcodeHeader = view.findViewById(R.id.frag_sample_test_code_header_tv)
+
+        //initialize buttons
+        saveButton = view.findViewById(R.id.frag_sample_save_btn)
 
         //at first all fields are empty and times are "gone"
         totalWeightTime.visibility = View.GONE
@@ -227,12 +136,88 @@ class SampleFragment : BluetoothFragment(R.layout.fragment_sample), CoroutineSco
         lintWeightTime.visibility = View.GONE
         testWeightTime.visibility = View.GONE
 
+        testBarcodeEt.onFocusChangeListener = View.OnFocusChangeListener { v, hasFocus ->
+
+            if (hasFocus) {
+                if (!getUsbBarcodeReaderEnabled()) {
+                    startBarcodeLauncher(getString(R.string.frag_sample_scan_test_label))
+                }
+            }
+        }
+
+        testBarcodeEt.setOnClickListener {
+            if (!getUsbBarcodeReaderEnabled()) {
+                startBarcodeLauncher(getString(R.string.frag_sample_scan_test_label))
+            }
+        }
+
         loadSamples()
+    }
+
+    // Barcode launcher for scanning Test label
+    private val barcodeLauncher = registerForActivityResult(
+        ScanContract()
+    ) { result: ScanIntentResult ->
+        if (result.contents == null) {
+
+            Toast.makeText(context,
+                getString(R.string.canceled),
+                Toast.LENGTH_LONG
+            ).show()
+
+        } else {
+
+            val code = result.contents
+
+            launch {
+
+                if (sampleViewModel.getSampleWithCode(code) == null) {
+
+                    activity?.runOnUiThread {
+
+                        test.code = result.contents
+                        testBarcodeEt.setText(test.code)
+                        test.scanTime = Calendar.getInstance().timeInMillis
+
+                    }
+
+                } else {
+
+                    activity?.runOnUiThread {
+
+                        Toast.makeText(context, R.string.frag_sample_barcode_exists, Toast.LENGTH_LONG).show()
+
+                    }
+                }
+            }
+        }
+    }
+
+    private fun startBarcodeLauncher(message: String) {
+        val options = ScanOptions()
+        options.setDesiredBarcodeFormats(ScanOptions.ALL_CODE_TYPES)
+        options.setPrompt(message)
+        options.setCameraId(0) // Use a specific camera of the device
+        options.setOrientationLocked(true)
+        options.setBeepEnabled(false)
+        options.setBarcodeImageEnabled(true)
+        barcodeLauncher.launch(options)
+    }
+
+    //called from main activity when back button is pressed
+    //if this is a new sample, ask if user wants to save or delete
+    open fun resolveBackPress() {
+
+        if (arguments?.getBoolean("new") == true) {
+
+            askSaveOrDeleteNewSample()
+
+        } else findNavController().popBackStack()
     }
 
     //find seed/lint samples from this parent
     //if they exist: show their UI and load data
-    private fun updateUi() {
+    open fun updateUi() {
 
         //stop listening for new data
         sampleLiveData.removeObserver(observer)
@@ -272,9 +257,22 @@ class SampleFragment : BluetoothFragment(R.layout.fragment_sample), CoroutineSco
                     testWeightTime.text = test.scaleTime?.toDateString()
                 }
 
-                testWeightTv.visibility = View.VISIBLE
-                testWeightEt.visibility = View.VISIBLE
-                testWeightTime.visibility = View.VISIBLE
+                if (!getTestEnabled()) {
+                    testWeightEt.visibility = View.GONE
+                    testWeightTime.visibility = View.GONE
+                    testWeightTv.visibility = View.GONE
+                } else {
+                    testWeightTv.visibility = View.VISIBLE
+                    testWeightEt.visibility = View.VISIBLE
+                    testWeightTime.visibility = View.VISIBLE
+                    testWeightTv.visibility = View.VISIBLE
+                    testBarcodeEt.visibility = View.VISIBLE
+                    testBarcodeHeader.visibility = View.VISIBLE
+
+                    if (test.code != null) {
+                        testBarcodeEt.setText(test.code)
+                    }
+                }
             }
 
         } else {
@@ -300,33 +298,70 @@ class SampleFragment : BluetoothFragment(R.layout.fragment_sample), CoroutineSco
 
         }
 
-        weightEt.addTextChangedListener(totalWeightListener)
-        lintWeightEt.addTextChangedListener(lintWeightListener)
-        seedWeightEt.addTextChangedListener(seedWeightListener)
-        testWeightEt.addTextChangedListener(testWeightListener)
+        saveButton.setOnClickListener {
 
-        weightEt.setOnClickListener {
-            state = FocusState.WAITING
+            saveWorkflowData()
+        }
+    }
+
+    protected fun askSaveOrDeleteNewSample() {
+
+        val builder = AlertDialog.Builder(context, R.style.AlertDialogTheme)
+        builder.setTitle(R.string.frag_sample_ask_resolve_new_sample_title)
+        builder.setMessage(R.string.frag_sample_ask_resolve_new_sample_message)
+        builder.setPositiveButton(R.string.save) { _, _ ->
+
+            saveWorkflowData()
+
+            findNavController().popBackStack()
+        }
+        builder.setNegativeButton(R.string.delete) { _, _ ->
+
+            deleteWorkflowData()
+
+            findNavController().popBackStack()
+        }
+        builder.show()
+    }
+
+    protected fun deleteWorkflowData() {
+
+        if (::sample.isInitialized) {
+            sampleViewModel.deleteSample(sample)
         }
 
-        lintWeightEt.setOnClickListener {
-            state = FocusState.WAITING
+        if (::seed.isInitialized) {
+            sampleViewModel.deleteSample(seed)
         }
 
-        seedWeightEt.setOnClickListener {
-            state = FocusState.WAITING
+        if (::test.isInitialized) {
+            sampleViewModel.deleteSample(test)
         }
 
-        testWeightEt.setOnClickListener {
-            state = FocusState.WAITING
+        if (::lint.isInitialized) {
+            sampleViewModel.deleteSample(lint)
+        }
+    }
+
+    //update sample weight and time
+    protected fun saveWorkflowData() {
+
+        //save all samples
+        if (::sample.isInitialized) {
+            updateSampleWeight(sample, weightEt.text, totalWeightTime)
         }
 
-        //TODO if data should be frozen
-        //if (sample.weight == null) {
+        if (::seed.isInitialized) {
+            updateSampleWeight(seed, seedWeightEt.text, seedWeightTime)
+        }
 
-        //}
+        if (::test.isInitialized) {
+            updateSampleWeight(test, testWeightEt.text, testWeightTime, testBarcodeEt)
+        }
 
-        startWeightListener()
+        if (::lint.isInitialized) {
+            updateSampleWeight(lint, lintWeightEt.text, lintWeightTime)
+        }
     }
 
     private fun loadSamples() {
@@ -334,147 +369,93 @@ class SampleFragment : BluetoothFragment(R.layout.fragment_sample), CoroutineSco
         sampleLiveData.observe(viewLifecycleOwner, observer)
     }
 
-    private var lastReading = 0.0
-    private var state = FocusState.TOTAL
-    private fun startWeightListener() {
+    protected fun getTestEnabled(): Boolean {
 
-        val scaleId = (activity as MainActivity).getScaleId()
+        return prefs?.getBoolean(getString(R.string.key_preferences_test_enabled), false) ?: false
 
-        viewModel.advisor = advisor
-
-        advisor.withNearby { adapter ->
-
-            viewModel.readWeight(requireContext(), adapter, scaleId).observe(viewLifecycleOwner) { data ->
-
-                //println("Weight: ${data.toCharArray().joinToString(",")}")
-
-                try {
-
-                    val weight = data.replace(ScaleUtil.UNIT, "").toDouble()
-
-                    val testThresh = getTestThresh()
-
-                    //in test mode take input until 25g are taken off (TODO should really figure out their units)
-                    //else take a reading between 0.0g readings
-                    if (state == FocusState.TEST) {
-
-                        if (::lint.isInitialized) {
-
-                            val diff = (lint.weight ?: 0.0) - weight
-                            //TODO used '>=' here but mainly for testing, or make a min/max thresh
-                            //TODO should this save the threshed amount of the final lint ?
-                            if (diff >= testThresh) {
-
-                                testWeightEt.setText("$weight")
-
-                                state = FocusState.WAITING
-
-                                Toast.makeText(context, R.string.frag_sample_test_complete, Toast.LENGTH_LONG).show()
-
-                                startBarcodeLauncher(getString(R.string.frag_sample_scan_test_label))
-                            }
-                        }
-
-                    } else if (state == FocusState.EDIT) {
-
-                        //do nothing !
-
-                    } else if (lastReading == 0.0 && weight > 0) {
-
-                        when (state) {
-
-                            FocusState.TOTAL -> {
-
-                                weightEt.setText("$weight")
-
-                                seedWeightEt.selectAll()
-
-                                state = FocusState.SEED
-                            }
-
-                            FocusState.SEED -> {
-
-                                seedWeightEt.setText("$weight")
-
-                                lintWeightEt.selectAll()
-
-                                state = FocusState.LINT
-                            }
-
-                            FocusState.LINT -> {
-
-                                lintWeightEt.setText("$weight")
-
-                                testWeightEt.selectAll()
-
-                                state = FocusState.TEST
-
-                            }
-
-                            else -> {
-
-                                //TODO WAITING, in case user interrupts
-
-                            }
-                        }
-                    }
-
-                    lastReading = weight
-
-                } catch (e: NumberFormatException) {
-
-                    e.printStackTrace()
-
-                    println(data)
-                }
-            }
-        }
     }
 
-    private fun getTestThresh(): Double = try {
+    protected fun getUsbBarcodeReaderEnabled(): Boolean {
 
-        val value = prefs?.getString(getString(R.string.key_preferences_test_weight_threshold), "0.025") ?: "0.025"
+        return prefs?.getBoolean(getString(R.string.key_preferences_usb_barcode_reader_enabled), false) ?: false
 
-        value.toDouble()
-
-    } catch (e: Exception) {
-
-        0.025
     }
 
-    private fun updateSampleWeight(model: SampleModel?, weight: Editable?, timeView: TextView) {
+    private fun updateSampleWeight(model: SampleModel?, weight: Editable?, timeView: TextView, barcodeView: TextView? = null) {
 
         val time = Calendar.getInstance().timeInMillis
 
         model?.let { m ->
 
+            m.person = prefs?.getString(getString(R.string.key_preferences_person), null)
+
             try {
 
-                m.person = prefs?.getString(getString(R.string.key_preferences_person), null)
                 m.weight = weight?.toString()?.toDouble()
-                m.scaleTime = time
-
-                timeView.text = time.toDateString()
-                timeView.visibility = View.VISIBLE
-
-                sampleViewModel.updateSample(m)
 
             } catch (e: NumberFormatException) {
 
                 e.printStackTrace()
 
             }
+
+            m.scaleTime = time
+
+            timeView.text = time.toDateString()
+            timeView.visibility = View.VISIBLE
+
+            if (barcodeView != null) {
+                m.code = barcodeView.text.toString()
+            }
+
+            sampleViewModel.updateSample(m)
         }
     }
 
-    private fun startBarcodeLauncher(message: String) {
-        val options = ScanOptions()
-        options.setDesiredBarcodeFormats(ScanOptions.ALL_CODE_TYPES)
-        options.setPrompt(message)
-        options.setCameraId(0) // Use a specific camera of the device
-        options.setOrientationLocked(false)
-        options.setBeepEnabled(false)
-        options.setBarcodeImageEnabled(true)
-        barcodeLauncher.launch(options)
+    //called from main toolbar to delete current sample
+    open fun resolveDelete() {
+
+        //not implemented
+    }
+
+    //called from main toolbar to restart workflow
+    open fun resolveWorkflow() {
+
+        // not implemented
+    }
+
+    fun resolveNote() {
+
+        val editText = EditText(context).apply {
+            layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
+                setMargins(8, 8, 8, 8)
+            }
+            setText(sample.note)
+            isSingleLine = false
+            setLines(1)
+            setHorizontallyScrolling(false)
+            maxLines = 1
+        }
+
+        AlertDialog.Builder(context, R.style.AlertDialogTheme)
+            .setTitle(R.string.frag_sample_note_dialog_title)
+            .setMessage(R.string.frag_sample_note_dialog_message)
+            .setView(editText)
+            .setPositiveButton(android.R.string.ok) { _, _ ->
+                sample.note = editText.text.toString()
+                sampleViewModel.updateSample(sample)
+            }
+            .create()
+            .show()
+    }
+
+    override fun onViewStateRestored(savedInstanceState: Bundle?) {
+        super.onViewStateRestored(savedInstanceState)
+        (activity as MainToolbarManager).updateToolbarVisibility()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        (activity as MainToolbarManager).updateToolbarVisibility()
     }
 }

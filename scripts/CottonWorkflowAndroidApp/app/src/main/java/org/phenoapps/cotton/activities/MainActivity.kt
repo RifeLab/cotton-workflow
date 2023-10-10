@@ -1,9 +1,19 @@
 package org.phenoapps.cotton.activities
 
 import android.annotation.SuppressLint
+import android.bluetooth.BluetoothManager
+import android.bluetooth.BluetoothProfile
+import android.content.Context
 import android.content.SharedPreferences
+import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.view.KeyEvent
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
+import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
@@ -17,20 +27,29 @@ import com.google.android.material.bottomnavigation.BottomNavigationView
 import dagger.hilt.android.AndroidEntryPoint
 import org.phenoapps.cotton.NavigationRootDirections
 import org.phenoapps.cotton.R
+import org.phenoapps.cotton.fragments.SampleEditFragment
+import org.phenoapps.cotton.fragments.SampleFragment
+import org.phenoapps.cotton.fragments.SampleListFragment
+import org.phenoapps.cotton.fragments.SampleWorkflowFragment
 import org.phenoapps.cotton.interfaces.Connector
+import org.phenoapps.cotton.interfaces.MainToolbarManager
+import org.phenoapps.cotton.interfaces.UsbBarcodeReader
 import org.phenoapps.cotton.models.SampleModel
+import org.phenoapps.cotton.util.BarcodeScannerHelper
+import org.phenoapps.cotton.util.DateUtil.Companion.toDateString
 import org.phenoapps.cotton.util.KeyboardListenerHelper
 import org.phenoapps.cotton.util.VerifyPersonHelper
+import org.phenoapps.cotton.util.WorkflowUtil
 import org.phenoapps.cotton.viewmodels.OhausSampleViewModel
 import org.phenoapps.cotton.viewmodels.SampleViewModel
 import org.phenoapps.security.Security
 import java.io.OutputStreamWriter
-import java.text.SimpleDateFormat
 import java.util.*
 import javax.inject.Inject
+import kotlin.math.abs
 
 @AndroidEntryPoint
-class MainActivity: AppCompatActivity(), Connector {
+class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarcodeReader {
 
     private var bottomNav: BottomNavigationView? = null
 
@@ -44,46 +63,107 @@ class MainActivity: AppCompatActivity(), Connector {
 
     private var samples: List<SampleModel>? = null
 
-    private var selectedSamples: List<SampleModel>? = null
-
     private val viewModel: SampleViewModel by viewModels()
 
-    private val ohausViewModel: OhausSampleViewModel by viewModels()
+    private var menu: Menu? = null
+
+    val ohausViewModel: OhausSampleViewModel by viewModels()
 
     companion object {
         const val PRINTER = 0
         const val SCALE = 1
         const val CONNECTION_CHECK_INTERVAL = 1000L
+        const val BACK_BUTTON_THRESH = 2000L
     }
 
     @Inject
     lateinit var verifyPersonHelper: VerifyPersonHelper
 
-    private val saveLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("text/csv")) { uri ->
+    @Inject
+    lateinit var barcodeScannerHelper: BarcodeScannerHelper
 
-        uri?.let { fileUri ->
+    private val saveLauncher =
+        registerForActivityResult(ActivityResultContracts.CreateDocument("text/csv")) { uri ->
 
-            contentResolver.openOutputStream(fileUri).use {
+            try {
 
-                OutputStreamWriter(it).use { writer ->
+                uri?.let { fileUri ->
 
-                    writer.write("id, barcode, weight, scan_time, scale_time, person, parent\n")
+                    exportToUri(fileUri)
 
-                    //iterate over chosen parents
-                    selectedSamples?.forEach { sample ->
+                }
 
-                        writer.write(sample.toRowString())
+                askUserDeleteSamples()
 
-                        writer.write("\n")
+            } catch (e: Exception ) {
 
-                        //iterate over its children and print as well
-                        val children = samples?.filter { it.parent == sample.sid }?.sortedBy { it.type }
+                e.printStackTrace()
 
-                        children?.forEach { child ->
+                Toast.makeText(this, R.string.export_failed, Toast.LENGTH_SHORT).show()
+            }
+        }
 
-                            writer.write(child.toRowString())
+    private fun askUserDeleteSamples() {
 
-                            writer.write("\n")
+        AlertDialog.Builder(this, R.style.AlertDialogTheme)
+            .setTitle(R.string.delete_samples)
+            .setMessage(R.string.delete_samples_message)
+            .setPositiveButton(android.R.string.yes) { _, _ ->
+
+                viewModel.deleteAll()
+
+            }
+            .setNegativeButton(android.R.string.no) { _, _ -> }
+            .show()
+    }
+
+    private fun exportToUri(uri: Uri) {
+
+        contentResolver.openOutputStream(uri).use {
+
+            OutputStreamWriter(it).use { writer ->
+
+                writer.write("Barcode, See Cotton Wt, Fuzzy Seed Wt, Lint Wt, HVI Sample No., Timestamp, Error, Notes\n")
+
+                //iterate over chosen parents
+                samples?.forEach { sample ->
+
+                    //iterate over its children and print as well
+                    samples?.filter { it.parent == sample.sid }?.sortedBy { it.type }?.let { children ->
+
+                        if (children.size == WorkflowUtil.NumSubSamples) {
+
+                            val seed = children[0]
+                            val lint = children[1]
+                            val test = children[2]
+
+                            val code = sample.code ?: ""
+                            val weight = sample.weight ?: ""
+                            val seedWeight = seed.weight ?: ""
+                            val lintWeight = lint.weight ?: ""
+                            val testCode = test.code ?: ""
+                            val scanTime = sample.scanTime?.toDateString() ?: ""
+                            val notes = if (sample.note == null) "" else "\"${sample.note?.replace("\"", "\"\"")}\""
+
+                            val error = if (sample.weight != null && lint.weight != null && seed.weight != null) {
+
+                                val doubleError =
+                                    abs(sample.weight!! - (lint.weight!! + seed.weight!!))
+                                var e = doubleError.toString()
+
+                                val length = e.length
+
+                                if (length > 5) {
+
+                                    e = e.substring(0..5)
+                                }
+
+                                e
+
+                            } else ""
+
+                            writer.write("$code, $weight, $seedWeight, $lintWeight, $testCode, $scanTime, $error, $notes\n")
+
                         }
                     }
                 }
@@ -104,8 +184,9 @@ class MainActivity: AppCompatActivity(), Connector {
         setupToolbar()
         verifyPersonHelper.setPrefNavigation {
             findNavController(R.id.nav_fragment)
-                .navigate(NavigationRootDirections
-                    .globalActionToPreferencesFragment(action = "person")
+                .navigate(
+                    NavigationRootDirections
+                        .globalActionToPreferencesFragment(action = "person")
                 )
         }
 
@@ -146,7 +227,7 @@ class MainActivity: AppCompatActivity(), Connector {
         bottomNav?.isSelected = false
         bottomNav?.setOnItemSelectedListener {
 
-            when(it.itemId) {
+            when (it.itemId) {
 
                 R.id.action_menu_main_bot_tb_home -> {
 
@@ -174,9 +255,95 @@ class MainActivity: AppCompatActivity(), Connector {
             }
         }
 
-        topToolbar?.setOnMenuItemClickListener {
+        updateToolbarStatus(SCALE, false)
 
-            when (it.itemId) {
+        setSupportActionBar(topToolbar)
+
+        if (supportActionBar != null) {
+            supportActionBar?.setDisplayHomeAsUpEnabled(true)
+            supportActionBar?.setDisplayShowHomeEnabled(true)
+            supportActionBar?.setDisplayShowTitleEnabled(false)
+            topToolbar?.inflateMenu(R.menu.menu_main_top_toolbar)
+        }
+    }
+
+
+    private fun resolveBackButtonPressed() {
+
+        when (findNavController(R.id.nav_fragment).currentDestination?.id
+            ?: R.id.fragment_sample_list) {
+
+            R.id.fragment_sample_list -> {
+
+                backPressedTime =
+                    if (backPressedTime + BACK_BUTTON_THRESH > System.currentTimeMillis()) {
+
+                        finish()
+
+                        0L
+
+                    } else {
+
+                        Toast.makeText(
+                            this,
+                            getString(R.string.act_main_press_back_twice),
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                        System.currentTimeMillis()
+                    }
+            }
+            R.id.fragment_device_chooser -> {
+
+                findNavController(R.id.nav_fragment)
+                    .popBackStack()
+            }
+            R.id.fragment_sample -> {
+
+                supportFragmentManager.findFragmentById(R.id.nav_fragment)
+                    ?.childFragmentManager?.fragments?.find { it is SampleFragment }.let {
+
+                        (it as? SampleEditFragment)?.resolveBackPress()
+
+                    }
+            }
+            R.id.fragment_workflow -> {
+
+                supportFragmentManager.findFragmentById(R.id.nav_fragment)
+                    ?.childFragmentManager?.fragments?.find { it is SampleWorkflowFragment }.let {
+
+                        (it as? SampleWorkflowFragment)?.resolveBackPress()
+
+                    }
+            }
+            R.id.fragment_scale_config_help -> {
+
+                findNavController(R.id.nav_fragment)
+                    .popBackStack()
+
+            }
+            else -> {
+
+                bottomNav?.selectedItemId = R.id.action_menu_main_bot_tb_home
+
+            }
+        }
+    }
+
+    //required to override this when using support action bar
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_main_top_toolbar, menu)
+        updateToolbarVisibility()
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    //track if back button is pressed twice to exit app
+    var backPressedTime = 0L
+
+    //support back button on toolbar to navigate back to home or close app
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+
+        when (item.itemId) {
 
 //                R.id.action_menu_main_top_printer -> {
 //
@@ -186,61 +353,102 @@ class MainActivity: AppCompatActivity(), Connector {
 //                    true
 //                }
 
-                R.id.action_menu_main_top_scale -> {
+            R.id.action_menu_main_top_scale -> {
 
-                    disconnectGatt()
+                disconnectGatt()
 
-                    findNavController(R.id.nav_fragment)
-                        .navigate(NavigationRootDirections.globalActionToDeviceChooserFragment("scale"))
+                findNavController(R.id.nav_fragment)
+                    .navigate(NavigationRootDirections.globalActionToDeviceChooserFragment("scale"))
 
-                    true
+            }
+
+            R.id.action_menu_main_top_workflow -> {
+
+                when (findNavController(R.id.nav_fragment).currentDestination?.id
+                    ?: R.id.fragment_sample_list) {
+
+                    R.id.fragment_workflow, R.id.fragment_sample -> {
+
+                        supportFragmentManager.findFragmentById(R.id.nav_fragment)
+                            ?.childFragmentManager?.fragments?.find { it is SampleFragment }.let {
+
+                                (it as? SampleFragment)?.resolveWorkflow()
+
+                            }
+                    }
                 }
+            }
 
-                else -> false
+            R.id.action_menu_main_top_delete -> {
+
+                when (findNavController(R.id.nav_fragment).currentDestination?.id
+                    ?: R.id.fragment_sample_list) {
+
+                    R.id.fragment_workflow, R.id.fragment_sample -> {
+
+                        supportFragmentManager.findFragmentById(R.id.nav_fragment)
+                            ?.childFragmentManager?.fragments?.find { it is SampleFragment }.let {
+
+                                (it as? SampleFragment)?.resolveDelete()
+
+                            }
+                    }
+                }
+            }
+
+            R.id.action_menu_main_top_note -> {
+
+                when (findNavController(R.id.nav_fragment).currentDestination?.id
+                    ?: R.id.fragment_sample_list) {
+
+                    R.id.fragment_workflow, R.id.fragment_sample -> {
+
+                        supportFragmentManager.findFragmentById(R.id.nav_fragment)
+                            ?.childFragmentManager?.fragments?.find { it is SampleFragment }.let {
+
+                                (it as? SampleFragment)?.resolveNote()
+
+                            }
+                    }
+                }
+            }
+
+            android.R.id.home -> {
+
+                resolveBackButtonPressed()
+
             }
         }
 
-        updateToolbarStatus(SCALE, false)
-        updateToolbarStatus(PRINTER, false)
-
+        return super.onOptionsItemSelected(item)
     }
 
     private fun showExportDialog() {
 
+        val filePrefix = getString(R.string.cotton_file_prefix)
+
         val parents = samples?.filter { it.parent == null }
 
-        val scanTime = Calendar.getInstance().timeInMillis
+        val exportTime = Calendar.getInstance().timeInMillis
 
-        val formatter = SimpleDateFormat.getDateTimeInstance()
-
-        val timestamp = formatter.format(scanTime)
-            .replace(Regex("[:/, ]"), "_")
+        val timestamp = exportTime.toDateString()
 
         // Create AlertDialog
         val builder = AlertDialog.Builder(this)
 
         // Set title
-        builder.setTitle(getString(R.string.act_main_select_sample_export_title))
+        builder.setTitle(getString(R.string.act_main_sample_export_title))
 
-        // Set multiple choice items
-        val selectedModels = arrayListOf<SampleModel>()
+        builder.setMessage(
+            getString(
+                R.string.act_main_sample_export_message,
+                (parents?.size ?: 0).toString()
+            )
+        )
 
-        parents?.let { selectedModels.addAll(it) }
+        builder.setPositiveButton(R.string.save) { _, _ ->
 
-        val checked = parents?.map { true }?.toBooleanArray()
-        builder.setMultiChoiceItems(parents?.map { it.code  }?.toTypedArray(), checked) { _, which, isChecked ->
-            // Handle selection
-            val selectedModel = selectedModels[which]
-            if (isChecked) {
-                selectedModels.add(selectedModel)
-            } else {
-                selectedModels.remove(selectedModel)
-            }
-        }
-
-        builder.setPositiveButton(android.R.string.ok) { _, _ ->
-
-            saveLauncher.launch("output_$timestamp.csv")
+            saveLauncher.launch("$filePrefix$timestamp.csv")
 
         }
 
@@ -250,15 +458,34 @@ class MainActivity: AppCompatActivity(), Connector {
 
         }
 
-        builder.setOnDismissListener {
-            selectedSamples = selectedModels
-        }
-
         val dialog = builder.create()
         dialog.show()
     }
 
+    var connected = false
+
+    var checking = false
+
     private fun startConnectionCheck(key: Int) {
+
+        if (!connected) {
+
+            if (!checking) {
+
+                checking = true
+
+                connectionCheck()
+
+            }
+
+            Handler(Looper.getMainLooper()).postDelayed({
+                startConnectionCheck(key)
+            }, 5000)
+        }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun connectionCheck() {
 
         val scaleId = getScaleId()
 
@@ -266,29 +493,33 @@ class MainActivity: AppCompatActivity(), Connector {
 
             advisor.withNearby { adapter ->
 
-                ohausViewModel.reach(this, adapter, scaleId).observe(this) { status: Boolean ->
+                ohausViewModel.reach(this, adapter, scaleId).observe(this) { status: Boolean? ->
 
-                    updateToolbarStatus(SCALE, status)
+                    status?.let { s ->
 
+                        println("STATUS: $s")
+                        connected = s
+
+                        updateToolbarStatus(SCALE, s)
+
+                        checking = false
+                    }
                 }
             }
         }
     }
 
+    override fun onPrepareOptionsMenu(menu: Menu): Boolean {
+        this.menu = menu
+        updateToolbarStatus(SCALE, connected)
+        return super.onPrepareOptionsMenu(menu)
+    }
+
     @Deprecated("Deprecated in Java")
     override fun onBackPressed() {
-        when (findNavController(R.id.nav_fragment).currentDestination?.id ?: -1) {
-            R.id.fragment_device_chooser -> {
-                findNavController(R.id.nav_fragment).popBackStack()
-            }
-            R.id.fragment_sample_list -> {
-                finish()
-            }
-            else -> {
-                super.onBackPressed()
-                bottomNav?.selectedItemId = R.id.action_menu_main_bot_tb_home
-            }
-        }
+
+        //press the support action back button
+        resolveBackButtonPressed()
     }
 
     private fun updateToolbarStatus(key: Int, connected: Boolean) {
@@ -296,15 +527,10 @@ class MainActivity: AppCompatActivity(), Connector {
         runOnUiThread {
             when (key) {
                 SCALE -> {
-                    topToolbar?.menu?.getItem(0)?.setIcon(
+                    menu?.findItem(R.id.action_menu_main_top_scale)?.setIcon(
                         if (connected) R.drawable.scale else R.drawable.scale_off
                     )
                 }
-//                PRINTER -> {
-//                    topToolbar?.menu?.getItem(1)?.setIcon(
-//                        if (connected) R.drawable.printer_outline else R.drawable.printer_off
-//                    )
-//                }
             }
         }
     }
@@ -312,27 +538,26 @@ class MainActivity: AppCompatActivity(), Connector {
     @SuppressLint("MissingPermission")
     override fun isConnected(address: String?): Boolean {
 
-        //val printerId = getPrinterId()
         val scaleId = getScaleId()
-
-//        if (printerId == address) {
-//
-//            return (topToolbar?.menu?.getItem(1)?.icon == AppCompatResources.getDrawable(this, R.drawable.printer_outline))
-//
-//        }
 
         if (scaleId == address) {
 
-            return (topToolbar?.menu?.getItem(0)?.icon == AppCompatResources.getDrawable(this, R.drawable.scale))
+            return (menu?.findItem(R.id.action_menu_main_top_scale)?.icon
+                    == AppCompatResources.getDrawable(this, R.drawable.scale))
 
         }
 
         return false
     }
 
-    override fun getPrinterId(): String? = prefs?.getString(getString(R.string.key_printer_device_id), null)
-    override fun getScaleId(): String? = prefs?.getString(getString(R.string.key_scale_device_id), null)
-    override fun getPerson(): String? = prefs?.getString(getString(R.string.key_preferences_person), "") ?: ""
+    override fun getPrinterId(): String? =
+        prefs?.getString(getString(R.string.key_printer_device_id), null)
+
+    override fun getScaleId(): String? =
+        prefs?.getString(getString(R.string.key_scale_device_id), null)
+
+    override fun getPerson(): String? =
+        prefs?.getString(getString(R.string.key_preferences_person), "") ?: ""
 
     override fun onPause() {
         super.onPause()
@@ -356,7 +581,78 @@ class MainActivity: AppCompatActivity(), Connector {
 
     fun reconnect() {
 
+        ohausViewModel.reset()
+
         startConnectionCheck(SCALE)
 
+    }
+
+    override fun updateToolbarVisibility() {
+
+        invalidateOptionsMenu()
+
+        when (findNavController(R.id.nav_fragment).currentDestination?.id) {
+
+            R.id.fragment_sample_list -> {
+
+                supportActionBar?.setDisplayHomeAsUpEnabled(false)
+                menu?.findItem(R.id.action_menu_main_top_delete)?.isVisible = false
+                menu?.findItem(R.id.action_menu_main_top_workflow)?.isVisible = false
+                menu?.findItem(R.id.action_menu_main_top_note)?.isVisible = false
+
+            }
+
+            R.id.fragment_sample, R.id.fragment_workflow -> {
+
+                supportActionBar?.setDisplayHomeAsUpEnabled(true)
+                menu?.findItem(R.id.action_menu_main_top_delete)?.isVisible = true
+                menu?.findItem(R.id.action_menu_main_top_workflow)?.isVisible = true
+                menu?.findItem(R.id.action_menu_main_top_note)?.isVisible = true
+
+            }
+
+            else -> {
+
+                supportActionBar?.setDisplayHomeAsUpEnabled(true)
+                menu?.findItem(R.id.action_menu_main_top_delete)?.isVisible = false
+                menu?.findItem(R.id.action_menu_main_top_workflow)?.isVisible = false
+                menu?.findItem(R.id.action_menu_main_top_note)?.isVisible = false
+
+            }
+        }
+    }
+
+    override fun resolveBarcode(code: String) {
+
+        when (findNavController(R.id.nav_fragment).currentDestination?.id
+            ?: R.id.fragment_sample_list) {
+
+            R.id.fragment_sample_list -> {
+
+                supportFragmentManager.findFragmentById(R.id.nav_fragment)
+                    ?.childFragmentManager?.fragments?.find { it is SampleListFragment }.let {
+
+                        (it as? SampleListFragment)?.checkForNewSample(code)
+
+                    }
+            }
+        }
+    }
+
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        return when (findNavController(R.id.nav_fragment).currentDestination?.id
+            ?: R.id.fragment_sample_list) {
+
+            R.id.fragment_sample_list -> {
+
+                return if (barcodeScannerHelper.dispatchKeyEvent(event)) true else super.dispatchKeyEvent(event)
+            }
+
+            else -> super.dispatchKeyEvent(event)
+        }
+    }
+
+    override fun askUsbBarcodeScanner() {
+        barcodeScannerHelper.askUsbBarcodeScanner()
     }
 }

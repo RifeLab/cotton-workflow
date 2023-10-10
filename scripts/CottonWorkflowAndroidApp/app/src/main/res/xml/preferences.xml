@@ -34,15 +34,29 @@
         android:title="@string/preferences_workflow"
         app:iconSpaceReserved="false">
 
+        <CheckBoxPreference
+            android:defaultValue="true"
+            android:icon="@drawable/alert_rhombus"
+            android:key="@string/key_preferences_error_threshold"
+            android:title="@string/pref_workflow_error_threshold_title"
+            android:summary="@string/pref_workflow_error_threshold_summary"/>
+
         <EditTextPreference android:title="@string/preferences_error_check_threshold_title"
             android:summary="@string/preferences_error_check_threshold_summary"
-            android:defaultValue="5"
+            android:defaultValue="3"
             android:icon="@drawable/abacus"
             android:key="@string/key_preferences_error_check_threshold"/>
 
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:icon="@drawable/test_tube"
+            android:key="@string/key_preferences_test_enabled"
+            android:title="@string/pref_workflow_test_enabled_title"
+            android:summary="@string/pref_workflow_test_enabled_summary"/>
+
         <EditTextPreference android:title="@string/preferences_test_check_threshold_title"
             android:summary="@string/preferences_test_check_threshold_summary"
-            android:defaultValue="0.025"
+            android:defaultValue="20"
             android:icon="@drawable/receipt_text_check_outline"
             android:key="@string/key_preferences_test_weight_threshold"/>
 
@@ -51,6 +65,18 @@
     <PreferenceCategory
         android:title="@string/preferences_devices"
         app:iconSpaceReserved="false">
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:icon="@drawable/barcode_scan"
+            android:key="@string/key_preferences_usb_barcode_reader_enabled"
+            android:title="@string/pref_device_usb_barcode_scanner_enabled_title"
+            android:summary="@string/pref_device_usb_barcode_scanner_enabled_summary"/>
+
+        <Preference android:title="@string/preferences_scale_config_helper_title"
+            android:summary="@string/preferences_scale_config_helper_summary"
+            android:icon="@drawable/ic_about_help_translate"
+            android:key="@string/key_preferences_scale_config_help"/>
 
         <Preference android:title="@string/preferences_scale_device_chooser"
             android:summary=""

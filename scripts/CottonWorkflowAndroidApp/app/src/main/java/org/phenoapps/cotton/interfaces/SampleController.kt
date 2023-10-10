@@ -21,9 +21,6 @@ interface SampleController {
     // prints label for a give sample, returns true/false if fails
     fun printSample(model: SampleModel): Boolean
 
-    // start workflow to weigh a sample
-    fun weighSample(model: SampleModel)
-
     // start a barcode scan to save code into model
     fun scanSample(model: SampleModel)
 
@@ -38,10 +35,20 @@ interface SampleController {
 
     // start automatic workflow action
     // edit mode overrides the automatic workflow and user inputs data
-    fun workflow(model: SampleModel, edit: Boolean)
+    // new mode is for creating a new sample (changes back button behaviour)
+    fun workflow(model: SampleModel, edit: Boolean, new: Boolean)
+
+    // returns the error thresh preference
+    fun getErrorEnabled(): Boolean
+
+    // returns the test mode preference
+    fun getTestEnabled(): Boolean
 
     // view code returns the error thresh preference
     fun getErrorThresh(): Double
+
+    // returns the usb barcode reader enabled preference
+    fun getUsbBarcodeReaderEnabled(): Boolean
 
     fun getString(id: Int): String
     fun getString(id: Int, diff: String): String

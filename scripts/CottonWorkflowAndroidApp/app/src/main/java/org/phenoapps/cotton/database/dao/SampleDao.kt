@@ -22,6 +22,9 @@ interface SampleDao {
     @Delete
     suspend fun delete(model: SampleEntity)
 
+    @Query("DELETE FROM samples")
+    suspend fun deleteAll()
+
     @Query("UPDATE samples SET weight = :weight WHERE sid = :id")
     suspend fun writeWeight(id: Long, weight: String)
 }

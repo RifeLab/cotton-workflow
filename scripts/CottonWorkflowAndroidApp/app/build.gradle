@@ -15,8 +15,8 @@ android {
         applicationId "org.phenoapps.cotton"
         minSdk 21
         targetSdk 33
-        versionCode 1
-        versionName "1.0"
+        versionCode 14
+        versionName "1.4"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
@@ -85,7 +85,6 @@ dependencies {
     implementation 'com.journeyapps:zxing-android-embedded:4.3.0'
     //required for zebra api
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.11.1'
-
 }
 
 // Allow references to generated code - hilt required

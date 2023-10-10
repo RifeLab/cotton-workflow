@@ -47,7 +47,7 @@
         android:src="@drawable/ic_connection"
         app:layout_constraintBottom_toTopOf="@id/frag_print_sample_accept_btn"
         app:layout_constraintEnd_toEndOf="parent"
-        app:backgroundTint="@color/pistachio"
+        app:backgroundTint="@color/accent"
         android:layout_margin="8dp"
         android:id="@+id/frag_print_sample_connect_fab"
         android:contentDescription="TODO" />

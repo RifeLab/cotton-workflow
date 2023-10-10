@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <TextView style="@style/Theme.Cotton.TitleText"
+    <TextView style="@style/Theme.Cotton.Dialog.Title"
+        android:layout_margin="8dp"
         android:id="@+id/dialog_sample_action_header_tv"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -14,7 +15,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <TextView style="@style/Theme.Cotton.Text"
+    <TextView style="@style/Theme.Cotton.Dialog.Subtitle"
+        android:layout_margin="8dp"
         android:id="@+id/dialog_sample_action_code_tv"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
@@ -24,31 +26,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!--        <Button-->
-    <!--            android:id="@+id/dialog_sample_action_print_rb"-->
-    <!--            android:layout_width="wrap_content"-->
-    <!--            android:layout_height="wrap_content"-->
-    <!--            android:checked="true"-->
-    <!--            android:text="@string/dialog_sample_action_print_label_rb"/>-->
-
-    <Button
-        android:id="@+id/dialog_sample_action_weigh_btn"
-        android:layout_width="0dp"
-        android:layout_margin="8dp"
-        android:layout_height="wrap_content"
-        android:checked="false"
-        android:text="@string/dialog_sample_action_weigh_rb"
-        app:layout_constraintTop_toBottomOf="@id/dialog_sample_action_code_tv"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
-
-    <!--        <Button-->
-    <!--            android:id="@+id/dialog_sample_action_add_subsample"-->
-    <!--            android:layout_width="wrap_content"-->
-    <!--            android:layout_height="wrap_content"-->
-    <!--            android:checked="false"-->
-    <!--            android:text="@string/dialog_sample_action_add_rb"/>-->
-
     <Button
         android:layout_width="0dp"
         android:layout_margin="8dp"
@@ -56,9 +33,10 @@
         android:id="@+id/dialog_sample_action_workflow_btn"
         android:checked="false"
         android:text="@string/dialog_sample_action_workflow_rb"
+        android:textColor="@color/black"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/dialog_sample_action_weigh_btn"/>
+        app:layout_constraintTop_toBottomOf="@id/dialog_sample_action_code_tv"/>
 
     <Button
         android:layout_width="0dp"
@@ -66,6 +44,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/dialog_sample_action_edit_btn"
         android:checked="false"
+        android:textColor="@color/black"
         android:text="@string/dialog_sample_action_edit_rb"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -78,6 +57,7 @@
         android:id="@+id/dialog_sample_action_scan_btn"
         android:checked="false"
         android:text="@string/dialog_sample_action_scan_rb"
+        android:textColor="@color/black"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/dialog_sample_action_edit_btn"/>
@@ -89,8 +69,21 @@
         android:layout_height="wrap_content"
         android:checked="false"
         android:text="@string/dialog_sample_action_delete_rb"
+        android:backgroundTint="@color/deleteButton"
+        android:textColor="@color/black"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@id/dialog_sample_action_scan_btn"/>
+
+    <Button
+        android:id="@+id/dialog_sample_action_cancel_btn"
+        android:textColor="@color/black"
+        android:background="?android:attr/selectableItemBackground"
+        android:layout_margin="8dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/dialog_sample_action_delete_btn"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:text="@android:string/cancel"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

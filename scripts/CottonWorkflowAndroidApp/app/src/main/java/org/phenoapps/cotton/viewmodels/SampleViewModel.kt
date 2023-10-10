@@ -30,4 +30,10 @@ class SampleViewModel @Inject constructor(
             samplesRepo.deleteSample(model)
         }
     }
+
+    fun deleteAll() {
+        viewModelScope.launch {
+            samplesRepo.deleteAll()
+        }
+    }
 }

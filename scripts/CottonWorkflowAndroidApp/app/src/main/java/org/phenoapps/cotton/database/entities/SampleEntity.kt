@@ -44,8 +44,12 @@ data class SampleEntity(
     @ColumnInfo(name = "type")
     val type: Int,
 
+    //note for sample
+    @ColumnInfo(name = "note")
+    val note: String? = null
+
 ) {
 
-    constructor(s: SampleModel) : this(s.sid, s.code, s.weight, s.scanTime, s.scaleTime, s.person, s.parent, s.type)
+    constructor(s: SampleModel) : this(s.sid, s.code, s.weight, s.scanTime, s.scaleTime, s.person, s.parent, s.type, s.note)
 
 }

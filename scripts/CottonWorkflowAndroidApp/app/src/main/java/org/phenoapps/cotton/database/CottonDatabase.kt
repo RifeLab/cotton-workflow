@@ -6,7 +6,7 @@ import org.phenoapps.cotton.database.dao.SampleDao
 import org.phenoapps.cotton.database.entities.SampleEntity
 
 @Database(entities = [SampleEntity::class],
-    version = 1, exportSchema = true, autoMigrations = []
+    version = 2, exportSchema = true, autoMigrations = [AutoMigration(from = 1, to = 2)]
 )
 abstract class CottonDatabase : RoomDatabase() {
 
