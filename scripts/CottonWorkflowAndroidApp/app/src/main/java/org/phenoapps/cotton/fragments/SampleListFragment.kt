@@ -234,6 +234,7 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list),
             val scanTime = Calendar.getInstance().timeInMillis
 
             val person = (activity as MainActivity).getPerson()
+            val experiment = (activity as MainActivity).getExperiment()
 
             viewModel.viewModelScope.launch {
 
@@ -245,7 +246,8 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list),
                     scaleTime = null,
                     parent = null,
                     person = person,
-                    type = WorkflowUtil.Companion.SubSampleType.PARENT.ordinal
+                    type = WorkflowUtil.Companion.SubSampleType.PARENT.ordinal,
+                    experiment = experiment
                 )
 
                 val parentId = viewModel.insertSample(parentSample)

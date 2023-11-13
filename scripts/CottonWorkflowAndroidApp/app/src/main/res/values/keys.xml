@@ -23,6 +23,7 @@
     <string name="key_preferences_error_threshold">&package;.workflow.error_threshold_enabled</string>
     <string name="key_preferences_scale_config_help">&package;.scale.config_help</string>
     <string name="key_preferences_test_enabled">&package;.workflow.test_enabled</string>
+    <string name="key_preferences_experiment">&package;.experiment</string>
 
     <!-- shared preferences -->
     <string name="key_scale_device_id">&package;devices.scale.id</string>

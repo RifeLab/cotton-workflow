@@ -127,4 +127,6 @@
     <string name="pref_stability_enabled_summary">This setting allows the app to handle stability checks when the hardware scale is not capable.</string>
     <string name="pref_stability_threshold_title">Stability Threshold</string>
     <string name="pref_stability_threshold_summary">When software stability is enabled, this is the threshold to detect stability between scale readings.</string>
+    <string name="pref_experiment_summary">This title will be saved to new experiments.</string>
+    <string name="pref_experiment_title">Experiment</string>
 </resources>

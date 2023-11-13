@@ -164,6 +164,19 @@ internal open class ParentViewHolder(view: View): SampleAdapter.ViewHolder(view)
                 noteIcon.visibility = View.GONE
 
             }
+
+            // update experiment ui
+            if (!model.experiment.isNullOrBlank()) {
+
+                experimentText.text = model.experiment
+                experimentText.visibility = View.VISIBLE
+                experimentIcon.visibility = View.VISIBLE
+
+            } else {
+
+                experimentText.visibility = View.GONE
+                experimentIcon.visibility = View.GONE
+            }
         }
     }
 }

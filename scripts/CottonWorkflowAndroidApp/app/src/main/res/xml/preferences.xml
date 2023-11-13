@@ -8,6 +8,11 @@
         android:title="@string/preferences_profile"
         app:iconSpaceReserved="false">
 
+        <EditTextPreference android:title="@string/pref_experiment_title"
+            android:icon="@drawable/experiment_24px"
+            android:key="@string/key_preferences_experiment"
+            android:summary="@string/pref_experiment_summary"/>
+
         <EditTextPreference android:title="@string/pref_person_title"
             android:icon="@drawable/ic_pref_profile_person"
             android:key="@string/key_preferences_person"

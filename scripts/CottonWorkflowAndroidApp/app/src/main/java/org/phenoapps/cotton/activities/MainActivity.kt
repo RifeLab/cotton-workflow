@@ -1,9 +1,6 @@
 package org.phenoapps.cotton.activities
 
 import android.annotation.SuppressLint
-import android.bluetooth.BluetoothManager
-import android.bluetooth.BluetoothProfile
-import android.content.Context
 import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
@@ -47,6 +44,8 @@ import java.io.OutputStreamWriter
 import java.util.*
 import javax.inject.Inject
 import kotlin.math.abs
+import org.phenoapps.cotton.util.StringUtil
+import org.phenoapps.cotton.util.StringUtil.Companion.sanitizeCsv
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarcodeReader {
@@ -143,7 +142,8 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarc
                             val lintWeight = lint.weight ?: ""
                             val testCode = test.code ?: ""
                             val scanTime = sample.scanTime?.toDateString() ?: ""
-                            val notes = if (sample.note == null) "" else "\"${sample.note?.replace("\"", "\"\"")}\""
+                            val notes = if (sample.note == null) "" else sample.note?.sanitizeCsv()
+                            val experiment = if (sample.experiment == null) "" else sample.experiment?.sanitizeCsv()
 
                             val error = if (sample.weight != null && lint.weight != null && seed.weight != null) {
 
@@ -162,7 +162,7 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarc
 
                             } else ""
 
-                            writer.write("$code, $weight, $seedWeight, $lintWeight, $testCode, $scanTime, $error, $notes\n")
+                            writer.write("$code, $weight, $seedWeight, $lintWeight, $testCode, $scanTime, $error, $experiment, $notes\n")
 
                         }
                     }
@@ -556,8 +556,11 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarc
     override fun getScaleId(): String? =
         prefs?.getString(getString(R.string.key_scale_device_id), null)
 
-    override fun getPerson(): String? =
+    override fun getPerson(): String =
         prefs?.getString(getString(R.string.key_preferences_person), "") ?: ""
+
+    override fun getExperiment(): String =
+        prefs?.getString(getString(R.string.key_preferences_experiment), "") ?: ""
 
     override fun onPause() {
         super.onPause()

@@ -46,10 +46,14 @@ data class SampleEntity(
 
     //note for sample
     @ColumnInfo(name = "note")
-    val note: String? = null
+    val note: String? = null,
+
+    //experiment text, similar to person, added in settings
+    @ColumnInfo(name = "experiment")
+    val experiment: String? = null
 
 ) {
 
-    constructor(s: SampleModel) : this(s.sid, s.code, s.weight, s.scanTime, s.scaleTime, s.person, s.parent, s.type, s.note)
+    constructor(s: SampleModel) : this(s.sid, s.code, s.weight, s.scanTime, s.scaleTime, s.person, s.parent, s.type, s.note, s.experiment)
 
 }
