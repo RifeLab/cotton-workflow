@@ -3,6 +3,7 @@ package org.phenoapps.cotton.fragments
 import android.annotation.SuppressLint
 import android.content.*
 import android.os.Bundle
+import android.text.InputType
 import android.view.View
 import android.widget.Toast
 import androidx.fragment.app.viewModels
@@ -102,6 +103,36 @@ class PreferencesFragment: PreferenceFragmentCompat() {
 
             preference.summary = getString(R.string.preferences_workflow_start_id_summary, id.toCode39())
 
+        }
+    }
+
+    /**
+     * Sets the threshold edit text to numeric input
+     * Enables threshold edit text if stability is enabled
+     */
+    private fun updateStabilityPreferences() {
+
+        val stabilityEnabledPref = findPreference<CheckBoxPreference>(getString(R.string.key_preferences_stability_enabled))
+        val stabilityThresholdPref = findPreference<EditTextPreference>(getString(R.string.key_preferences_stability_threshold))
+
+        if (stabilityEnabledPref != null && stabilityThresholdPref != null) {
+
+            val enabled = prefs?.getBoolean(getString(R.string.key_preferences_stability_enabled), false) ?: false
+
+            stabilityThresholdPref.isVisible = enabled
+
+            stabilityThresholdPref.setOnBindEditTextListener { editText ->
+
+                editText.inputType = InputType.TYPE_NUMBER_FLAG_DECIMAL
+
+            }
+
+            stabilityEnabledPref.setOnPreferenceChangeListener { _, newValue ->
+
+                stabilityThresholdPref.isVisible = newValue as Boolean
+
+                true
+            }
         }
     }
 
@@ -277,6 +308,7 @@ class PreferencesFragment: PreferenceFragmentCompat() {
         updateStartIdSummary()
         updateThresholdVisibility()
         updateTestThresholdVisibility()
+        updateStabilityPreferences()
         setupPersonUpdateUi(null)
         (activity as MainToolbarManager).updateToolbarVisibility()
     }

@@ -60,6 +60,21 @@
             android:icon="@drawable/receipt_text_check_outline"
             android:key="@string/key_preferences_test_weight_threshold"/>
 
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:icon="@drawable/balance_24px"
+            android:key="@string/key_preferences_stability_enabled"
+            android:title="@string/pref_stability_enabled_title"
+            android:summary="@string/pref_stability_enabled_summary"/>
+
+        <EditTextPreference
+            android:inputType="number"
+            android:defaultValue="1"
+            android:icon="@drawable/data_thresholding_24px"
+            android:key="@string/key_preferences_stability_threshold"
+            android:title="@string/pref_stability_threshold_title"
+            android:summary="@string/pref_stability_threshold_summary"/>
+
     </PreferenceCategory>
 
     <PreferenceCategory

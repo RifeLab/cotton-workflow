@@ -1,6 +1,8 @@
 package org.phenoapps.cotton.fragments
 
+import StabilityMonitor
 import android.app.AlertDialog
+import android.content.Context
 import android.os.Bundle
 import android.view.View
 import android.widget.*
@@ -52,6 +54,8 @@ import java.util.*
  */
 @AndroidEntryPoint
 class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow) {
+
+    private lateinit var stabilityMonitor: StabilityMonitor
 
     private var state = FocusState.TOTAL
 
@@ -130,6 +134,11 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
                 }
             }
         }
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        stabilityMonitor = StabilityMonitor(context)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -347,7 +356,19 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
 
                     try {
 
-                        val weight = data.replace(ScaleUtil.UNIT, "").toDouble()
+                        var weight = data.replace(ScaleUtil.UNIT, "").toDouble()
+
+                        if (stabilityMonitor.isEnabled()) {
+
+                            stabilityMonitor.monitor(weight.toString())
+
+                            if (stabilityMonitor.isStable()) {
+
+                                weight = stabilityMonitor.getStableRead().toDouble()
+
+                            } else return@observe
+
+                        }
 
                         //in test mode take input until 25g are taken off
                         //else take a reading between 0.0g readings

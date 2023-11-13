@@ -14,6 +14,8 @@
     <string name="key_preferences_person">&package;person</string>
     <string name="key_preferences_person_require">&package;person_require</string>
     <string name="key_preferences_person_require_interval">&package;person_require_interval</string>
+    <string name="key_preferences_stability_enabled">&package;stability_enabled</string>
+    <string name="key_preferences_stability_threshold">&package;stability_threshold</string>
     <string name="key_preferences_workflow_scale_jitter_thresh">&package;.workflow.scale_jitter</string>
     <string name="key_preferences_error_check_threshold">&package;.workflow.error_thresh</string>
     <string name="key_preferences_test_weight_threshold">&package;.workflow.test_weight_thresh</string>
