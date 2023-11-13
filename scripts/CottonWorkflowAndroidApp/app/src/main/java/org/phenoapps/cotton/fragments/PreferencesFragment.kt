@@ -148,6 +148,8 @@ class PreferencesFragment: PreferenceFragmentCompat() {
 
             addPreferencesFromResource(R.xml.preferences)
 
+            refreshUi()
+
             val clearDeviceIdPreference =
                 findPreference<Preference>(getString(R.string.key_preferences_device_id_clear))
 
@@ -302,6 +304,10 @@ class PreferencesFragment: PreferenceFragmentCompat() {
     @SuppressLint("MissingPermission")
     override fun onResume() {
         super.onResume()
+        //refreshUi()
+    }
+
+    private fun refreshUi() {
         updateDeviceAddressSummary(PRINTER_DEVICE_CHOICE)
         updateDeviceAddressSummary(SCALE_DEVICE_CHOICE)
         updatePersonSummary()
