@@ -41,6 +41,8 @@ class SampleAdapter(private val controller: SampleController):
         val seedWeightTv: TextView = view.findViewById(R.id.list_item_seed_weight_header_tv)
         val testIcon: ImageView = view.findViewById(R.id.list_item_test_header_iv)
         val testText: TextView = view.findViewById(R.id.list_item_sample_test_header_tv)
+        val noteIcon: ImageView = view.findViewById(R.id.list_item_sample_note_header_iv)
+        val noteText: TextView = view.findViewById(R.id.list_item_sample_note_tv)
 
         open fun bind(controller: SampleController, model: SampleModel) {
 

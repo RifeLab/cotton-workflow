@@ -202,9 +202,32 @@
         app:layout_constraintTop_toBottomOf="@id/list_item_test_header_iv"
         app:layout_constraintStart_toEndOf="@id/list_item_sample_analysis_header_iv"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/list_item_sample_note_tv"
         android:singleLine="true"
         android:ellipsize="marquee"
         tools:text="0.01% error"/>
+
+    <ImageView android:id="@+id/list_item_sample_note_header_iv"
+        android:padding="4dp"
+        android:layout_margin="8dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/pencil"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/list_item_sample_analysis_tv"
+        android:contentDescription="TODO" />
+
+    <TextView style="@style/Theme.Cotton.Text"
+        android:id="@+id/list_item_sample_note_tv"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_margin="8dp"
+        app:layout_constraintTop_toBottomOf="@id/list_item_sample_analysis_tv"
+        app:layout_constraintStart_toEndOf="@id/list_item_sample_note_header_iv"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:singleLine="true"
+        android:ellipsize="marquee"
+        tools:text="Hello sample note."/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

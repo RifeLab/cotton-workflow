@@ -150,6 +150,20 @@ internal open class ParentViewHolder(view: View): SampleAdapter.ViewHolder(view)
                     }
                 }
             }
+
+            // update note ui when the database value exists
+            if (!model.note.isNullOrBlank()) {
+
+                noteText.text = model.note
+                noteText.visibility = View.VISIBLE
+                noteIcon.visibility = View.VISIBLE
+
+            } else {
+
+                noteText.visibility = View.GONE
+                noteIcon.visibility = View.GONE
+
+            }
         }
     }
 }
