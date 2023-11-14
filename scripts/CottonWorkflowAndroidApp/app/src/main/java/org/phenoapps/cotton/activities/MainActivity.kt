@@ -634,7 +634,11 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarc
 
     override fun resolveBarcode(code: String) {
 
-        when (findNavController(R.id.nav_fragment).currentDestination?.id
+        if (code.isBlank()) {
+
+            Toast.makeText(this, R.string.frag_sample_list_empty_code_error, Toast.LENGTH_SHORT).show()
+
+        } else when (findNavController(R.id.nav_fragment).currentDestination?.id
             ?: R.id.fragment_sample_list) {
 
             R.id.fragment_sample_list -> {

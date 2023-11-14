@@ -221,11 +221,16 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list),
      * This will go to onAcceptNewBarcode when accepted, else it will be dismissed
      */
     override fun onNewBarcode(code: String) {
-        //skip straight to this step now, instead aof asking if user wants to add new sample
+
+        soundHelper.playCelebrate()
+
+        //skip straight to this step now, instead of asking if user wants to add new sample
         onAcceptNewBarcode(code)
     }
 
     override fun onBarcodeExists(sample: SampleModel) {
+
+        soundHelper.playAdvance()
 
         sampleClicked(sample)
 
