@@ -1,22 +1,15 @@
 package org.phenoapps.cotton.fragments
 
-import android.app.Activity
 import android.app.AlertDialog
-import android.content.Intent
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import org.phenoapps.cotton.R
-import org.phenoapps.cotton.activities.CameraActivity
 import org.phenoapps.cotton.activities.MainActivity
 import org.phenoapps.cotton.util.DateUtil.Companion.toDateString
 import org.phenoapps.cotton.util.WorkflowUtil
-import java.util.*
 
 /***
  *
@@ -66,6 +59,8 @@ class SampleEditFragment : SampleFragment(R.layout.fragment_sample_edit) {
             }
 
             if (model.weight != null) {
+
+                soundHelper.playAdvance()
 
                 //update text view based on state
                 state = when (state) {
@@ -124,7 +119,6 @@ class SampleEditFragment : SampleFragment(R.layout.fragment_sample_edit) {
             }
         }
     }
-
 
     //called from main activity when back button is pressed
     //if this is a new sample, ask if user wants to save or delete
@@ -253,6 +247,8 @@ class SampleEditFragment : SampleFragment(R.layout.fragment_sample_edit) {
 
             saveWorkflowData()
 
+            soundHelper.playCelebrate()
+
             findNavController().popBackStack()
         }
 
@@ -267,6 +263,7 @@ class SampleEditFragment : SampleFragment(R.layout.fragment_sample_edit) {
             .setMessage(R.string.dialog_sample_delete_confirm_message)
             .setPositiveButton(android.R.string.ok) { _, _ ->
                 deleteWorkflowData()
+                soundHelper.playDelete()
                 findNavController().popBackStack()
             }
             .setNegativeButton(android.R.string.cancel) { d, _ ->

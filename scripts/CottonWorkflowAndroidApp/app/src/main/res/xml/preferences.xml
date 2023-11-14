@@ -41,6 +41,13 @@
 
         <CheckBoxPreference
             android:defaultValue="true"
+            android:icon="@drawable/music_note_24px"
+            android:key="@string/key_preferences_sound_enabled"
+            android:title="@string/pref_workflow_sound_title"
+            android:summary="@string/pref_workflow_sound_summary"/>
+
+        <CheckBoxPreference
+            android:defaultValue="true"
             android:icon="@drawable/alert_rhombus"
             android:key="@string/key_preferences_error_threshold"
             android:title="@string/pref_workflow_error_threshold_title"

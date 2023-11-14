@@ -7,9 +7,13 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.text.Editable
+import android.view.KeyEvent
 import android.view.View
+import android.view.inputmethod.EditorInfo
+import android.view.inputmethod.InputMethod
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.view.ViewCompat.FocusDirection
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
@@ -21,14 +25,18 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import org.phenoapps.cotton.R
 import org.phenoapps.cotton.activities.CameraActivity
+import org.phenoapps.cotton.activities.MainActivity
 import org.phenoapps.cotton.database.entities.SampleEntity
 import org.phenoapps.cotton.interfaces.MainToolbarManager
+import org.phenoapps.cotton.interfaces.SoundApi
 import org.phenoapps.cotton.models.SampleModel
 import org.phenoapps.cotton.util.DateUtil.Companion.toDateString
+import org.phenoapps.cotton.util.SoundHelperImpl
 import org.phenoapps.cotton.util.WorkflowUtil
 import org.phenoapps.cotton.viewmodels.SampleViewModel
 import org.phenoapps.fragments.bluetooth.BluetoothFragment
 import java.util.*
+import javax.inject.Inject
 
 /***
  *
@@ -40,6 +48,10 @@ open class SampleFragment(layoutId: Int) : BluetoothFragment(layoutId), Coroutin
 
     enum class FocusState(priority: Int) {
         TOTAL(0), SEED(1), LINT(2), TEST(3), WAITING(4), EDIT(5)
+    }
+
+    protected val soundHelper by lazy {
+        (activity as SoundApi).soundHelper
     }
 
     protected val sampleViewModel: SampleViewModel by viewModels()
@@ -152,12 +164,12 @@ open class SampleFragment(layoutId: Int) : BluetoothFragment(layoutId), Coroutin
             }
         }
 
+        setupSoundOnActionNext()
         loadSamples()
     }
 
     private val barcodeScannerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
 
-        println("sample")
         if (result.resultCode == Activity.RESULT_OK) {
 
             if (result.data == null) {
@@ -165,6 +177,8 @@ open class SampleFragment(layoutId: Int) : BluetoothFragment(layoutId), Coroutin
                     getString(R.string.canceled),
                     Toast.LENGTH_LONG
                 ).show()
+
+                soundHelper.playError()
             }
 
             result.data?.getStringExtra(CameraActivity.EXTRA_BARCODE)?.let { code ->
@@ -181,6 +195,7 @@ open class SampleFragment(layoutId: Int) : BluetoothFragment(layoutId), Coroutin
                                 testBarcodeEt.setText(test.code)
                                 test.scanTime = Calendar.getInstance().timeInMillis
 
+                                soundHelper.playCelebrate()
                             }
 
                         } else {
@@ -189,6 +204,7 @@ open class SampleFragment(layoutId: Int) : BluetoothFragment(layoutId), Coroutin
 
                                 Toast.makeText(context, R.string.frag_sample_barcode_exists, Toast.LENGTH_LONG).show()
 
+                                soundHelper.playError()
                             }
                         }
                     }
@@ -201,6 +217,53 @@ open class SampleFragment(layoutId: Int) : BluetoothFragment(layoutId), Coroutin
                 getString(R.string.canceled),
                 Toast.LENGTH_LONG
             ).show()
+
+            soundHelper.playError()
+        }
+    }
+
+    private fun setupSoundOnActionNext() {
+
+        weightEt.setOnEditorActionListener { _, action, _ ->
+
+            if (action == EditorInfo.IME_ACTION_NEXT) {
+
+                seedWeightEt.requestFocus()
+
+                soundHelper.playAdvance()
+
+                return@setOnEditorActionListener true
+            }
+
+            false
+        }
+
+        seedWeightEt.setOnEditorActionListener { _, action, _ ->
+
+            if (action == EditorInfo.IME_ACTION_NEXT) {
+
+                lintWeightEt.requestFocus()
+
+                soundHelper.playAdvance()
+
+                return@setOnEditorActionListener true
+            }
+
+            false
+        }
+
+        lintWeightEt.setOnEditorActionListener { _, action, _ ->
+
+            if (action == EditorInfo.IME_ACTION_NEXT) {
+
+                testBarcodeEt.requestFocus()
+
+                soundHelper.playAdvance()
+
+                return@setOnEditorActionListener true
+            }
+
+            false
         }
     }
 
@@ -307,6 +370,8 @@ open class SampleFragment(layoutId: Int) : BluetoothFragment(layoutId), Coroutin
 
         saveButton.setOnClickListener {
 
+            soundHelper.playCelebrate()
+
             saveWorkflowData()
         }
     }
@@ -320,11 +385,15 @@ open class SampleFragment(layoutId: Int) : BluetoothFragment(layoutId), Coroutin
 
             saveWorkflowData()
 
+            soundHelper.playCelebrate()
+
             findNavController().popBackStack()
         }
         builder.setNegativeButton(R.string.delete) { _, _ ->
 
             deleteWorkflowData()
+
+            soundHelper.playDelete()
 
             findNavController().popBackStack()
         }

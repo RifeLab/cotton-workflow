@@ -30,13 +30,11 @@ import org.phenoapps.cotton.fragments.SampleListFragment
 import org.phenoapps.cotton.fragments.SampleWorkflowFragment
 import org.phenoapps.cotton.interfaces.Connector
 import org.phenoapps.cotton.interfaces.MainToolbarManager
+import org.phenoapps.cotton.interfaces.SoundApi
 import org.phenoapps.cotton.interfaces.UsbBarcodeReader
 import org.phenoapps.cotton.models.SampleModel
-import org.phenoapps.cotton.util.BarcodeScannerHelper
+import org.phenoapps.cotton.util.*
 import org.phenoapps.cotton.util.DateUtil.Companion.toDateString
-import org.phenoapps.cotton.util.KeyboardListenerHelper
-import org.phenoapps.cotton.util.VerifyPersonHelper
-import org.phenoapps.cotton.util.WorkflowUtil
 import org.phenoapps.cotton.viewmodels.OhausSampleViewModel
 import org.phenoapps.cotton.viewmodels.SampleViewModel
 import org.phenoapps.security.Security
@@ -47,7 +45,7 @@ import kotlin.math.abs
 import org.phenoapps.cotton.util.StringUtil.Companion.sanitizeCsv
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarcodeReader {
+class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarcodeReader, SoundApi {
 
     private var bottomNav: BottomNavigationView? = null
 
@@ -66,6 +64,9 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarc
     private var menu: Menu? = null
 
     val ohausViewModel: OhausSampleViewModel by viewModels()
+
+    @Inject
+    override lateinit var soundHelper: SoundHelperImpl
 
     companion object {
         const val PRINTER = 0
@@ -89,6 +90,7 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarc
 
                     exportToUri(fileUri)
 
+                    soundHelper.playCelebrate()
                 }
 
                 askUserDeleteSamples()
@@ -98,6 +100,8 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarc
                 e.printStackTrace()
 
                 Toast.makeText(this, R.string.export_failed, Toast.LENGTH_SHORT).show()
+
+                soundHelper.playError()
             }
         }
 
@@ -109,6 +113,8 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarc
             .setPositiveButton(android.R.string.yes) { _, _ ->
 
                 viewModel.deleteAll()
+
+                soundHelper.playDelete()
 
             }
             .setNegativeButton(android.R.string.no) { _, _ -> }

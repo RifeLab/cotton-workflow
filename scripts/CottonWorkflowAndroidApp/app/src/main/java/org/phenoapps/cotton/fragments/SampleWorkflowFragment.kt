@@ -72,6 +72,9 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
         if (result.resultCode == Activity.RESULT_OK) {
 
             if (result.data == null) {
+
+                soundHelper.playError()
+
                 Toast.makeText(
                     context,
                     getString(R.string.canceled),
@@ -93,6 +96,7 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
                             test.scanTime = Calendar.getInstance().timeInMillis
                             sampleViewModel.updateSample(test)
 
+                            soundHelper.playCelebrate()
                         }
 
                     } else {
@@ -104,6 +108,8 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
                                 R.string.frag_sample_barcode_exists,
                                 Toast.LENGTH_LONG
                             ).show()
+
+                            soundHelper.playError()
 
                         }
                     }
@@ -117,6 +123,8 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
                 getString(R.string.canceled),
                 Toast.LENGTH_LONG
             ).show()
+
+            soundHelper.playError()
 
         }
     }
@@ -310,6 +318,8 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
 
             saveWorkflowData()
 
+            soundHelper.playCelebrate()
+
             findNavController().popBackStack()
         }
 
@@ -341,6 +351,8 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
                 numericFourIv.setImageResource(R.drawable.check_circle_outline_green)
 
                 Toast.makeText(context, R.string.frag_sample_test_complete, Toast.LENGTH_LONG).show()
+
+                soundHelper.playAdvance()
 
                 saveWorkflowData()
 
@@ -407,6 +419,8 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
                                     state = FocusState.SEED
 
                                     numericOneIv.setImageResource(R.drawable.check_circle_outline_green)
+
+                                    soundHelper.playAdvance()
                                 }
 
                                 FocusState.SEED -> {
@@ -418,6 +432,9 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
                                     state = FocusState.LINT
 
                                     numericTwoIv.setImageResource(R.drawable.check_circle_outline_green)
+
+                                    soundHelper.playAdvance()
+
                                 }
 
                                 FocusState.LINT -> {
@@ -438,6 +455,9 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
 
                                         FocusState.WAITING
                                     }
+
+                                    soundHelper.playAdvance()
+
                                 }
 
                                 else -> {
@@ -487,6 +507,7 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
             .setMessage(R.string.dialog_sample_delete_confirm_message)
             .setPositiveButton(android.R.string.ok) { _, _ ->
                 deleteWorkflowData()
+                soundHelper.playDelete()
                 findNavController().popBackStack()
             }
             .setNegativeButton(android.R.string.cancel) { d, _ ->
@@ -527,14 +548,14 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
                 weightEt.selectAll()
 
                 resetUi()
+
+                soundHelper.playCycle()
             }
             .setNegativeButton(android.R.string.cancel) { d, _ ->
                 d.dismiss()
             }
             .create()
             .show()
-
-
     }
 
     private fun resetUi() {

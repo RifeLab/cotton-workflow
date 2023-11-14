@@ -21,10 +21,7 @@ import org.phenoapps.cotton.R
 import org.phenoapps.cotton.activities.CameraActivity
 import org.phenoapps.cotton.activities.MainActivity
 import org.phenoapps.cotton.adapters.SampleAdapter
-import org.phenoapps.cotton.interfaces.MainToolbarManager
-import org.phenoapps.cotton.interfaces.SampleController
-import org.phenoapps.cotton.interfaces.ScanInteractor
-import org.phenoapps.cotton.interfaces.UsbBarcodeReader
+import org.phenoapps.cotton.interfaces.*
 import org.phenoapps.cotton.models.SampleModel
 import org.phenoapps.cotton.util.WorkflowUtil
 import org.phenoapps.cotton.viewmodels.SampleViewModel
@@ -38,6 +35,10 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list),
     companion object {
         //must be <= MAX_INT
         const val MAX_ID_INCREMENT_ATTEMPTS = 1000
+    }
+
+    private val soundHelper by lazy {
+        (activity as SoundApi).soundHelper
     }
 
     private var prefs: SharedPreferences? = null
@@ -61,6 +62,8 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list),
             result?.data?.getStringExtra(CameraActivity.EXTRA_BARCODE)?.let { barcode ->
 
                 code = barcode
+
+                soundHelper.playCelebrate()
 
                 checkForNewSample(barcode)
             }
@@ -92,7 +95,13 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list),
                             sampleToUpdate = null
                         }
                 }
+
+                soundHelper.playCelebrate()
             }
+
+        } else {
+
+            soundHelper.playError()
         }
     }
 
@@ -104,6 +113,9 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list),
                 it.putExtra(CameraActivity.EXTRA_TITLE, getString(R.string.frag_sample_list_scan_a_sample))
             })
 
+        } else {
+
+            soundHelper.playError()
         }
     }
 
@@ -134,7 +146,7 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list),
 
                 else -> {
 
-                    Toast.makeText(context, "Barcode exists already!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, getString(R.string.frag_sample_barcode_exists), Toast.LENGTH_SHORT).show()
 
                     if (sample.type == WorkflowUtil.Companion.SubSampleType.PARENT.ordinal) {
 
@@ -200,7 +212,7 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list),
     //call barcode scanner for hvi test subsample barcode scan
     private fun startBarcodeUpdateLauncher(message: String) {
 
-        barcodeScannerLauncher.launch(Intent(context, CameraActivity::class.java).also {
+        barcodeUpdateLauncher.launch(Intent(context, CameraActivity::class.java).also {
             it.putExtra(CameraActivity.EXTRA_TITLE, message)
         })
     }

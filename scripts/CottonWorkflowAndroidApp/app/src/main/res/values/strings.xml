@@ -129,4 +129,6 @@
     <string name="pref_stability_threshold_summary">When software stability is enabled, this is the threshold to detect stability between scale readings.</string>
     <string name="pref_experiment_summary">This title will be saved to new experiments.</string>
     <string name="pref_experiment_title">Experiment</string>
+    <string name="pref_workflow_sound_title">Enable Sound</string>
+    <string name="pref_workflow_sound_summary">Sounds will play for various actions throughout the workflow.</string>
 </resources>
