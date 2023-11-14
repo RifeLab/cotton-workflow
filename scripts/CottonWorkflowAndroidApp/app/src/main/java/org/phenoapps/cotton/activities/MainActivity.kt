@@ -44,7 +44,6 @@ import java.io.OutputStreamWriter
 import java.util.*
 import javax.inject.Inject
 import kotlin.math.abs
-import org.phenoapps.cotton.util.StringUtil
 import org.phenoapps.cotton.util.StringUtil.Companion.sanitizeCsv
 
 @AndroidEntryPoint
@@ -355,11 +354,13 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarc
 
             R.id.action_menu_main_top_scale -> {
 
-                disconnectGatt()
+                advisor.withNearby {
 
-                findNavController(R.id.nav_fragment)
-                    .navigate(NavigationRootDirections.globalActionToDeviceChooserFragment("scale"))
+                    disconnectGatt()
 
+                    findNavController(R.id.nav_fragment)
+                        .navigate(NavigationRootDirections.globalActionToDeviceChooserFragment("scale"))
+                }
             }
 
             R.id.action_menu_main_top_workflow -> {
