@@ -1,18 +1,19 @@
 package org.phenoapps.cotton.fragments
 
 import StabilityMonitor
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.navigation.fragment.findNavController
-import com.journeyapps.barcodescanner.ScanContract
-import com.journeyapps.barcodescanner.ScanIntentResult
-import com.journeyapps.barcodescanner.ScanOptions
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import org.phenoapps.cotton.R
+import org.phenoapps.cotton.activities.CameraActivity
 import org.phenoapps.cotton.activities.MainActivity
 import org.phenoapps.cotton.util.DateUtil.Companion.toDateString
 import org.phenoapps.cotton.util.ScaleUtil
@@ -66,44 +67,57 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
     private lateinit var numericFourIv: ImageView
     private lateinit var numericFiveIv: ImageView
 
-    // Barcode launcher for scanning Test label
-    private val barcodeLauncher = registerForActivityResult(
-        ScanContract()
-    ) { result: ScanIntentResult ->
-        if (result.contents == null) {
+    private val barcodeLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
 
-            Toast.makeText(context,
+        if (result.resultCode == Activity.RESULT_OK) {
+
+            if (result.data == null) {
+                Toast.makeText(
+                    context,
+                    getString(R.string.canceled),
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+
+            result.data?.getStringExtra(CameraActivity.EXTRA_BARCODE)?.let { code ->
+
+                launch {
+
+                    if (sampleViewModel.getSampleWithCode(code) == null) {
+
+                        activity?.runOnUiThread {
+
+                            numericFiveIv.setImageResource(R.drawable.check_circle_outline_green)
+                            test.code = code
+                            testBarcodeEt.setText(test.code)
+                            test.scanTime = Calendar.getInstance().timeInMillis
+                            sampleViewModel.updateSample(test)
+
+                        }
+
+                    } else {
+
+                        activity?.runOnUiThread {
+
+                            Toast.makeText(
+                                context,
+                                R.string.frag_sample_barcode_exists,
+                                Toast.LENGTH_LONG
+                            ).show()
+
+                        }
+                    }
+                }
+            }
+
+        } else {
+
+            Toast.makeText(
+                context,
                 getString(R.string.canceled),
                 Toast.LENGTH_LONG
             ).show()
 
-        } else {
-
-            val code = result.contents
-
-            launch {
-
-                if (sampleViewModel.getSampleWithCode(code) == null) {
-
-                    activity?.runOnUiThread {
-
-                        numericFiveIv.setImageResource(R.drawable.check_circle_outline_green)
-                        test.code = result.contents
-                        testBarcodeEt.setText(test.code)
-                        test.scanTime = Calendar.getInstance().timeInMillis
-                        sampleViewModel.updateSample(test)
-
-                    }
-
-                } else {
-
-                    activity?.runOnUiThread {
-
-                        Toast.makeText(context, R.string.frag_sample_barcode_exists, Toast.LENGTH_LONG).show()
-
-                    }
-                }
-            }
         }
     }
 
@@ -448,14 +462,10 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
     }
 
     private fun startBarcodeLauncher(message: String) {
-        val options = ScanOptions()
-        options.setOrientationLocked(true)
-        options.setDesiredBarcodeFormats(ScanOptions.ALL_CODE_TYPES)
-        options.setPrompt(message)
-        options.setCameraId(0) // Use a specific camera of the device
-        options.setBeepEnabled(false)
-        options.setBarcodeImageEnabled(true)
-        barcodeLauncher.launch(options)
+
+        barcodeLauncher.launch(Intent(context, CameraActivity::class.java).also {
+            it.putExtra(CameraActivity.EXTRA_TITLE, message)
+        })
     }
 
     private fun getTestThresh(): Double = try {

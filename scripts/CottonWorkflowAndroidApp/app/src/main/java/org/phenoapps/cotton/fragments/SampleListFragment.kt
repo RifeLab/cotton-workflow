@@ -1,10 +1,13 @@
 package org.phenoapps.cotton.fragments
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.findNavController
@@ -12,12 +15,10 @@ import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.journeyapps.barcodescanner.ScanContract
-import com.journeyapps.barcodescanner.ScanIntentResult
-import com.journeyapps.barcodescanner.ScanOptions
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import org.phenoapps.cotton.R
+import org.phenoapps.cotton.activities.CameraActivity
 import org.phenoapps.cotton.activities.MainActivity
 import org.phenoapps.cotton.adapters.SampleAdapter
 import org.phenoapps.cotton.interfaces.MainToolbarManager
@@ -53,6 +54,59 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list),
 
     private var sampleToUpdate: SampleModel? = null
 
+    private val barcodeScannerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+
+        if (result.resultCode == Activity.RESULT_OK) {
+
+            result?.data?.getStringExtra(CameraActivity.EXTRA_BARCODE)?.let { barcode ->
+
+                code = barcode
+
+                checkForNewSample(barcode)
+            }
+
+        } else {
+
+            soundHelper.playError()
+        }
+    }
+
+    // used to update hvi test subsample barcode
+    // Register the launcher and result handler
+    private val barcodeUpdateLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+
+        if (result.resultCode == Activity.RESULT_OK) {
+
+            result.data?.getStringExtra(CameraActivity.EXTRA_BARCODE)?.let { barcode ->
+
+                sampleToUpdate?.let { sample ->
+
+                    samples?.filter { it.parent == sample.sid }
+                        ?.first { it.type == WorkflowUtil.Companion.SubSampleType.TEST.ordinal }?.let { testSubSample ->
+
+                            testSubSample.code = barcode
+                            testSubSample.scanTime = Calendar.getInstance().timeInMillis
+
+                            viewModel.updateSample(testSubSample)
+
+                            sampleToUpdate = null
+                        }
+                }
+            }
+        }
+    }
+
+    private val cameraPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { result ->
+
+        if (result) {
+
+            barcodeScannerLauncher.launch(Intent(context, CameraActivity::class.java).also {
+                it.putExtra(CameraActivity.EXTRA_TITLE, getString(R.string.frag_sample_list_scan_a_sample))
+            })
+
+        }
+    }
+
     override fun onAttach(context: Context) {
         super.onAttach(context)
         advisor.initialize()
@@ -66,61 +120,6 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list),
         scanButton = view.findViewById(R.id.frag_sample_list_scanner_fab)
 
         setupUi()
-    }
-
-    // Register the launcher and result handler
-    private val barcodeLauncher = registerForActivityResult(
-        ScanContract()
-    ) { result: ScanIntentResult ->
-        if (result.contents == null) {
-
-//            Toast.makeText(context,
-//                getString(R.string.canceled),
-//                Toast.LENGTH_LONG
-//            ).show()
-
-        } else {
-
-//            Toast.makeText(
-//                context,
-//                result.contents,
-//                Toast.LENGTH_LONG
-//            ).show()
-
-            code = result.contents
-
-            checkForNewSample(result.contents)
-        }
-    }
-
-    // used to update hvi test subsample barcode
-    // Register the launcher and result handler
-    private val barcodeUpdateLauncher = registerForActivityResult(
-        ScanContract()
-    ) { result: ScanIntentResult ->
-        if (result.contents == null) {
-
-//            Toast.makeText(context,
-//                getString(R.string.canceled),
-//                Toast.LENGTH_LONG
-//            ).show()
-
-        } else {
-
-            sampleToUpdate?.let { sample ->
-
-                samples?.filter { it.parent == sample.sid }
-                    ?.first { it.type == WorkflowUtil.Companion.SubSampleType.TEST.ordinal }?.let { testSubSample ->
-
-                        testSubSample.code = result.contents
-                        testSubSample.scanTime = Calendar.getInstance().timeInMillis
-
-                        viewModel.updateSample(testSubSample)
-
-                        sampleToUpdate = null
-                    }
-            }
-        }
     }
 
     fun checkForNewSample(code: String) {
@@ -182,7 +181,7 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list),
             if (getUsbBarcodeReaderEnabled()) {
                 (activity as UsbBarcodeReader).askUsbBarcodeScanner()
             } else {
-                startBarcodeLauncher(getString(R.string.frag_sample_list_scan_a_sample))
+                startBarcodeLauncher()
             }
         }
 
@@ -192,25 +191,18 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list),
         )
     }
 
-    private fun startBarcodeLauncher(message: String) {
-        val options = ScanOptions()
-        options.setDesiredBarcodeFormats(ScanOptions.ALL_CODE_TYPES)
-        options.setPrompt(message)
-        options.setCameraId(0) // Use a specific camera of the device
-        options.setBeepEnabled(false)
-        options.setBarcodeImageEnabled(true)
-        barcodeLauncher.launch(options)
+    private fun startBarcodeLauncher() {
+
+        cameraPermissionLauncher.launch(android.Manifest.permission.CAMERA)
+
     }
 
     //call barcode scanner for hvi test subsample barcode scan
     private fun startBarcodeUpdateLauncher(message: String) {
-        val options = ScanOptions()
-        options.setDesiredBarcodeFormats(ScanOptions.ALL_CODE_TYPES)
-        options.setPrompt(message)
-        options.setCameraId(0) // Use a specific camera of the device
-        options.setBeepEnabled(false)
-        options.setBarcodeImageEnabled(true)
-        barcodeUpdateLauncher.launch(options)
+
+        barcodeScannerLauncher.launch(Intent(context, CameraActivity::class.java).also {
+            it.putExtra(CameraActivity.EXTRA_TITLE, message)
+        })
     }
 
     /**

@@ -1,25 +1,26 @@
 package org.phenoapps.cotton.fragments
 
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.text.Editable
 import android.view.View
 import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
-import com.journeyapps.barcodescanner.ScanContract
-import com.journeyapps.barcodescanner.ScanIntentResult
-import com.journeyapps.barcodescanner.ScanOptions
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import org.phenoapps.cotton.R
+import org.phenoapps.cotton.activities.CameraActivity
 import org.phenoapps.cotton.database.entities.SampleEntity
 import org.phenoapps.cotton.interfaces.MainToolbarManager
 import org.phenoapps.cotton.models.SampleModel
@@ -154,54 +155,60 @@ open class SampleFragment(layoutId: Int) : BluetoothFragment(layoutId), Coroutin
         loadSamples()
     }
 
-    // Barcode launcher for scanning Test label
-    private val barcodeLauncher = registerForActivityResult(
-        ScanContract()
-    ) { result: ScanIntentResult ->
-        if (result.contents == null) {
+    private val barcodeScannerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+
+        println("sample")
+        if (result.resultCode == Activity.RESULT_OK) {
+
+            if (result.data == null) {
+                Toast.makeText(context,
+                    getString(R.string.canceled),
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+
+            result.data?.getStringExtra(CameraActivity.EXTRA_BARCODE)?.let { code ->
+
+                if (isTestInitialized()) {
+
+                    launch {
+
+                        if (sampleViewModel.getSampleWithCode(code) == null) {
+
+                            activity?.runOnUiThread {
+
+                                test.code = code
+                                testBarcodeEt.setText(test.code)
+                                test.scanTime = Calendar.getInstance().timeInMillis
+
+                            }
+
+                        } else {
+
+                            activity?.runOnUiThread {
+
+                                Toast.makeText(context, R.string.frag_sample_barcode_exists, Toast.LENGTH_LONG).show()
+
+                            }
+                        }
+                    }
+                }
+            }
+
+        } else {
 
             Toast.makeText(context,
                 getString(R.string.canceled),
                 Toast.LENGTH_LONG
             ).show()
-
-        } else {
-
-            val code = result.contents
-
-            launch {
-
-                if (sampleViewModel.getSampleWithCode(code) == null) {
-
-                    activity?.runOnUiThread {
-
-                        test.code = result.contents
-                        testBarcodeEt.setText(test.code)
-                        test.scanTime = Calendar.getInstance().timeInMillis
-
-                    }
-
-                } else {
-
-                    activity?.runOnUiThread {
-
-                        Toast.makeText(context, R.string.frag_sample_barcode_exists, Toast.LENGTH_LONG).show()
-
-                    }
-                }
-            }
         }
     }
 
     private fun startBarcodeLauncher(message: String) {
-        val options = ScanOptions()
-        options.setDesiredBarcodeFormats(ScanOptions.ALL_CODE_TYPES)
-        options.setPrompt(message)
-        options.setCameraId(0) // Use a specific camera of the device
-        options.setOrientationLocked(true)
-        options.setBeepEnabled(false)
-        options.setBarcodeImageEnabled(true)
-        barcodeLauncher.launch(options)
+
+        barcodeScannerLauncher.launch(Intent(context, CameraActivity::class.java).also {
+            it.putExtra(CameraActivity.EXTRA_TITLE, message)
+        })
     }
 
     //called from main activity when back button is pressed

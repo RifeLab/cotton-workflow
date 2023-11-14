@@ -81,6 +81,15 @@ dependencies {
     //androidx preferences
     implementation "androidx.preference:preference-ktx:1.2.0"
 
+    //camerax api
+    def camerax_version = "1.2.0"
+    implementation "androidx.camera:camera-camera2:$camerax_version"
+    implementation "androidx.camera:camera-lifecycle:$camerax_version"
+    implementation "androidx.camera:camera-view:$camerax_version"
+
+    //mlkit barcode scanning
+    implementation 'com.google.mlkit:barcode-scanning:17.2.0'
+
     //zebra scanner
     implementation 'com.journeyapps:zxing-android-embedded:4.3.0'
     //required for zebra api
