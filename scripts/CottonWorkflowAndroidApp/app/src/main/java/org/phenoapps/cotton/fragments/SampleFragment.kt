@@ -7,13 +7,11 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.text.Editable
-import android.view.KeyEvent
+import android.util.Log
 import android.view.View
 import android.view.inputmethod.EditorInfo
-import android.view.inputmethod.InputMethod
 import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.view.ViewCompat.FocusDirection
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
@@ -25,18 +23,15 @@ import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import org.phenoapps.cotton.R
 import org.phenoapps.cotton.activities.CameraActivity
-import org.phenoapps.cotton.activities.MainActivity
 import org.phenoapps.cotton.database.entities.SampleEntity
 import org.phenoapps.cotton.interfaces.MainToolbarManager
 import org.phenoapps.cotton.interfaces.SoundApi
 import org.phenoapps.cotton.models.SampleModel
 import org.phenoapps.cotton.util.DateUtil.Companion.toDateString
-import org.phenoapps.cotton.util.SoundHelperImpl
 import org.phenoapps.cotton.util.WorkflowUtil
 import org.phenoapps.cotton.viewmodels.SampleViewModel
 import org.phenoapps.fragments.bluetooth.BluetoothFragment
 import java.util.*
-import javax.inject.Inject
 
 /***
  *
@@ -45,6 +40,10 @@ import javax.inject.Inject
  */
 @AndroidEntryPoint
 open class SampleFragment(layoutId: Int) : BluetoothFragment(layoutId), CoroutineScope by MainScope() {
+
+    companion object {
+        val TAG = SampleFragment::class.simpleName
+    }
 
     enum class FocusState(priority: Int) {
         TOTAL(0), SEED(1), LINT(2), TEST(3), WAITING(4), EDIT(5)
@@ -149,7 +148,7 @@ open class SampleFragment(layoutId: Int) : BluetoothFragment(layoutId), Coroutin
         lintWeightTime.visibility = View.GONE
         testWeightTime.visibility = View.GONE
 
-        testBarcodeEt.onFocusChangeListener = View.OnFocusChangeListener { v, hasFocus ->
+        testBarcodeEt.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
 
             if (hasFocus) {
                 if (!getUsbBarcodeReaderEnabled()) {
@@ -470,6 +469,8 @@ open class SampleFragment(layoutId: Int) : BluetoothFragment(layoutId), Coroutin
                 m.weight = weight?.toString()?.toDouble()
 
             } catch (e: NumberFormatException) {
+
+                Log.d(TAG, "weight error NFE: ${weight.toString()}")
 
                 e.printStackTrace()
 

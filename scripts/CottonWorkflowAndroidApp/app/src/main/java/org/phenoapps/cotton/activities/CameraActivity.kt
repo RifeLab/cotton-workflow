@@ -164,6 +164,10 @@ class CameraActivity : AppCompatActivity() {
 
                             })
 
+                            try {
+                                imageProxy.close()
+                            } catch (ignore: Exception) {}
+
                             finish()
                         }
                     }
@@ -175,8 +179,9 @@ class CameraActivity : AppCompatActivity() {
 
             }.addOnCompleteListener {
 
-                imageProxy.close()
-
+                try {
+                    imageProxy.close()
+                } catch (ignore: Exception) {}
             }
         }
     }

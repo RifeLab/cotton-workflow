@@ -504,7 +504,7 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarc
 
                     status?.let { s ->
 
-                        println("STATUS: $s")
+//                        println("STATUS: $s")
                         connected = s
 
                         updateToolbarStatus(SCALE, s)
