@@ -379,8 +379,8 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarc
                         supportFragmentManager.findFragmentById(R.id.nav_fragment)
                             ?.childFragmentManager?.fragments?.find { it is SampleFragment }.let {
 
-                                (it as? SampleFragment)?.resolveWorkflow()
-
+                                (it as? SampleEditFragment)?.resolveWorkflow()
+                                (it as? SampleWorkflowFragment)?.resolveWorkflow()
                             }
                     }
                 }
@@ -396,8 +396,8 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarc
                         supportFragmentManager.findFragmentById(R.id.nav_fragment)
                             ?.childFragmentManager?.fragments?.find { it is SampleFragment }.let {
 
-                                (it as? SampleFragment)?.resolveDelete()
-
+                                (it as? SampleEditFragment)?.resolveDelete()
+                                (it as? SampleWorkflowFragment)?.resolveDelete()
                             }
                     }
                 }
@@ -413,8 +413,8 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarc
                         supportFragmentManager.findFragmentById(R.id.nav_fragment)
                             ?.childFragmentManager?.fragments?.find { it is SampleFragment }.let {
 
-                                (it as? SampleFragment)?.resolveNote()
-
+                                (it as? SampleEditFragment)?.resolveNote()
+                                (it as? SampleWorkflowFragment)?.resolveNote()
                             }
                     }
                 }
