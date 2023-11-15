@@ -591,10 +591,18 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarc
 
     fun reconnect() {
 
-        ohausViewModel.reset()
+        advisor.withAdapter { adapter ->
 
-        startConnectionCheck(SCALE)
+            ohausViewModel.reset()
 
+            ohausViewModel.reach(
+                context = this,
+                adapter = adapter,
+                address = prefs?.getString(getString(R.string.key_scale_device_id), "")
+            )
+
+            startConnectionCheck(SCALE)
+        }
     }
 
     override fun updateToolbarVisibility() {
