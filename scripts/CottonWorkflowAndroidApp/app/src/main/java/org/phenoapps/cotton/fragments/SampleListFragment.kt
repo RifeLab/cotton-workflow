@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.viewModels
@@ -46,6 +47,7 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list),
     private var mainButton: ExtendedFloatingActionButton? = null
     private var scanButton: FloatingActionButton? = null
     private var printButton: FloatingActionButton? = null
+    private lateinit var countTextView: TextView
 
     private var code: String? = null
 
@@ -130,6 +132,7 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list),
 
         sampleListRecyclerView = view.findViewById(R.id.frag_sample_list_rv)
         scanButton = view.findViewById(R.id.frag_sample_list_scanner_fab)
+        countTextView = view.findViewById(R.id.frag_sample_list_count_tv)
 
         setupUi()
     }
@@ -172,6 +175,8 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list),
         viewModel.getSamples().observe(viewLifecycleOwner) { samples ->
 
             if (samples != null) {
+
+                countTextView.text = "${samples.filter { it.parent == null }.size}"
 
                 //cache all samples
                 this.samples = samples.map { SampleModel(it) }
