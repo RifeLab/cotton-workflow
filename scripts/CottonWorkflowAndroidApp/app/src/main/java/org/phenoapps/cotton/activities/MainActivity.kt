@@ -229,6 +229,7 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarc
         topToolbar = findViewById(R.id.act_main_top_tb)
         bottomNav = findViewById(R.id.act_main_bot_tb)
 
+        bottomNav?.setOnApplyWindowInsetsListener(null)
         bottomNav?.isSelected = false
         bottomNav?.setOnItemSelectedListener {
 
@@ -503,7 +504,7 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarc
 
                     status?.let { s ->
 
-//                        println("STATUS: $s")
+                        println("STATUS: $s")
                         connected = s
 
                         updateToolbarStatus(SCALE, s)
@@ -592,15 +593,23 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarc
 
         advisor.withAdapter { adapter ->
 
-            ohausViewModel.reset()
+            ohausViewModel.clearScaleLastRead()
 
-            ohausViewModel.reach(
-                context = this,
-                adapter = adapter,
-                address = prefs?.getString(getString(R.string.key_scale_device_id), "")
-            )
+            val address = prefs?.getString(getString(R.string.key_scale_device_id), "")
 
-            startConnectionCheck(SCALE)
+            if (!address.isNullOrBlank()) {
+
+                ohausViewModel.connect(
+                    context = this,
+                    adapter = adapter,
+                    address = address
+                )
+
+                //connected = true
+                //updateToolbarStatus(SCALE, true)
+
+                startConnectionCheck(SCALE)
+            }
         }
     }
 

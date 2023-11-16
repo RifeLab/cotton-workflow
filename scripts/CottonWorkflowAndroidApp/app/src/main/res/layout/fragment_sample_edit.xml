@@ -254,7 +254,9 @@
         app:layout_constraintBottom_toTopOf="@id/frag_sample_save_btn"
         android:src="@drawable/scale"
         app:backgroundTint="@color/accent"
-        android:contentDescription="@string/fragment_sample_list_fab_content_description" />
+        android:contentDescription="@string/fragment_sample_list_fab_content_description"
+        android:tint="@color/white"
+        app:tint="@color/white"/>
 
     <Button style="@style/Theme.Cotton.Button.Save"
         android:layout_margin="8dp"

@@ -66,6 +66,8 @@ class SampleAdapter(private val controller: SampleController):
             WorkflowUtil.Companion.SubSampleType.SEED.ordinal -> SeedViewHolder(view)
             WorkflowUtil.Companion.SubSampleType.LINT.ordinal -> LintViewHolder(view)
             else -> TestViewHolder(view)
+        }.also { vh ->
+            vh.itemView.visibility = View.VISIBLE
         }
     }
 

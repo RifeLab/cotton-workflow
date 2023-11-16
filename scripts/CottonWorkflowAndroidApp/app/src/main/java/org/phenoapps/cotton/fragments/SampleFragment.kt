@@ -165,6 +165,8 @@ open class SampleFragment(layoutId: Int) : BluetoothFragment(layoutId), Coroutin
 
         setupSoundOnActionNext()
         loadSamples()
+
+        view.visibility = View.VISIBLE
     }
 
     private val barcodeScannerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -491,13 +493,15 @@ open class SampleFragment(layoutId: Int) : BluetoothFragment(layoutId), Coroutin
                 Log.d(TAG, "weight error NFE: ${weight.toString()}")
 
                 e.printStackTrace()
-
             }
 
-            m.scaleTime = time
+            if (m.weight != null) {
 
-            timeView.text = time.toDateString()
-            timeView.visibility = View.VISIBLE
+                m.scaleTime = time
+
+                timeView.text = time.toDateString()
+                timeView.visibility = View.VISIBLE
+            }
 
             if (barcodeView != null) {
                 m.code = barcodeView.text.toString()

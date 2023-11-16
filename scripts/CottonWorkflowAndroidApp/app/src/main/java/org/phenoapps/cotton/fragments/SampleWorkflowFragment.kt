@@ -377,7 +377,7 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
 
         (activity as MainActivity).ohausViewModel.advisor = advisor
 
-        advisor.withNearby { adapter ->
+        advisor.withNearby {
 
             if ((activity as MainActivity).connected) {
 
@@ -548,11 +548,13 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
 
                 state = FocusState.TOTAL
 
-                lastReading = 0.0
+                lastReading = Double.NEGATIVE_INFINITY
 
                 weightEt.selectAll()
 
                 resetUi()
+
+                (activity as MainActivity).ohausViewModel.clearScaleLastRead()
 
                 soundHelper.playCycle()
             }

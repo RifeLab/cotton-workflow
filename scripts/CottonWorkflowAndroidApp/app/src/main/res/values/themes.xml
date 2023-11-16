@@ -15,6 +15,9 @@
 
         <item name="buttonBarPositiveButtonStyle">@style/PositiveButtonStyle</item>
         <item name="buttonBarNegativeButtonStyle">@style/NegativeButtonStyle</item>
+
+        <item name="android:windowActionBarOverlay">true</item>
+        <item name="windowActionBarOverlay">true</item>
     </style>
 
     <style name="Theme.Cotton.Button.Save">
