@@ -330,38 +330,41 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
 
     private fun checkTestDiff(weight: Double) {
 
-        val testThresh = getTestThresh()
+        if (weight > 0) {
 
-        if (isLintInitialized()) {
+            val testThresh = getTestThresh()
 
-            val lintWeight = try {
-                lintWeightEt.text.toString().toDouble()
-            } catch (e: NumberFormatException) {
-                0.0
-            }
+            if (isLintInitialized()) {
 
-            val diff = lintWeight - weight
-            //TODO used '>=' here but mainly for testing, or make a min/max thresh
-            //TODO should this save the threshed amount of the final lint ?
-            //TODO make an issue on things to ask Scientists
-            if (diff >= testThresh) {
+                val lintWeight = try {
+                    lintWeightEt.text.toString().toDouble()
+                } catch (e: NumberFormatException) {
+                    0.0
+                }
 
-                testWeightEt.setText("$weight")
+                val diff = lintWeight - weight
+                //TODO used '>=' here but mainly for testing, or make a min/max thresh
+                //TODO should this save the threshed amount of the final lint ?
+                //TODO make an issue on things to ask Scientists
+                if (diff >= testThresh) {
 
-                state = FocusState.WAITING
+                    testWeightEt.setText("$weight")
 
-                numericFourIv.setImageResource(R.drawable.check_circle_outline_green)
+                    state = FocusState.WAITING
 
-                Toast.makeText(context, R.string.frag_sample_test_complete, Toast.LENGTH_LONG).show()
+                    numericFourIv.setImageResource(R.drawable.check_circle_outline_green)
 
-                soundHelper.playAdvance()
+                    Toast.makeText(context, R.string.frag_sample_test_complete, Toast.LENGTH_LONG).show()
 
-                saveWorkflowData()
+                    soundHelper.playAdvance()
 
-                if (!getUsbBarcodeReaderEnabled()) {
-                    startBarcodeLauncher(getString(R.string.frag_sample_scan_test_label))
-                } else {
-                    testBarcodeEt.requestFocus()
+                    saveWorkflowData()
+
+                    if (!getUsbBarcodeReaderEnabled()) {
+                        startBarcodeLauncher(getString(R.string.frag_sample_scan_test_label))
+                    } else {
+                        testBarcodeEt.requestFocus()
+                    }
                 }
             }
         }
