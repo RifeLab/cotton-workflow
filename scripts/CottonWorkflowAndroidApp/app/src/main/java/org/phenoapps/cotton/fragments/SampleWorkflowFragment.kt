@@ -195,6 +195,8 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
         //set save button text
         saveButton.text = getString(R.string.save)
 
+        view.visibility = View.VISIBLE
+
     }
 
     //called from main activity when back button is pressed

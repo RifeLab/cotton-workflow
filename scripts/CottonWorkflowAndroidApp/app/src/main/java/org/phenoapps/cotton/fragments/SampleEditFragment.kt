@@ -35,6 +35,8 @@ class SampleEditFragment : SampleFragment(R.layout.fragment_sample_edit) {
         saveButton.text = getString(R.string.update)
 
         initializeScaleButton()
+
+        view.visibility = View.VISIBLE
     }
 
     private fun initializeScaleButton() {
