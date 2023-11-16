@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.util.Size
+import android.view.Display
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
@@ -78,7 +79,7 @@ class CameraActivity : AppCompatActivity() {
 
         val preview = Preview.Builder()
             .setTargetResolution(Size(1080, 1920))
-            .setTargetRotation(previewView.display.rotation)
+            .setTargetRotation(previewView.display?.rotation ?: 0)
             .build()
 
         val cameraSelector = CameraSelector.Builder()
@@ -94,7 +95,7 @@ class CameraActivity : AppCompatActivity() {
         )
 
         val analysis = ImageAnalysis.Builder()
-            .setTargetRotation(previewView.display.rotation)
+            .setTargetRotation(previewView.display?.rotation ?: 0)
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
             .build()
 

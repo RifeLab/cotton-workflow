@@ -255,6 +255,24 @@ open class SampleFragment(layoutId: Int) : BluetoothFragment(layoutId), Coroutin
 
             if (action == EditorInfo.IME_ACTION_NEXT) {
 
+                if (getTestEnabled()) {
+
+                    testWeightEt.requestFocus()
+
+                } else testBarcodeEt.requestFocus()
+
+                soundHelper.playAdvance()
+
+                return@setOnEditorActionListener true
+            }
+
+            false
+        }
+
+        testWeightEt.setOnEditorActionListener { _, action, _ ->
+
+            if (action == EditorInfo.IME_ACTION_NEXT) {
+
                 testBarcodeEt.requestFocus()
 
                 soundHelper.playAdvance()
