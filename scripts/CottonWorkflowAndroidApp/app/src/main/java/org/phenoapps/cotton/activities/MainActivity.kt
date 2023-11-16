@@ -268,7 +268,6 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarc
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
             supportActionBar?.setDisplayShowHomeEnabled(true)
             supportActionBar?.setDisplayShowTitleEnabled(false)
-            topToolbar?.inflateMenu(R.menu.menu_main_top_toolbar)
         }
     }
 
@@ -606,8 +605,6 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarc
     }
 
     override fun updateToolbarVisibility() {
-
-        invalidateOptionsMenu()
 
         when (findNavController(R.id.nav_fragment).currentDestination?.id) {
 

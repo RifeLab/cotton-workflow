@@ -526,11 +526,6 @@ open class SampleFragment(layoutId: Int) : BluetoothFragment(layoutId), Coroutin
             .show()
     }
 
-    override fun onViewStateRestored(savedInstanceState: Bundle?) {
-        super.onViewStateRestored(savedInstanceState)
-        (activity as MainToolbarManager).updateToolbarVisibility()
-    }
-
     override fun onResume() {
         super.onResume()
         (activity as MainToolbarManager).updateToolbarVisibility()
