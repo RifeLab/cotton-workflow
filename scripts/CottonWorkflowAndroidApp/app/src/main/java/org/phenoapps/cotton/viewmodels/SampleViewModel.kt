@@ -13,6 +13,7 @@ class SampleViewModel @Inject constructor(
     private val samplesRepo: SampleRepository
 ): ViewModel() {
 
+    fun getParentSamples() = samplesRepo.getParentSamples()
     fun getSamples() = samplesRepo.getAll()
 
     suspend fun insertSample(model: SampleModel) = samplesRepo.insert(model)

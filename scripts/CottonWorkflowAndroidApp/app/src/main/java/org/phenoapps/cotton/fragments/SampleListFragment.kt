@@ -172,6 +172,17 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list),
 
         sampleListRecyclerView?.adapter = adapter
 
+        viewModel.getParentSamples().observe(viewLifecycleOwner) { samples ->
+
+            if (samples != null) {
+
+                //main list only shows non-sub-samples
+                adapter.submitList(samples.map {
+                    SampleModel(it)
+                })
+            }
+        }
+
         viewModel.getSamples().observe(viewLifecycleOwner) { samples ->
 
             if (samples != null) {
@@ -180,14 +191,7 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list),
 
                 //cache all samples
                 this.samples = samples.map { SampleModel(it) }
-
-                //main list only shows non-sub-samples
-                adapter.submitList(this.samples?.filter { it.parent == null })
-
             }
-
-            adapter.notifyItemRangeChanged(0, adapter.itemCount)
-
         }
     }
 

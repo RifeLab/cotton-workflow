@@ -9,6 +9,7 @@ class SampleRepository @Inject constructor(
     private val dao: SampleDao
 ) {
 
+    fun getParentSamples() = dao.getParentSamples()
     fun getAll() = dao.getAll()
 
     suspend fun getSampleWithCode(code: String) = dao.getSampleWithCode(code)
