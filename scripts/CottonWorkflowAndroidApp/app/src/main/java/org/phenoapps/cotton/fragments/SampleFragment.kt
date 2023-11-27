@@ -1,27 +1,31 @@
 package org.phenoapps.cotton.fragments
 
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.text.Editable
+import android.util.Log
 import android.view.View
+import android.view.inputmethod.EditorInfo
 import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.preference.PreferenceManager
-import com.journeyapps.barcodescanner.ScanContract
-import com.journeyapps.barcodescanner.ScanIntentResult
-import com.journeyapps.barcodescanner.ScanOptions
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 import org.phenoapps.cotton.R
+import org.phenoapps.cotton.activities.CameraActivity
 import org.phenoapps.cotton.database.entities.SampleEntity
 import org.phenoapps.cotton.interfaces.MainToolbarManager
+import org.phenoapps.cotton.interfaces.SoundApi
 import org.phenoapps.cotton.models.SampleModel
 import org.phenoapps.cotton.util.DateUtil.Companion.toDateString
 import org.phenoapps.cotton.util.WorkflowUtil
@@ -37,8 +41,16 @@ import java.util.*
 @AndroidEntryPoint
 open class SampleFragment(layoutId: Int) : BluetoothFragment(layoutId), CoroutineScope by MainScope() {
 
+    companion object {
+        val TAG = SampleFragment::class.simpleName
+    }
+
     enum class FocusState(priority: Int) {
         TOTAL(0), SEED(1), LINT(2), TEST(3), WAITING(4), EDIT(5)
+    }
+
+    protected val soundHelper by lazy {
+        (activity as SoundApi).soundHelper
     }
 
     protected val sampleViewModel: SampleViewModel by viewModels()
@@ -136,7 +148,7 @@ open class SampleFragment(layoutId: Int) : BluetoothFragment(layoutId), Coroutin
         lintWeightTime.visibility = View.GONE
         testWeightTime.visibility = View.GONE
 
-        testBarcodeEt.onFocusChangeListener = View.OnFocusChangeListener { v, hasFocus ->
+        testBarcodeEt.onFocusChangeListener = View.OnFocusChangeListener { _, hasFocus ->
 
             if (hasFocus) {
                 if (!getUsbBarcodeReaderEnabled()) {
@@ -151,57 +163,134 @@ open class SampleFragment(layoutId: Int) : BluetoothFragment(layoutId), Coroutin
             }
         }
 
+        setupSoundOnActionNext()
         loadSamples()
+
+        view.visibility = View.VISIBLE
     }
 
-    // Barcode launcher for scanning Test label
-    private val barcodeLauncher = registerForActivityResult(
-        ScanContract()
-    ) { result: ScanIntentResult ->
-        if (result.contents == null) {
+    private val barcodeScannerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+
+        if (result.resultCode == Activity.RESULT_OK) {
+
+            if (result.data == null) {
+                Toast.makeText(context,
+                    getString(R.string.canceled),
+                    Toast.LENGTH_LONG
+                ).show()
+
+                soundHelper.playError()
+            }
+
+            result.data?.getStringExtra(CameraActivity.EXTRA_BARCODE)?.let { code ->
+
+                if (isTestInitialized()) {
+
+                    launch {
+
+                        if (sampleViewModel.getSampleWithCode(code) == null) {
+
+                            activity?.runOnUiThread {
+
+                                test.code = code
+                                testBarcodeEt.setText(test.code)
+                                test.scanTime = Calendar.getInstance().timeInMillis
+
+                                soundHelper.playCelebrate()
+                            }
+
+                        } else {
+
+                            activity?.runOnUiThread {
+
+                                Toast.makeText(context, R.string.frag_sample_barcode_exists, Toast.LENGTH_LONG).show()
+
+                                soundHelper.playError()
+                            }
+                        }
+                    }
+                }
+            }
+
+        } else {
 
             Toast.makeText(context,
                 getString(R.string.canceled),
                 Toast.LENGTH_LONG
             ).show()
 
-        } else {
+            soundHelper.playError()
+        }
+    }
 
-            val code = result.contents
+    private fun setupSoundOnActionNext() {
 
-            launch {
+        weightEt.setOnEditorActionListener { _, action, _ ->
 
-                if (sampleViewModel.getSampleWithCode(code) == null) {
+            if (action == EditorInfo.IME_ACTION_NEXT) {
 
-                    activity?.runOnUiThread {
+                seedWeightEt.requestFocus()
 
-                        test.code = result.contents
-                        testBarcodeEt.setText(test.code)
-                        test.scanTime = Calendar.getInstance().timeInMillis
+                soundHelper.playAdvance()
 
-                    }
-
-                } else {
-
-                    activity?.runOnUiThread {
-
-                        Toast.makeText(context, R.string.frag_sample_barcode_exists, Toast.LENGTH_LONG).show()
-
-                    }
-                }
+                return@setOnEditorActionListener true
             }
+
+            false
+        }
+
+        seedWeightEt.setOnEditorActionListener { _, action, _ ->
+
+            if (action == EditorInfo.IME_ACTION_NEXT) {
+
+                lintWeightEt.requestFocus()
+
+                soundHelper.playAdvance()
+
+                return@setOnEditorActionListener true
+            }
+
+            false
+        }
+
+        lintWeightEt.setOnEditorActionListener { _, action, _ ->
+
+            if (action == EditorInfo.IME_ACTION_NEXT) {
+
+                if (getTestEnabled()) {
+
+                    testWeightEt.requestFocus()
+
+                } else testBarcodeEt.requestFocus()
+
+                soundHelper.playAdvance()
+
+                return@setOnEditorActionListener true
+            }
+
+            false
+        }
+
+        testWeightEt.setOnEditorActionListener { _, action, _ ->
+
+            if (action == EditorInfo.IME_ACTION_NEXT) {
+
+                testBarcodeEt.requestFocus()
+
+                soundHelper.playAdvance()
+
+                return@setOnEditorActionListener true
+            }
+
+            false
         }
     }
 
     private fun startBarcodeLauncher(message: String) {
-        val options = ScanOptions()
-        options.setDesiredBarcodeFormats(ScanOptions.ALL_CODE_TYPES)
-        options.setPrompt(message)
-        options.setCameraId(0) // Use a specific camera of the device
-        options.setOrientationLocked(true)
-        options.setBeepEnabled(false)
-        options.setBarcodeImageEnabled(true)
-        barcodeLauncher.launch(options)
+
+        barcodeScannerLauncher.launch(Intent(context, CameraActivity::class.java).also {
+            it.putExtra(CameraActivity.EXTRA_TITLE, message)
+        })
     }
 
     //called from main activity when back button is pressed
@@ -300,6 +389,8 @@ open class SampleFragment(layoutId: Int) : BluetoothFragment(layoutId), Coroutin
 
         saveButton.setOnClickListener {
 
+            soundHelper.playCelebrate()
+
             saveWorkflowData()
         }
     }
@@ -313,11 +404,15 @@ open class SampleFragment(layoutId: Int) : BluetoothFragment(layoutId), Coroutin
 
             saveWorkflowData()
 
+            soundHelper.playCelebrate()
+
             findNavController().popBackStack()
         }
         builder.setNegativeButton(R.string.delete) { _, _ ->
 
             deleteWorkflowData()
+
+            soundHelper.playDelete()
 
             findNavController().popBackStack()
         }
@@ -395,14 +490,18 @@ open class SampleFragment(layoutId: Int) : BluetoothFragment(layoutId), Coroutin
 
             } catch (e: NumberFormatException) {
 
-                e.printStackTrace()
+                Log.d(TAG, "weight error NFE: ${weight.toString()}")
 
+                e.printStackTrace()
             }
 
-            m.scaleTime = time
+            if (m.weight != null) {
 
-            timeView.text = time.toDateString()
-            timeView.visibility = View.VISIBLE
+                m.scaleTime = time
+
+                timeView.text = time.toDateString()
+                timeView.visibility = View.VISIBLE
+            }
 
             if (barcodeView != null) {
                 m.code = barcodeView.text.toString()
@@ -447,11 +546,6 @@ open class SampleFragment(layoutId: Int) : BluetoothFragment(layoutId), Coroutin
             }
             .create()
             .show()
-    }
-
-    override fun onViewStateRestored(savedInstanceState: Bundle?) {
-        super.onViewStateRestored(savedInstanceState)
-        (activity as MainToolbarManager).updateToolbarVisibility()
     }
 
     override fun onResume() {

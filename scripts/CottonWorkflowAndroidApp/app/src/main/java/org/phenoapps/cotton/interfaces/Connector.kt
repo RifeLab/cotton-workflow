@@ -12,5 +12,8 @@ interface Connector {
     fun getPrinterId(): String?
 
     //get the current person from preferences
-    fun getPerson(): String?
+    fun getPerson(): String
+
+    //get the current experiment from preferences
+    fun getExperiment(): String
 }

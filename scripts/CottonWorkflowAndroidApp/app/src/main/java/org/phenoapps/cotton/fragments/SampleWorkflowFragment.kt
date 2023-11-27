@@ -1,16 +1,19 @@
 package org.phenoapps.cotton.fragments
 
+import StabilityMonitor
+import android.app.Activity
 import android.app.AlertDialog
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.navigation.fragment.findNavController
-import com.journeyapps.barcodescanner.ScanContract
-import com.journeyapps.barcodescanner.ScanIntentResult
-import com.journeyapps.barcodescanner.ScanOptions
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import org.phenoapps.cotton.R
+import org.phenoapps.cotton.activities.CameraActivity
 import org.phenoapps.cotton.activities.MainActivity
 import org.phenoapps.cotton.util.DateUtil.Companion.toDateString
 import org.phenoapps.cotton.util.ScaleUtil
@@ -53,6 +56,8 @@ import java.util.*
 @AndroidEntryPoint
 class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow) {
 
+    private lateinit var stabilityMonitor: StabilityMonitor
+
     private var state = FocusState.TOTAL
 
     //numeric image views
@@ -62,44 +67,65 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
     private lateinit var numericFourIv: ImageView
     private lateinit var numericFiveIv: ImageView
 
-    // Barcode launcher for scanning Test label
-    private val barcodeLauncher = registerForActivityResult(
-        ScanContract()
-    ) { result: ScanIntentResult ->
-        if (result.contents == null) {
+    private val barcodeLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
 
-            Toast.makeText(context,
+        if (result.resultCode == Activity.RESULT_OK) {
+
+            if (result.data == null) {
+
+                soundHelper.playError()
+
+                Toast.makeText(
+                    context,
+                    getString(R.string.canceled),
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+
+            result.data?.getStringExtra(CameraActivity.EXTRA_BARCODE)?.let { code ->
+
+                launch {
+
+                    if (sampleViewModel.getSampleWithCode(code) == null) {
+
+                        activity?.runOnUiThread {
+
+                            numericFiveIv.setImageResource(R.drawable.check_circle_outline_green)
+                            test.code = code
+                            testBarcodeEt.setText(test.code)
+                            test.scanTime = Calendar.getInstance().timeInMillis
+                            sampleViewModel.updateSample(test)
+
+                            soundHelper.playCelebrate()
+                        }
+
+                    } else {
+
+                        activity?.runOnUiThread {
+
+                            Toast.makeText(
+                                context,
+                                R.string.frag_sample_barcode_exists,
+                                Toast.LENGTH_LONG
+                            ).show()
+
+                            soundHelper.playError()
+
+                        }
+                    }
+                }
+            }
+
+        } else {
+
+            Toast.makeText(
+                context,
                 getString(R.string.canceled),
                 Toast.LENGTH_LONG
             ).show()
 
-        } else {
+            soundHelper.playError()
 
-            val code = result.contents
-
-            launch {
-
-                if (sampleViewModel.getSampleWithCode(code) == null) {
-
-                    activity?.runOnUiThread {
-
-                        numericFiveIv.setImageResource(R.drawable.check_circle_outline_green)
-                        test.code = result.contents
-                        testBarcodeEt.setText(test.code)
-                        test.scanTime = Calendar.getInstance().timeInMillis
-                        sampleViewModel.updateSample(test)
-
-                    }
-
-                } else {
-
-                    activity?.runOnUiThread {
-
-                        Toast.makeText(context, R.string.frag_sample_barcode_exists, Toast.LENGTH_LONG).show()
-
-                    }
-                }
-            }
         }
     }
 
@@ -130,6 +156,11 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
                 }
             }
         }
+    }
+
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        stabilityMonitor = StabilityMonitor(context)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -163,6 +194,8 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
 
         //set save button text
         saveButton.text = getString(R.string.save)
+
+        view.visibility = View.VISIBLE
 
     }
 
@@ -287,6 +320,8 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
 
             saveWorkflowData()
 
+            soundHelper.playCelebrate()
+
             findNavController().popBackStack()
         }
 
@@ -295,36 +330,41 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
 
     private fun checkTestDiff(weight: Double) {
 
-        val testThresh = getTestThresh()
+        if (weight > 0) {
 
-        if (isLintInitialized()) {
+            val testThresh = getTestThresh()
 
-            val lintWeight = try {
-                lintWeightEt.text.toString().toDouble()
-            } catch (e: NumberFormatException) {
-                0.0
-            }
+            if (isLintInitialized()) {
 
-            val diff = lintWeight - weight
-            //TODO used '>=' here but mainly for testing, or make a min/max thresh
-            //TODO should this save the threshed amount of the final lint ?
-            //TODO make an issue on things to ask Scientists
-            if (diff >= testThresh) {
+                val lintWeight = try {
+                    lintWeightEt.text.toString().toDouble()
+                } catch (e: NumberFormatException) {
+                    0.0
+                }
 
-                testWeightEt.setText("$weight")
+                val diff = lintWeight - weight
+                //TODO used '>=' here but mainly for testing, or make a min/max thresh
+                //TODO should this save the threshed amount of the final lint ?
+                //TODO make an issue on things to ask Scientists
+                if (diff >= testThresh) {
 
-                state = FocusState.WAITING
+                    testWeightEt.setText("$weight")
 
-                numericFourIv.setImageResource(R.drawable.check_circle_outline_green)
+                    state = FocusState.WAITING
 
-                Toast.makeText(context, R.string.frag_sample_test_complete, Toast.LENGTH_LONG).show()
+                    numericFourIv.setImageResource(R.drawable.check_circle_outline_green)
 
-                saveWorkflowData()
+                    Toast.makeText(context, R.string.frag_sample_test_complete, Toast.LENGTH_LONG).show()
 
-                if (!getUsbBarcodeReaderEnabled()) {
-                    startBarcodeLauncher(getString(R.string.frag_sample_scan_test_label))
-                } else {
-                    testBarcodeEt.requestFocus()
+                    soundHelper.playAdvance()
+
+                    saveWorkflowData()
+
+                    if (!getUsbBarcodeReaderEnabled()) {
+                        startBarcodeLauncher(getString(R.string.frag_sample_scan_test_label))
+                    } else {
+                        testBarcodeEt.requestFocus()
+                    }
                 }
             }
         }
@@ -337,7 +377,7 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
 
         (activity as MainActivity).ohausViewModel.advisor = advisor
 
-        advisor.withNearby { adapter ->
+        advisor.withNearby {
 
             if ((activity as MainActivity).connected) {
 
@@ -347,7 +387,19 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
 
                     try {
 
-                        val weight = data.replace(ScaleUtil.UNIT, "").toDouble()
+                        var weight = data.replace(ScaleUtil.UNIT, "").toDouble()
+
+                        if (stabilityMonitor.isEnabled()) {
+
+                            stabilityMonitor.monitor(weight.toString())
+
+                            if (stabilityMonitor.isStable()) {
+
+                                weight = stabilityMonitor.getStableRead().toDouble()
+
+                            } else return@observe
+
+                        }
 
                         //in test mode take input until 25g are taken off
                         //else take a reading between 0.0g readings
@@ -372,6 +424,8 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
                                     state = FocusState.SEED
 
                                     numericOneIv.setImageResource(R.drawable.check_circle_outline_green)
+
+                                    soundHelper.playAdvance()
                                 }
 
                                 FocusState.SEED -> {
@@ -383,6 +437,9 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
                                     state = FocusState.LINT
 
                                     numericTwoIv.setImageResource(R.drawable.check_circle_outline_green)
+
+                                    soundHelper.playAdvance()
+
                                 }
 
                                 FocusState.LINT -> {
@@ -403,6 +460,9 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
 
                                         FocusState.WAITING
                                     }
+
+                                    soundHelper.playAdvance()
+
                                 }
 
                                 else -> {
@@ -427,14 +487,10 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
     }
 
     private fun startBarcodeLauncher(message: String) {
-        val options = ScanOptions()
-        options.setOrientationLocked(true)
-        options.setDesiredBarcodeFormats(ScanOptions.ALL_CODE_TYPES)
-        options.setPrompt(message)
-        options.setCameraId(0) // Use a specific camera of the device
-        options.setBeepEnabled(false)
-        options.setBarcodeImageEnabled(true)
-        barcodeLauncher.launch(options)
+
+        barcodeLauncher.launch(Intent(context, CameraActivity::class.java).also {
+            it.putExtra(CameraActivity.EXTRA_TITLE, message)
+        })
     }
 
     private fun getTestThresh(): Double = try {
@@ -456,6 +512,7 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
             .setMessage(R.string.dialog_sample_delete_confirm_message)
             .setPositiveButton(android.R.string.ok) { _, _ ->
                 deleteWorkflowData()
+                soundHelper.playDelete()
                 findNavController().popBackStack()
             }
             .setNegativeButton(android.R.string.cancel) { d, _ ->
@@ -491,19 +548,21 @@ class SampleWorkflowFragment : SampleFragment(R.layout.fragment_sample_workflow)
 
                 state = FocusState.TOTAL
 
-                lastReading = 0.0
+                lastReading = Double.NEGATIVE_INFINITY
 
                 weightEt.selectAll()
 
                 resetUi()
+
+                (activity as MainActivity).ohausViewModel.clearScaleLastRead()
+
+                soundHelper.playCycle()
             }
             .setNegativeButton(android.R.string.cancel) { d, _ ->
                 d.dismiss()
             }
             .create()
             .show()
-
-
     }
 
     private fun resetUi() {

@@ -1,10 +1,14 @@
 package org.phenoapps.cotton.fragments
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.View
+import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.viewModelScope
 import androidx.navigation.fragment.findNavController
@@ -12,18 +16,13 @@ import androidx.preference.PreferenceManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.journeyapps.barcodescanner.ScanContract
-import com.journeyapps.barcodescanner.ScanIntentResult
-import com.journeyapps.barcodescanner.ScanOptions
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import org.phenoapps.cotton.R
+import org.phenoapps.cotton.activities.CameraActivity
 import org.phenoapps.cotton.activities.MainActivity
 import org.phenoapps.cotton.adapters.SampleAdapter
-import org.phenoapps.cotton.interfaces.MainToolbarManager
-import org.phenoapps.cotton.interfaces.SampleController
-import org.phenoapps.cotton.interfaces.ScanInteractor
-import org.phenoapps.cotton.interfaces.UsbBarcodeReader
+import org.phenoapps.cotton.interfaces.*
 import org.phenoapps.cotton.models.SampleModel
 import org.phenoapps.cotton.util.WorkflowUtil
 import org.phenoapps.cotton.viewmodels.SampleViewModel
@@ -39,11 +38,16 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list),
         const val MAX_ID_INCREMENT_ATTEMPTS = 1000
     }
 
+    private val soundHelper by lazy {
+        (activity as SoundApi).soundHelper
+    }
+
     private var prefs: SharedPreferences? = null
     private var sampleListRecyclerView: RecyclerView? = null
     private var mainButton: ExtendedFloatingActionButton? = null
     private var scanButton: FloatingActionButton? = null
     private var printButton: FloatingActionButton? = null
+    private lateinit var countTextView: TextView
 
     private var code: String? = null
 
@@ -52,6 +56,70 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list),
     private var samples: List<SampleModel>? = null
 
     private var sampleToUpdate: SampleModel? = null
+
+    private val barcodeScannerLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+
+        if (result.resultCode == Activity.RESULT_OK) {
+
+            result?.data?.getStringExtra(CameraActivity.EXTRA_BARCODE)?.let { barcode ->
+
+                code = barcode
+
+                soundHelper.playCelebrate()
+
+                checkForNewSample(barcode)
+            }
+
+        } else {
+
+            soundHelper.playError()
+        }
+    }
+
+    // used to update hvi test subsample barcode
+    // Register the launcher and result handler
+    private val barcodeUpdateLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+
+        if (result.resultCode == Activity.RESULT_OK) {
+
+            result.data?.getStringExtra(CameraActivity.EXTRA_BARCODE)?.let { barcode ->
+
+                sampleToUpdate?.let { sample ->
+
+                    samples?.filter { it.parent == sample.sid }
+                        ?.first { it.type == WorkflowUtil.Companion.SubSampleType.TEST.ordinal }?.let { testSubSample ->
+
+                            testSubSample.code = barcode
+                            testSubSample.scanTime = Calendar.getInstance().timeInMillis
+
+                            viewModel.updateSample(testSubSample)
+
+                            sampleToUpdate = null
+                        }
+                }
+
+                soundHelper.playCelebrate()
+            }
+
+        } else {
+
+            soundHelper.playError()
+        }
+    }
+
+    private val cameraPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { result ->
+
+        if (result) {
+
+            barcodeScannerLauncher.launch(Intent(context, CameraActivity::class.java).also {
+                it.putExtra(CameraActivity.EXTRA_TITLE, getString(R.string.frag_sample_list_scan_a_sample))
+            })
+
+        } else {
+
+            soundHelper.playError()
+        }
+    }
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -64,63 +132,9 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list),
 
         sampleListRecyclerView = view.findViewById(R.id.frag_sample_list_rv)
         scanButton = view.findViewById(R.id.frag_sample_list_scanner_fab)
+        countTextView = view.findViewById(R.id.frag_sample_list_count_tv)
 
         setupUi()
-    }
-
-    // Register the launcher and result handler
-    private val barcodeLauncher = registerForActivityResult(
-        ScanContract()
-    ) { result: ScanIntentResult ->
-        if (result.contents == null) {
-
-//            Toast.makeText(context,
-//                getString(R.string.canceled),
-//                Toast.LENGTH_LONG
-//            ).show()
-
-        } else {
-
-//            Toast.makeText(
-//                context,
-//                result.contents,
-//                Toast.LENGTH_LONG
-//            ).show()
-
-            code = result.contents
-
-            checkForNewSample(result.contents)
-        }
-    }
-
-    // used to update hvi test subsample barcode
-    // Register the launcher and result handler
-    private val barcodeUpdateLauncher = registerForActivityResult(
-        ScanContract()
-    ) { result: ScanIntentResult ->
-        if (result.contents == null) {
-
-//            Toast.makeText(context,
-//                getString(R.string.canceled),
-//                Toast.LENGTH_LONG
-//            ).show()
-
-        } else {
-
-            sampleToUpdate?.let { sample ->
-
-                samples?.filter { it.parent == sample.sid }
-                    ?.first { it.type == WorkflowUtil.Companion.SubSampleType.TEST.ordinal }?.let { testSubSample ->
-
-                        testSubSample.code = result.contents
-                        testSubSample.scanTime = Calendar.getInstance().timeInMillis
-
-                        viewModel.updateSample(testSubSample)
-
-                        sampleToUpdate = null
-                    }
-            }
-        }
     }
 
     fun checkForNewSample(code: String) {
@@ -135,7 +149,7 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list),
 
                 else -> {
 
-                    Toast.makeText(context, "Barcode exists already!", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, getString(R.string.frag_sample_barcode_exists), Toast.LENGTH_SHORT).show()
 
                     if (sample.type == WorkflowUtil.Companion.SubSampleType.PARENT.ordinal) {
 
@@ -158,20 +172,26 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list),
 
         sampleListRecyclerView?.adapter = adapter
 
+        viewModel.getParentSamples().observe(viewLifecycleOwner) { samples ->
+
+            if (samples != null) {
+
+                //main list only shows non-sub-samples
+                adapter.submitList(samples.map {
+                    SampleModel(it)
+                })
+            }
+        }
+
         viewModel.getSamples().observe(viewLifecycleOwner) { samples ->
 
             if (samples != null) {
 
+                countTextView.text = "${samples.filter { it.parent == null }.size}"
+
                 //cache all samples
                 this.samples = samples.map { SampleModel(it) }
-
-                //main list only shows non-sub-samples
-                adapter.submitList(this.samples?.filter { it.parent == null })
-
             }
-
-            adapter.notifyItemRangeChanged(0, adapter.itemCount)
-
         }
     }
 
@@ -182,7 +202,7 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list),
             if (getUsbBarcodeReaderEnabled()) {
                 (activity as UsbBarcodeReader).askUsbBarcodeScanner()
             } else {
-                startBarcodeLauncher(getString(R.string.frag_sample_list_scan_a_sample))
+                startBarcodeLauncher()
             }
         }
 
@@ -192,36 +212,34 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list),
         )
     }
 
-    private fun startBarcodeLauncher(message: String) {
-        val options = ScanOptions()
-        options.setDesiredBarcodeFormats(ScanOptions.ALL_CODE_TYPES)
-        options.setPrompt(message)
-        options.setCameraId(0) // Use a specific camera of the device
-        options.setBeepEnabled(false)
-        options.setBarcodeImageEnabled(true)
-        barcodeLauncher.launch(options)
+    private fun startBarcodeLauncher() {
+
+        cameraPermissionLauncher.launch(android.Manifest.permission.CAMERA)
+
     }
 
     //call barcode scanner for hvi test subsample barcode scan
     private fun startBarcodeUpdateLauncher(message: String) {
-        val options = ScanOptions()
-        options.setDesiredBarcodeFormats(ScanOptions.ALL_CODE_TYPES)
-        options.setPrompt(message)
-        options.setCameraId(0) // Use a specific camera of the device
-        options.setBeepEnabled(false)
-        options.setBarcodeImageEnabled(true)
-        barcodeUpdateLauncher.launch(options)
+
+        barcodeUpdateLauncher.launch(Intent(context, CameraActivity::class.java).also {
+            it.putExtra(CameraActivity.EXTRA_TITLE, message)
+        })
     }
 
     /**
      * This will go to onAcceptNewBarcode when accepted, else it will be dismissed
      */
     override fun onNewBarcode(code: String) {
-        //skip straight to this step now, instead aof asking if user wants to add new sample
+
+        soundHelper.playCelebrate()
+
+        //skip straight to this step now, instead of asking if user wants to add new sample
         onAcceptNewBarcode(code)
     }
 
     override fun onBarcodeExists(sample: SampleModel) {
+
+        soundHelper.playAdvance()
 
         sampleClicked(sample)
 
@@ -234,6 +252,7 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list),
             val scanTime = Calendar.getInstance().timeInMillis
 
             val person = (activity as MainActivity).getPerson()
+            val experiment = (activity as MainActivity).getExperiment()
 
             viewModel.viewModelScope.launch {
 
@@ -245,7 +264,8 @@ class SampleListFragment: BluetoothFragment(R.layout.fragment_sample_list),
                     scaleTime = null,
                     parent = null,
                     person = person,
-                    type = WorkflowUtil.Companion.SubSampleType.PARENT.ordinal
+                    type = WorkflowUtil.Companion.SubSampleType.PARENT.ordinal,
+                    experiment = experiment
                 )
 
                 val parentId = viewModel.insertSample(parentSample)

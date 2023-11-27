@@ -19,6 +19,8 @@ import javax.inject.Inject
 @HiltViewModel
 class OhausSampleViewModel @Inject constructor(): GattViewModel() {
 
+    private var gattStack = ArrayList<BluetoothGatt>()
+
     var job = Job()
         get() {
             if (field.isCancelled) field = Job()
@@ -43,7 +45,7 @@ class OhausSampleViewModel @Inject constructor(): GattViewModel() {
         emitSource(scaleReading)
     }
 
-    fun reset() {
+    fun clearScaleLastRead() {
         scaleReading.value = ""
     }
 
@@ -75,15 +77,37 @@ class OhausSampleViewModel @Inject constructor(): GattViewModel() {
         emit(false)
     }
 
-    fun connect(context: Context, adapter: BluetoothAdapter, address: String? = "C4:BE:84:1A:25:93") {
+    fun connect(context: Context, adapter: BluetoothAdapter, address: String? = null) {
 
-        register(adapter, context, address ?: "C4:BE:84:1A:25:93")
+        if (!address.isNullOrBlank()) {
 
+            try {
+
+                register(adapter, context, address)
+
+            } catch (e: java.lang.IllegalArgumentException) {
+
+                e.printStackTrace()
+            }
+        }
     }
 
     fun disconnect() {
         connected = false
         super.unregister()
+
+        //old devices <= Android 10 that track multiple gatt objects
+        //without disconnecting all, the connected device might think its still connected
+        try {
+            gattStack.forEach { g ->
+                g.close()
+                g.disconnect()
+                g.discoverServices()
+            }
+            gattStack.clear()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
@@ -99,10 +123,10 @@ class OhausSampleViewModel @Inject constructor(): GattViewModel() {
             OhausViewModel.OHAUS_SERVICE_UUID.toString(), OhausViewModel.OHAUS_COMMAND_CHAR_UUID.toString(),
             OhausViewModel.SET2GRAM
         )
-        write(
-            OhausViewModel.OHAUS_SERVICE_UUID.toString(), OhausViewModel.OHAUS_COMMAND_CHAR_UUID.toString(),
-            "SP".toByteArray() //OhausViewModel.CONTINUOUS //TODO
-        )
+//        write(
+//            OhausViewModel.OHAUS_SERVICE_UUID.toString(), OhausViewModel.OHAUS_COMMAND_CHAR_UUID.toString(),
+//            "SP".toByteArray() //send print on stability settings pass
+//        )
     }
 
     @Synchronized
@@ -193,6 +217,11 @@ class OhausSampleViewModel @Inject constructor(): GattViewModel() {
         newState: Int
     ) {
         super.onConnectionStateChange(gatt, status, newState)
+
+        //track gatt objects for device compatibility <= Android 10
+        gatt?.let { g ->
+            gattStack.add(g)
+        }
 
         when (newState) {
             BluetoothGatt.STATE_DISCONNECTED -> {

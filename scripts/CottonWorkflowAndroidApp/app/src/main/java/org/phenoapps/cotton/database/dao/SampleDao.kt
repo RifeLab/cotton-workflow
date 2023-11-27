@@ -7,6 +7,9 @@ import org.phenoapps.cotton.database.entities.SampleEntity
 @Dao
 interface SampleDao {
 
+    @Query("SELECT * FROM samples WHERE parent IS null ORDER BY scan_time DESC")
+    fun getParentSamples(): LiveData<List<SampleEntity>>
+
     @Query("SELECT * FROM samples ORDER BY scan_time DESC")
     fun getAll(): LiveData<List<SampleEntity>>
 

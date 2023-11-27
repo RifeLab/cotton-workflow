@@ -8,6 +8,11 @@
         android:title="@string/preferences_profile"
         app:iconSpaceReserved="false">
 
+        <EditTextPreference android:title="@string/pref_experiment_title"
+            android:icon="@drawable/experiment_24px"
+            android:key="@string/key_preferences_experiment"
+            android:summary="@string/pref_experiment_summary"/>
+
         <EditTextPreference android:title="@string/pref_person_title"
             android:icon="@drawable/ic_pref_profile_person"
             android:key="@string/key_preferences_person"
@@ -36,6 +41,13 @@
 
         <CheckBoxPreference
             android:defaultValue="true"
+            android:icon="@drawable/music_note_24px"
+            android:key="@string/key_preferences_sound_enabled"
+            android:title="@string/pref_workflow_sound_title"
+            android:summary="@string/pref_workflow_sound_summary"/>
+
+        <CheckBoxPreference
+            android:defaultValue="true"
             android:icon="@drawable/alert_rhombus"
             android:key="@string/key_preferences_error_threshold"
             android:title="@string/pref_workflow_error_threshold_title"
@@ -59,6 +71,21 @@
             android:defaultValue="20"
             android:icon="@drawable/receipt_text_check_outline"
             android:key="@string/key_preferences_test_weight_threshold"/>
+
+        <CheckBoxPreference
+            android:defaultValue="false"
+            android:icon="@drawable/balance_24px"
+            android:key="@string/key_preferences_stability_enabled"
+            android:title="@string/pref_stability_enabled_title"
+            android:summary="@string/pref_stability_enabled_summary"/>
+
+        <EditTextPreference
+            android:inputType="number"
+            android:defaultValue="1"
+            android:icon="@drawable/data_thresholding_24px"
+            android:key="@string/key_preferences_stability_threshold"
+            android:title="@string/pref_stability_threshold_title"
+            android:summary="@string/pref_stability_threshold_summary"/>
 
     </PreferenceCategory>
 

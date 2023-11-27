@@ -42,10 +42,9 @@
             </intent-filter>
         </activity>
 
-        <activity android:theme="@style/Theme.Cotton"
-            android:name="com.journeyapps.barcodescanner.CaptureActivity"
-            android:screenOrientation="unspecified"
-            tools:replace="screenOrientation,android:theme" />
+        <activity android:name=".activities.CameraActivity"
+            android:exported="true"
+            android:theme="@style/Theme.Cotton"/>
 
     </application>
 </manifest>

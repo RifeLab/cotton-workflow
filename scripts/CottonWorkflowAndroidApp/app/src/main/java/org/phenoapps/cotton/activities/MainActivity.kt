@@ -1,9 +1,6 @@
 package org.phenoapps.cotton.activities
 
 import android.annotation.SuppressLint
-import android.bluetooth.BluetoothManager
-import android.bluetooth.BluetoothProfile
-import android.content.Context
 import android.content.SharedPreferences
 import android.net.Uri
 import android.os.Bundle
@@ -33,13 +30,11 @@ import org.phenoapps.cotton.fragments.SampleListFragment
 import org.phenoapps.cotton.fragments.SampleWorkflowFragment
 import org.phenoapps.cotton.interfaces.Connector
 import org.phenoapps.cotton.interfaces.MainToolbarManager
+import org.phenoapps.cotton.interfaces.SoundApi
 import org.phenoapps.cotton.interfaces.UsbBarcodeReader
 import org.phenoapps.cotton.models.SampleModel
-import org.phenoapps.cotton.util.BarcodeScannerHelper
+import org.phenoapps.cotton.util.*
 import org.phenoapps.cotton.util.DateUtil.Companion.toDateString
-import org.phenoapps.cotton.util.KeyboardListenerHelper
-import org.phenoapps.cotton.util.VerifyPersonHelper
-import org.phenoapps.cotton.util.WorkflowUtil
 import org.phenoapps.cotton.viewmodels.OhausSampleViewModel
 import org.phenoapps.cotton.viewmodels.SampleViewModel
 import org.phenoapps.security.Security
@@ -47,9 +42,10 @@ import java.io.OutputStreamWriter
 import java.util.*
 import javax.inject.Inject
 import kotlin.math.abs
+import org.phenoapps.cotton.util.StringUtil.Companion.sanitizeCsv
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarcodeReader {
+class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarcodeReader, SoundApi {
 
     private var bottomNav: BottomNavigationView? = null
 
@@ -68,6 +64,9 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarc
     private var menu: Menu? = null
 
     val ohausViewModel: OhausSampleViewModel by viewModels()
+
+    @Inject
+    override lateinit var soundHelper: SoundHelperImpl
 
     companion object {
         const val PRINTER = 0
@@ -91,6 +90,7 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarc
 
                     exportToUri(fileUri)
 
+                    soundHelper.playCelebrate()
                 }
 
                 askUserDeleteSamples()
@@ -100,6 +100,8 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarc
                 e.printStackTrace()
 
                 Toast.makeText(this, R.string.export_failed, Toast.LENGTH_SHORT).show()
+
+                soundHelper.playError()
             }
         }
 
@@ -111,6 +113,8 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarc
             .setPositiveButton(android.R.string.yes) { _, _ ->
 
                 viewModel.deleteAll()
+
+                soundHelper.playDelete()
 
             }
             .setNegativeButton(android.R.string.no) { _, _ -> }
@@ -143,7 +147,8 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarc
                             val lintWeight = lint.weight ?: ""
                             val testCode = test.code ?: ""
                             val scanTime = sample.scanTime?.toDateString() ?: ""
-                            val notes = if (sample.note == null) "" else "\"${sample.note?.replace("\"", "\"\"")}\""
+                            val notes = if (sample.note == null) "" else sample.note?.sanitizeCsv()
+                            val experiment = if (sample.experiment == null) "" else sample.experiment?.sanitizeCsv()
 
                             val error = if (sample.weight != null && lint.weight != null && seed.weight != null) {
 
@@ -162,7 +167,7 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarc
 
                             } else ""
 
-                            writer.write("$code, $weight, $seedWeight, $lintWeight, $testCode, $scanTime, $error, $notes\n")
+                            writer.write("$code, $weight, $seedWeight, $lintWeight, $testCode, $scanTime, $error, $experiment, $notes\n")
 
                         }
                     }
@@ -224,6 +229,7 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarc
         topToolbar = findViewById(R.id.act_main_top_tb)
         bottomNav = findViewById(R.id.act_main_bot_tb)
 
+        bottomNav?.setOnApplyWindowInsetsListener(null)
         bottomNav?.isSelected = false
         bottomNav?.setOnItemSelectedListener {
 
@@ -263,7 +269,6 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarc
             supportActionBar?.setDisplayHomeAsUpEnabled(true)
             supportActionBar?.setDisplayShowHomeEnabled(true)
             supportActionBar?.setDisplayShowTitleEnabled(false)
-            topToolbar?.inflateMenu(R.menu.menu_main_top_toolbar)
         }
     }
 
@@ -355,11 +360,13 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarc
 
             R.id.action_menu_main_top_scale -> {
 
-                disconnectGatt()
+                advisor.withNearby {
 
-                findNavController(R.id.nav_fragment)
-                    .navigate(NavigationRootDirections.globalActionToDeviceChooserFragment("scale"))
+                    disconnectGatt()
 
+                    findNavController(R.id.nav_fragment)
+                        .navigate(NavigationRootDirections.globalActionToDeviceChooserFragment("scale"))
+                }
             }
 
             R.id.action_menu_main_top_workflow -> {
@@ -372,8 +379,8 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarc
                         supportFragmentManager.findFragmentById(R.id.nav_fragment)
                             ?.childFragmentManager?.fragments?.find { it is SampleFragment }.let {
 
-                                (it as? SampleFragment)?.resolveWorkflow()
-
+                                (it as? SampleEditFragment)?.resolveWorkflow()
+                                (it as? SampleWorkflowFragment)?.resolveWorkflow()
                             }
                     }
                 }
@@ -389,8 +396,8 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarc
                         supportFragmentManager.findFragmentById(R.id.nav_fragment)
                             ?.childFragmentManager?.fragments?.find { it is SampleFragment }.let {
 
-                                (it as? SampleFragment)?.resolveDelete()
-
+                                (it as? SampleEditFragment)?.resolveDelete()
+                                (it as? SampleWorkflowFragment)?.resolveDelete()
                             }
                     }
                 }
@@ -406,8 +413,8 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarc
                         supportFragmentManager.findFragmentById(R.id.nav_fragment)
                             ?.childFragmentManager?.fragments?.find { it is SampleFragment }.let {
 
-                                (it as? SampleFragment)?.resolveNote()
-
+                                (it as? SampleEditFragment)?.resolveNote()
+                                (it as? SampleWorkflowFragment)?.resolveNote()
                             }
                     }
                 }
@@ -556,8 +563,11 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarc
     override fun getScaleId(): String? =
         prefs?.getString(getString(R.string.key_scale_device_id), null)
 
-    override fun getPerson(): String? =
+    override fun getPerson(): String =
         prefs?.getString(getString(R.string.key_preferences_person), "") ?: ""
+
+    override fun getExperiment(): String =
+        prefs?.getString(getString(R.string.key_preferences_experiment), "") ?: ""
 
     override fun onPause() {
         super.onPause()
@@ -581,15 +591,29 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarc
 
     fun reconnect() {
 
-        ohausViewModel.reset()
+        advisor.withAdapter { adapter ->
 
-        startConnectionCheck(SCALE)
+            ohausViewModel.clearScaleLastRead()
 
+            val address = prefs?.getString(getString(R.string.key_scale_device_id), "")
+
+            if (!address.isNullOrBlank()) {
+
+                ohausViewModel.connect(
+                    context = this,
+                    adapter = adapter,
+                    address = address
+                )
+
+                //connected = true
+                //updateToolbarStatus(SCALE, true)
+
+                startConnectionCheck(SCALE)
+            }
+        }
     }
 
     override fun updateToolbarVisibility() {
-
-        invalidateOptionsMenu()
 
         when (findNavController(R.id.nav_fragment).currentDestination?.id) {
 
@@ -624,7 +648,11 @@ class MainActivity : AppCompatActivity(), Connector, MainToolbarManager, UsbBarc
 
     override fun resolveBarcode(code: String) {
 
-        when (findNavController(R.id.nav_fragment).currentDestination?.id
+        if (code.isBlank()) {
+
+            Toast.makeText(this, R.string.frag_sample_list_empty_code_error, Toast.LENGTH_SHORT).show()
+
+        } else when (findNavController(R.id.nav_fragment).currentDestination?.id
             ?: R.id.fragment_sample_list) {
 
             R.id.fragment_sample_list -> {

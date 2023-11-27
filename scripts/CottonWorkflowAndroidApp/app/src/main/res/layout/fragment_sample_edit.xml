@@ -2,6 +2,8 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:visibility="gone"
+    tools:visibility="visible"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools">
@@ -252,7 +254,9 @@
         app:layout_constraintBottom_toTopOf="@id/frag_sample_save_btn"
         android:src="@drawable/scale"
         app:backgroundTint="@color/accent"
-        android:contentDescription="@string/fragment_sample_list_fab_content_description" />
+        android:contentDescription="@string/fragment_sample_list_fab_content_description"
+        android:tint="@color/white"
+        app:tint="@color/white"/>
 
     <Button style="@style/Theme.Cotton.Button.Save"
         android:layout_margin="8dp"
