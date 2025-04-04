@@ -1,5 +1,14 @@
 # Cotton Workflow Android App
 
+## Hardware
+
+| Item              | Manufacturer | Model            | Price | Vendor                                                                                                                                                             |
+|-------------------|--------------|------------------|-------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Tablet            | Lenovo       | M9               | $140  | [Lenovo](https://www.lenovo.com/us/en/p/tablets/android-tablets/lenovo-tab-series/lenovo-tab-m9-9-inch-mtk/len103l0016)                                            |
+| Scale             | Ohaus        | Ranger 5000      | $520  | [ScalesGalore](https://www.scalesgalore.com/product/Ohaus-30031708-Ranger-3000-Compact-Bench-Scale-6-lb-x-00002-lb-and-Legal-for-Trade-6-lb-x-0002-lb-px36329.cfm) |
+| Bluetooth adapter | SerialIO     | BlueSnap DB9-M6A | $105  | [SerialIO](https://buy.serialio.com/products/bluesnap-smart-db9-m6a)                                                                                               |
+| Barcode scanner   | Alacrity     | 2D Bluetooth     | $75   | [Amazon](https://www.amazon.com/dp/B0823LYJZX)                                                                                                                     |
+
 ## Overview
 
 The cotton workflow app is designed to flow through a pre-defined process. The process is defiend as:
