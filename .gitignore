@@ -21,12 +21,6 @@ gradlew
 gradlew.bat
 *.hprof
 
-# Local configuration file (sdk path, etc)
-local.properties
-
-# Log Files
-*.log
-
 # Android Studio
 .idea
 .idea/libraries/
@@ -41,28 +35,3 @@ local.properties
 .idea/scopes/scope_settings.xml
 .idea/vcs.xml
 *.iml
-
-# Other
-**/ApiKeys.java
-.claude/
-
-# Git orig files
-*.orig
-
-# Unnecessary Github files
-.github/*
-!.github/ISSUE_TEMPLATE/
-!.github/PULL_REQUEST_TEMPLATE.md
-!.github/workflows/
-
-# Keystore files
-# Uncomment the following lines if you do not want to check your keystore files in.
-*.jks
-*.keystore
-keystore.config
-
-# VS Code files
-.vscode/settings.json
-
-# python cache files
-__pycache__/
